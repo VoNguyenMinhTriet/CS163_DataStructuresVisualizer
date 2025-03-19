@@ -1,0 +1,5 @@
+extern/
+bin/
+tmp/
+.cache/
+compile_commands.json

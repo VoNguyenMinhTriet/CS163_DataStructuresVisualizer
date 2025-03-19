@@ -1,0 +1,13 @@
+FROM archlinux:multilib-devel
+
+# Not everything should be done on root
+ARG DOCKER_USER=linux-build
+RUN useradd --create-home $DOCKER_USER
+
+# Update everything
+RUN pacman -Syu --noconfirm
+
+# Remove sudo password confirmations
+RUN echo "$DOCKER_USER ALL=(ALL:ALL) NOPASSWD: ALL" | tee -a /etc/sudoers
+
+RUN pacman -S raylib --noconfirm
