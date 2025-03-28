@@ -1,6 +1,6 @@
 // Implementation splitting here is merely a workaround.
 
-#include "./main_window.hpp"
+#include "main_window.hpp"
 #include "./pages/main_menu.hpp"
 #include "./themes/dark_simple/dark_simple.hpp"
 #include "main_app/pages/page.hpp"
