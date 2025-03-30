@@ -23,13 +23,15 @@ namespace raywtk
     public:
         raylib::Rectangle buttonRect;
         bool enabled = true;
-
+        // Text for button
+        std::string buttonText;
         // Events
         eventpp::CallbackList<void()> Click;
 
         // Styling
         ButtonClass state = ButtonClass::Normal;
         std::unique_ptr<IStyle> style;
+
 
         void Update (float deltaTime) override
         {
