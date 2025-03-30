@@ -23,8 +23,9 @@ namespace raywtk
     public:
         raylib::Rectangle buttonRect;
         bool enabled = true;
+
         // Text for button
-        std::string buttonText;
+        std::string buttonText = "Button";
         // Events
         eventpp::CallbackList<void()> Click;
 

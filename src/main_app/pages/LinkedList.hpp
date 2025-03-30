@@ -1,8 +1,12 @@
 #pragma once
 
-#include "./page.hpp"
 #include <memory>
+#include <vector>
 #include "raylib-cpp/raylib-cpp.hpp"
+#include "widget_toolkit/controls/button.hpp"
+#include "main_app/themes/dark_simple/button.hpp"
+#include "./page.hpp"
+
 
 namespace ds_viz::pages 
 {
@@ -10,21 +14,15 @@ namespace ds_viz::pages
     {
         std::unique_ptr<raylib::Font> font;
         raylib::Text title;
+        std::vector<std::unique_ptr<raywtk::Button>> Buttons;
 
     public:
     
-    LinkedListPage () 
-    {
-        font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
-        title = raylib::Text("Singly-Linked List", 128, raylib::Color::White(), *font, 0);
-    }
-        
-    void Update(float dt) override
-    {
-
-    }
-
+    LinkedListPage(); 
+    void OnReturnButtonClick();
+    void Update(float dt) override;
     void Render() override;
     
     };
 }
+
