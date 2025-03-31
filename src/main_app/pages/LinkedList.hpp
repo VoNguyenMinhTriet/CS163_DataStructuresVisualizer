@@ -13,12 +13,11 @@ namespace ds_viz::pages
 {
     class LinkedListPage : public Page 
     {
-
-        
         std::unique_ptr<raylib::Font> font;
         raylib::Text title;
-        std::vector<std::unique_ptr<raywtk::NodeWidget>> Nodes;
-        
+        std::unique_ptr<raywtk::NodeWidget> head = nullptr; // Head node
+        int size = 0; // Size of Linked List
+
         std::unique_ptr<raywtk::Button> insertAtTail;
         std::unique_ptr<raywtk::Button> returnButton;
 
@@ -35,7 +34,6 @@ namespace ds_viz::pages
     void InsertNode(int value);
     void Update(float dt) override;
     void Render() override;
-    
     };
 }
 

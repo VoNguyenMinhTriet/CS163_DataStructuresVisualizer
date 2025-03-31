@@ -28,8 +28,6 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
 // Handle return button click event
 void ds_viz::pages::LinkedListPage::OnReturnButtonClick()
 {
-    Nodes.clear();
-
     if (_context)
         _context->ChangePage(std::make_shared<ds_viz::pages::MainMenuPage>());
     else
@@ -42,43 +40,50 @@ void ds_viz::pages::LinkedListPage::InsertNode(int value)
     float startX = 100;  // Initial X position
     float startY = 400;  // Fixed Y position
 
-    // Compute new node position (each node is spaced 100px apart)
-    float posX = startX + Nodes.size() * 100;
-
-    auto newNode = std::make_unique<raywtk::NodeWidget>();
-    newNode->position = raylib::Vector2(posX, startY);
-    newNode->color = DARKBLUE;
-
-    // Set content to display value inside node
-    newNode->content = [newNode = newNode.get(), value]()
+    auto newNode = std::make_unique<raywtk::NodeWidget>(value);
+    
+    // Compute position
+    if (!head) 
     {
-        std::string text = std::to_string(value);
-        int fontSize = 20;
-        int textWidth = MeasureText(text.c_str(), fontSize); // Measure text width
-        int textHeight = fontSize;  // Font height is usually close to font size
+        newNode->position = raylib::Vector2(startX, startY);
+        head = std::move(newNode);
+    } 
+    
+    else 
+    {
+        raywtk::NodeWidget* current = head.get();
+        int index = 0;
+        while (current->next) 
+        {
+            current = current->next.get();
+            index++;
+        }
 
-        // Adjust to center inside the node
-        float centeredX = newNode->position.x - (textWidth / 2);
-        float centeredY = newNode->position.y - (textHeight / 2);
+        // Compute new node position
+        float posX = startX + (index + 1) * 100;
+        newNode->position = raylib::Vector2(posX, startY);
 
-        DrawText(text.c_str(), centeredX, centeredY, fontSize, RAYWHITE);
-    };
+        current->next = std::move(newNode);
+    }
 
-    Nodes.push_back(std::move(newNode));
+    size++;
 }
+
+   
 
 void ds_viz::pages::LinkedListPage::Update(float dt)
 {
     
-    for (auto& node : Nodes)
-        node->Update(dt);
+    raywtk::NodeWidget* current = head.get();
+    if (current)
+        current->Update(dt);
 
-        if (errorTimer > 0) 
-        {
-            errorTimer -= dt; // Decrease timer
-            if (errorTimer < 0) 
-                errorTimer = 0; // Hide the message after timeout
-        }
+    if (errorTimer > 0) 
+    {
+        errorTimer -= dt; // Decrease timer
+        if (errorTimer < 0) 
+            errorTimer = 0; // Hide the message after timeout
+    }
 
     if (showInputBar)
     {
@@ -99,7 +104,7 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                     errorTimer = 2.0f; // Show error for 2 seconds
                 }
                 
-                else if (Nodes.size() >= 18) 
+                else if (size>=18) 
                 {
                     errorMessage = "Maximum number of nodes is 18!";
                     errorTimer = 2.0f;
@@ -131,78 +136,58 @@ void ds_viz::pages::LinkedListPage::Render()
         (_context->ref_raylib_window->GetWidth() - title.MeasureEx().x) / 2.0,
         0));
 
-        for (size_t i = 0; i < Nodes.size(); i++)
-        {
-            Nodes[i]->Render();
-        
-            if (i < Nodes.size() - 1) // Draw connections except for the last node
-            {
-                raylib::Vector2 start = Nodes[i]->position;
-                raylib::Vector2 end = Nodes[i + 1]->position;
-        
-                // Compute direction vector from start to end
-                raylib::Vector2 direction = (end - start).Normalize();
-        
-                // Get perimeter intersection points
-                raylib::Vector2 startEdge = start + (direction * Nodes[i]->radius);
-                raylib::Vector2 endEdge = end - (direction * Nodes[i + 1]->radius);
-        
-                // Draw the adjusted line
-                DrawLineEx(startEdge, endEdge, 5, RAYWHITE);
-        
-                // === Draw Arrowhead ===
-                float arrowSize = 12.0f;
-                float arrowAngle = 30.0f * DEG2RAD; // Angle of arrowhead
-                
-                raylib::Vector2 leftWing = endEdge - direction * arrowSize +
-                raylib::Vector2(cos(arrowAngle) * -direction.x - sin(arrowAngle) * -direction.y,
-                    sin(arrowAngle) * -direction.x + cos(arrowAngle) * -direction.y) * arrowSize;
-
-                raylib::Vector2 rightWing = endEdge - direction * arrowSize +
-                raylib::Vector2(cos(-arrowAngle) * -direction.x - sin(-arrowAngle) * -direction.y,
-                    sin(-arrowAngle) * -direction.x + cos(-arrowAngle) * -direction.y) * arrowSize;
-
-                // Draw arrowhead as a triangle
-                DrawTriangle(endEdge, leftWing, rightWing, RAYWHITE);
-            }
-        }
+    // Render the linked list
+    raywtk::NodeWidget* current = head.get();
+    if (current)
+        current->Render();
 
     // Draw Head and Tail labels
-    if (!Nodes.empty())
+    if (head)
     {
-        DrawText("head", Nodes.front()->position.x - 30, Nodes.front()->position.y - 50, 20, RED);
-        DrawText("tail", Nodes.back()->position.x - 20, Nodes.back()->position.y + 50, 20, GREEN);
+        DrawText("head", head->position.x - 30, head->position.y - 50, 20, RED);
+        if (!head->next) // If only one node exists, it's both head and tail
+            DrawText("tail", head->position.x - 20, head->position.y + 50, 20, GREEN);
+        else
+        {
+            raywtk::NodeWidget* tail = head.get();
+            while (tail->next)
+                tail = tail->next.get();
+            DrawText("tail", tail->position.x - 20, tail->position.y + 50, 20, GREEN);
+        }
     }
 
+    // Draw input bar if active
     if (showInputBar)
     {
         DrawRectangle(100, 850, 150, 50, DARKGRAY);
         DrawText(inputValue.c_str(), 120, 865, 20, RAYWHITE);
     }
 
+    // Render buttons
     insertAtTail->Render();
     returnButton->Render();
 
+    // Draw error message if needed
     if (errorTimer > 0)
     {
-    int screenWidth = _context->ref_raylib_window->GetWidth();
-    int screenHeight = _context->ref_raylib_window->GetHeight();
+        int screenWidth = _context->ref_raylib_window->GetWidth();
+        int screenHeight = _context->ref_raylib_window->GetHeight();
 
-    int boxWidth = 600;  // Increased width
-    int boxHeight = 40;
-    int boxX = (screenWidth - boxWidth) / 2;  // Center horizontally
-    int boxY = screenHeight - 100;
+        int boxWidth = 600;
+        int boxHeight = 40;
+        int boxX = (screenWidth - boxWidth) / 2;
+        int boxY = screenHeight - 100;
 
-    int fontSize = 20;
-    int textWidth = MeasureText(errorMessage.c_str(), fontSize);
+        int fontSize = 20;
+        int textWidth = MeasureText(errorMessage.c_str(), fontSize);
     
-    // Draw background box
-    DrawRectangle(boxX, boxY, boxWidth, boxHeight, RED);
+        // Draw background box
+        DrawRectangle(boxX, boxY, boxWidth, boxHeight, RED);
 
-    // Adjust text position to center inside the box
-    int textX = boxX + (boxWidth - textWidth) / 2;
-    int textY = boxY + (boxHeight - fontSize) / 2;
+        // Adjust text position to center inside the box
+        int textX = boxX + (boxWidth - textWidth) / 2;
+        int textY = boxY + (boxHeight - fontSize) / 2;
 
-    DrawText(errorMessage.c_str(), textX, textY, fontSize, RAYWHITE);
+        DrawText(errorMessage.c_str(), textX, textY, fontSize, RAYWHITE);
     }
 }
