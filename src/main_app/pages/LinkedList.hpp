@@ -20,10 +20,15 @@ namespace ds_viz::pages
 
         std::unique_ptr<raywtk::Button> insertAtTail;
         std::unique_ptr<raywtk::Button> returnButton;
+        std::unique_ptr<raywtk::Button> randomButton;
+        std::unique_ptr<raywtk::Button> clearAllButton;
 
         bool showInputBar = false;
         std::string inputValue;
 
+        bool showRandomInput = false;  
+        std::string randomInputValue;
+        
         std::string errorMessage = "";
         float errorTimer = 0.0f;
 
@@ -31,6 +36,8 @@ namespace ds_viz::pages
     
     LinkedListPage(); 
     void OnReturnButtonClick();
+    void OnRandomButtonClick();
+    void OnClearButtonClick();
     void InsertNode(int value);
     void Update(float dt) override;
     void Render() override;
