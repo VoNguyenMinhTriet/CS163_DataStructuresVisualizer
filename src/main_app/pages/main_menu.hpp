@@ -6,7 +6,7 @@
 #include "./page.hpp"
 #include "widget_toolkit/controls/button.hpp"
 #include "./LinkedList.hpp"
-#include "main_app/themes/dark_simple/button.hpp"
+#include "main_app/themes/dark_simple/text_button.hpp"
 
 namespace ds_viz::pages
 {
@@ -31,7 +31,6 @@ namespace ds_viz::pages
         button->buttonRect = raylib::Rectangle(x, y, 200, 60);
         button->buttonText = text;
         button->Click.append(callback);
-        
         button->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
         buttons.push_back(std::move(button));
     }

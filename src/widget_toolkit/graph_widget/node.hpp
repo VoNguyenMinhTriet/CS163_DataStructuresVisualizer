@@ -14,7 +14,7 @@ namespace raywtk
     public:
         raylib::Vector2 position;
         raylib::Camera2D *camera;
-        float radius = 10.0f;
+        float radius = 25.0f;
         raylib::Color color = raylib::Color::White();
         bool visible = true;
         std::function<void()> content; // Optional content function

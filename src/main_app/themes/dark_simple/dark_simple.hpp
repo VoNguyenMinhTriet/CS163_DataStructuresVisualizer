@@ -5,7 +5,7 @@
 #include "widget_toolkit/controls/button.hpp"
 #include "widget_toolkit/interfaces.hpp"
 #include "widget_toolkit/theme_manager.hpp"
-#include "./button.hpp"
+#include "./text_button.hpp"
 #include <memory>
 
 namespace ds_viz::themes::dark_simple
@@ -27,7 +27,6 @@ namespace ds_viz::themes::dark_simple
                     typeid(raywtk::Button).name(),
                     std::shared_ptr<raywtk::IStyle>(new ButtonStyle())
                 });
-
         }
 
         return &_darkSimpleTheme;
