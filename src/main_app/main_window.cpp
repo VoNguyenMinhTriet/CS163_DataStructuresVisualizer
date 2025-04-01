@@ -30,7 +30,7 @@ int ds_viz::MainWindow::Run ()
     ref_raylib_window->SetTargetFPS(fixedFPS);
     ref_raylib_window->SetMinSize(1280, 720);
 
-    ChangePage(std::make_shared<pages::MainMenuPage>());
+    ChangePage(std::make_shared<pages::MainMenuPage>()); // Current in main menu page
 
     while (!ref_raylib_window->ShouldClose()) // Detect window close button or ESC key
     {

@@ -7,4 +7,10 @@ void ds_viz::pages::MainMenuPage::Render ()
         (_context->ref_raylib_window->GetWidth() - title.MeasureEx().x) / 2.0,
         0));
 
+    for (auto& button: buttons)
+    {
+        button->Render();
+    }
+
+
 }

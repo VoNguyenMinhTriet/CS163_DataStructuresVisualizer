@@ -27,7 +27,6 @@ namespace ds_viz::themes::dark_simple
                     typeid(raywtk::Button).name(),
                     std::shared_ptr<raywtk::IStyle>(new ButtonStyle())
                 });
-
         }
 
         return &_darkSimpleTheme;
