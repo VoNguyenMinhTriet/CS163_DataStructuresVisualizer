@@ -19,9 +19,10 @@ namespace raywtk
         bool visible = true;
         std::function<void()> content; // Optional content function
         eventpp::CallbackList<void()> Click; // Optional click handler
+        int value; // Store node's value
         std::unique_ptr<NodeWidget> next = nullptr; // Pointer to next node
 
-        NodeWidget(int value): content([this, value]() 
+        NodeWidget(int val): value(val), content([this]() 
         {
             std::string text = std::to_string(value);
             int fontSize = 20;

@@ -32,6 +32,27 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     clearAllButton->Click.append([this]() { OnClearButtonClick(); });
     clearAllButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
+    // Reposition Nodes Button
+    repositionButton = std::make_unique<raywtk::Button>();
+    repositionButton->buttonText = "Reposition";
+    repositionButton->buttonRect = raylib::Rectangle(300, 900, 180, 50);
+    repositionButton->Click.append([this]() { RepositionNodes(); });
+    repositionButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // Search by Value Button
+    searchByValueButton = std::make_unique<raywtk::Button>();
+    searchByValueButton->buttonText = "Search by Value";
+    searchByValueButton->buttonRect = raylib::Rectangle(300, 700, 180, 50);
+    searchByValueButton->Click.append([this]() { searchByValue = true; showSearchInput = true; });
+    searchByValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // Search by Index Button
+    searchByIndexButton = std::make_unique<raywtk::Button>();
+    searchByIndexButton->buttonText = "Search by Index";
+    searchByIndexButton->buttonRect = raylib::Rectangle(300, 800, 180, 50);
+    searchByIndexButton->Click.append([this]() { searchByValue = false; showSearchInput = true; });
+    searchByIndexButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
     // return button
     returnButton = std::make_unique<raywtk::Button>();
     returnButton->buttonRect = raylib::Rectangle(1700, 800, 80, 80); 
@@ -63,18 +84,42 @@ void ds_viz::pages::LinkedListPage::OnClearButtonClick()
     size = 0;
 }
 
-// Insert a new node at the tail
-void ds_viz::pages::LinkedListPage::InsertNode(int value)
+void ds_viz::pages::LinkedListPage::ResetColor()
 {
-    float startX = 100;  // Initial X position
-    float startY = 400;  // Fixed Y position
+    raywtk::NodeWidget* current = head.get();
+    while (current)
+    {
+        current->color = raylib::Color::Blue(); // Reset to default
+        current = current->next.get();
+    }
+}
+
+// Repositioning the nodes if dragged
+void ds_viz::pages::LinkedListPage::RepositionNodes()
+{
+    raywtk::NodeWidget* current = head.get();
+    int index = 0;
+
+    while (current)
+    {
+        current->position = raylib::Vector2(headX + index * spacing, headY);
+        current = current->next.get();
+        index++;
+    }
+}
+
+
+// Insert a new node at the tail
+void ds_viz::pages::LinkedListPage::InsertAtTail(int value)
+{
+    ResetColor();
 
     auto newNode = std::make_unique<raywtk::NodeWidget>(value);
     
     // Compute position
     if (!head) 
     {
-        newNode->position = raylib::Vector2(startX, startY);
+        newNode->position = raylib::Vector2(headX, headY);
         head = std::move(newNode);
     } 
     
@@ -89,18 +134,98 @@ void ds_viz::pages::LinkedListPage::InsertNode(int value)
         }
 
         // Compute new node position
-        float posX = startX + (index + 1) * 100;
-        newNode->position = raylib::Vector2(posX, startY);
+        float posX = headX + (index + 1) * spacing;
+        newNode->position = raylib::Vector2(posX, headY);
 
         current->next = std::move(newNode);
     }
 
     size++;
+    RepositionNodes();
+}
+
+void ds_viz::pages::LinkedListPage::SearchByValue(int val)
+{
+    ResetColor();
+    if (!head)
+    {
+        errorMessage = "List is empty!";
+        errorTimer = 2.0f;
+        return;
+    }
+    
+    animatingSearch = true;
+    searchCurrent = head.get();
+    searchTarget = val;
+    searchTimer = 0.5f; // Delay per step
+
+    found = false;
+
+    while (searchCurrent)
+    {
+        searchCurrent->color = raylib::Color::Orange(); // Highlight step
+        WaitTime(searchTimer); // Pause for animation
+
+        if (searchCurrent->value == val) // Check value
+        {
+            searchCurrent->color = raylib::Color::Green(); // Found!
+            found = true;
+            break;
+        }
+
+        searchCurrent->color = raylib::Color::Blue(); // Reset color
+        searchCurrent = searchCurrent->next.get();
+    }
+
+    if (!found)
+    {
+        errorMessage = "Value not found!";
+        errorTimer = 2.0f;
+    }
+}
+
+void ds_viz::pages::LinkedListPage::SearchByIndex(int index)
+{   
+    ResetColor();
+    if (index < 0 || index >= size)
+    {
+        errorMessage = "Index out of bounds!";
+        errorTimer = 2.0f;
+        return;
+    }
+
+    if (!head)
+    {
+        errorMessage = "List is empty!";
+        errorTimer = 2.0f;
+        return;
+    }
+
+    animatingSearch = true;
+    searchCurrent = head.get();
+    searchIndex = index;
+    currentIndex = 0;
+    searchTimer = 0.5f;
+
+    while (searchCurrent)
+    {
+        searchCurrent->color = raylib::Color::Orange(); // Highlight step
+        WaitTime(searchTimer);
+
+        if (currentIndex == searchIndex)
+        {
+            searchCurrent->color = raylib::Color::Green(); // Found!
+            return;
+        }
+
+        searchCurrent->color = raylib::Color::Blue();
+        searchCurrent = searchCurrent->next.get();
+        currentIndex++;
+    }
 }
 
 void ds_viz::pages::LinkedListPage::Update(float dt)
 {
-    
     raywtk::NodeWidget* current = head.get();
     if (current)
         current->Update(dt);
@@ -138,7 +263,7 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                 }
                 
                 else
-                    InsertNode(newValue);
+                    InsertAtTail(newValue);
             }
             
             catch (const std::exception& e) 
@@ -179,7 +304,7 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                     for (int i = 0; i < numNodes; i++)
                     {
                         int randomValue = rand() % 1999 - 999; 
-                        InsertNode(randomValue);
+                        InsertAtTail(randomValue);
                     }
                 }
             }
@@ -194,9 +319,91 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
         }
     }
 
+    if (showSearchInput)
+    {
+        int key = GetKeyPressed();
+        if ((key >= '0' && key <= '9') || (key == '-' && searchInput.empty())) 
+            searchInput += static_cast<char>(key);
+        else if (key == KEY_BACKSPACE && !searchInput.empty()) 
+            searchInput.pop_back();
+        else if (key == KEY_ENTER && !searchInput.empty()) 
+        {
+            try 
+            {
+                int searchValue = std::stoi(searchInput);
+                if (searchByValue) 
+                    SearchByValue(searchValue);
+                else 
+                    SearchByIndex(searchValue);
+            } 
+            catch (...) 
+            {
+                errorMessage = "Invalid input!";
+                errorTimer = 2.0f;
+            }
+
+            searchInput.clear();
+            showSearchInput = false;
+        }
+    }
+
+    if (animatingSearch && searchCurrent)
+    {
+        searchTimer -= dt;
+        if (searchTimer <= 0)
+        {
+            searchTimer = 0.5f; // Reset delay
+
+            // Highlight the current node in orange
+            searchCurrent->color = raylib::Color::Orange();
+
+            if (searchByValue)
+            {
+                if (searchCurrent->value == searchTarget)
+                {
+                    searchCurrent->color = raylib::Color::Green(); // Found!
+                    animatingSearch = false;
+                    searchCurrent = nullptr;
+                    return;
+                }
+            }
+
+            else
+            {
+                if (currentIndex == searchIndex)
+                {
+                    searchCurrent->color = raylib::Color::Green(); // Found!
+                    animatingSearch = false;
+                    searchCurrent = nullptr;
+                    return;
+                }
+            }
+
+            // Move to next node
+            searchCurrent->color = raylib::Color::Blue(); // Reset color to normal
+            searchCurrent = searchCurrent->next.get();
+            currentIndex++;
+
+            // If the value is not found
+            if (!found)
+            {
+                if (searchByValue)
+                {
+                    errorMessage = "Value not found!";
+                    errorTimer = 2.0f;
+                }
+                
+                animatingSearch = false;
+            }
+        }
+    }
+
     insertAtTail->Update(dt);
     randomButton->Update(dt);
     clearAllButton->Update(dt);
+    repositionButton->Update(dt);
+    searchByValueButton->Update(dt);
+    searchByIndexButton->Update(dt);
     returnButton->Update(dt);
 }
 
@@ -241,12 +448,18 @@ void ds_viz::pages::LinkedListPage::Render()
         DrawText(randomInputValue.c_str(), 120, 765, 20, RAYWHITE);
     }
 
-    // Render buttons
-    insertAtTail->Render();
-    randomButton->Render();
-    clearAllButton->Render();
-    returnButton->Render();
-
+    if (showSearchInput && searchByValue)
+    {
+        DrawRectangle(300, 750, 180, 50, DARKGRAY);
+        DrawText(searchInput.c_str(), 320, 765, 20, RAYWHITE);
+    }
+    
+    if (showSearchInput && !searchByValue)
+    {
+        DrawRectangle(300, 850, 180, 50, DARKGRAY);
+        DrawText(searchInput.c_str(), 320, 865, 20, RAYWHITE);
+    }
+     
     // Draw error message if needed
     if (errorTimer > 0)
     {
@@ -270,4 +483,13 @@ void ds_viz::pages::LinkedListPage::Render()
 
         DrawText(errorMessage.c_str(), textX, textY, fontSize, RAYWHITE);
     }
+
+    // Render buttons
+    insertAtTail->Render();
+    randomButton->Render();
+    clearAllButton->Render();
+    repositionButton->Render();
+    searchByValueButton->Render();
+    searchByIndexButton->Render(); 
+    returnButton->Render();
 }

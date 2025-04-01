@@ -15,22 +15,44 @@ namespace ds_viz::pages
     {
         std::unique_ptr<raylib::Font> font;
         raylib::Text title;
+        
         std::unique_ptr<raywtk::NodeWidget> head = nullptr; // Head node
+        float headX = 100; // Default X-coordinate of head
+        float headY = 400; // Default Y-coordinate of head
+        float spacing = 100; // Default spacing between nodes
         int size = 0; // Size of Linked List
 
+        // List of buttons
         std::unique_ptr<raywtk::Button> insertAtTail;
         std::unique_ptr<raywtk::Button> returnButton;
         std::unique_ptr<raywtk::Button> randomButton;
         std::unique_ptr<raywtk::Button> clearAllButton;
+        std::unique_ptr<raywtk::Button> repositionButton;
+        std::unique_ptr<raywtk::Button> searchByValueButton;
+        std::unique_ptr<raywtk::Button> searchByIndexButton;
+
 
         bool showInputBar = false;
         std::string inputValue;
 
         bool showRandomInput = false;  
         std::string randomInputValue;
-        
+
+        bool showSearchInput = false;
+        bool searchByValue = true; // Toggle between value and index search
+        std::string searchInput;
+
+        bool animatingSearch = false;
+        raywtk::NodeWidget* searchCurrent = nullptr;
+        bool found;
+        int searchTarget = -1000;
+        int searchIndex = -1;
+        int currentIndex = 0;
+        float searchTimer = 0.0f;
+
         std::string errorMessage = "";
         float errorTimer = 0.0f;
+
 
     public:
     
@@ -38,7 +60,11 @@ namespace ds_viz::pages
     void OnReturnButtonClick();
     void OnRandomButtonClick();
     void OnClearButtonClick();
-    void InsertNode(int value);
+    void InsertAtTail(int value); // Eventually become InsertRandom since only 1 frame
+    void SearchByValue(int value);
+    void SearchByIndex(int index);
+    void ResetColor();
+    void RepositionNodes();
     void Update(float dt) override;
     void Render() override;
     };
