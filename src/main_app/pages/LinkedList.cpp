@@ -3,6 +3,7 @@
 #include "./main_menu.hpp"
 #include "../themes/dark_simple/back_button.hpp"
 #include <iostream>
+#include <fstream>
 #include <cstdlib> // For rand()
 #include <ctime>
 
@@ -32,21 +33,28 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     clearAllButton->Click.append([this]() { OnClearButtonClick(); });
     clearAllButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
-    // Reposition Nodes Button
+    // repositioning nodes button
     repositionButton = std::make_unique<raywtk::Button>();
     repositionButton->buttonText = "Reposition";
     repositionButton->buttonRect = raylib::Rectangle(300, 900, 180, 50);
     repositionButton->Click.append([this]() { RepositionNodes(); });
     repositionButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
-    // Search by Value Button
+    // Load from file button
+loadFileButton = std::make_unique<raywtk::Button>();
+loadFileButton->buttonText = "Load from File";
+loadFileButton->buttonRect = raylib::Rectangle(500, 700, 180, 50);
+loadFileButton->Click.append([this]() { OnLoadFileButtonClick(); });
+loadFileButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // search by value button
     searchByValueButton = std::make_unique<raywtk::Button>();
     searchByValueButton->buttonText = "Search by Value";
     searchByValueButton->buttonRect = raylib::Rectangle(300, 700, 180, 50);
     searchByValueButton->Click.append([this]() { searchByValue = true; showSearchInput = true; });
     searchByValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
-    // Search by Index Button
+    // search by index button
     searchByIndexButton = std::make_unique<raywtk::Button>();
     searchByIndexButton->buttonText = "Search by Index";
     searchByIndexButton->buttonRect = raylib::Rectangle(300, 800, 180, 50);
@@ -108,6 +116,44 @@ void ds_viz::pages::LinkedListPage::RepositionNodes()
     }
 }
 
+// Load list from textfile, must save before uploading
+void ds_viz::pages::LinkedListPage::OnLoadFileButtonClick()
+{
+    if (IsFileDropped()) 
+    {
+        FilePathList droppedFiles = LoadDroppedFiles();
+        std::ifstream fin(droppedFiles.paths[0]);
+
+        if (!fin) 
+        {
+            errorMessage = "Cannot open file!";
+            errorTimer = 2.0f;
+            UnloadDroppedFiles(droppedFiles);
+            return;
+        }
+
+        int n;
+        fin >> n; // read number of elements
+       
+        OnClearButtonClick(); 
+
+        for (int i = 0; i < std::min(n, 18); i++) 
+        {
+            int x;
+            fin >> x;
+            InsertAtTail(x);
+        }
+
+        if (n > 18)
+        {
+            errorMessage = "Maximum number of nodes is 18!";
+            errorTimer = 2.0f;
+        }
+
+        fin.close();
+        UnloadDroppedFiles(droppedFiles);
+    }
+}
 
 // Insert a new node at the tail
 void ds_viz::pages::LinkedListPage::InsertAtTail(int value)
@@ -168,7 +214,7 @@ void ds_viz::pages::LinkedListPage::SearchByValue(int val)
 
         if (searchCurrent->value == val) // Check value
         {
-            searchCurrent->color = raylib::Color::Green(); // Found!
+            searchCurrent->color = raylib::Color::Green(); // Found the node
             found = true;
             break;
         }
@@ -214,7 +260,7 @@ void ds_viz::pages::LinkedListPage::SearchByIndex(int index)
 
         if (currentIndex == searchIndex)
         {
-            searchCurrent->color = raylib::Color::Green(); // Found!
+            searchCurrent->color = raylib::Color::Green(); // Found the node
             return;
         }
 
@@ -354,14 +400,14 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
         {
             searchTimer = 0.5f; // Reset delay
 
-            // Highlight the current node in orange
+            // Highlight the current node in orange, currently not working
             searchCurrent->color = raylib::Color::Orange();
 
             if (searchByValue)
             {
                 if (searchCurrent->value == searchTarget)
                 {
-                    searchCurrent->color = raylib::Color::Green(); // Found!
+                    searchCurrent->color = raylib::Color::Green(); // Found the node
                     animatingSearch = false;
                     searchCurrent = nullptr;
                     return;
@@ -372,7 +418,7 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
             {
                 if (currentIndex == searchIndex)
                 {
-                    searchCurrent->color = raylib::Color::Green(); // Found!
+                    searchCurrent->color = raylib::Color::Green(); // Found the node
                     animatingSearch = false;
                     searchCurrent = nullptr;
                     return;
@@ -384,7 +430,7 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
             searchCurrent = searchCurrent->next.get();
             currentIndex++;
 
-            // If the value is not found
+            // If the value is not found, currently not working in some cases
             if (!found)
             {
                 if (searchByValue)
@@ -402,6 +448,7 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
     randomButton->Update(dt);
     clearAllButton->Update(dt);
     repositionButton->Update(dt);
+    loadFileButton->Update(dt);
     searchByValueButton->Update(dt);
     searchByIndexButton->Update(dt);
     returnButton->Update(dt);
@@ -489,6 +536,7 @@ void ds_viz::pages::LinkedListPage::Render()
     randomButton->Render();
     clearAllButton->Render();
     repositionButton->Render();
+    loadFileButton->Render();
     searchByValueButton->Render();
     searchByIndexButton->Render(); 
     returnButton->Render();

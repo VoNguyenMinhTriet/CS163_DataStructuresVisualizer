@@ -28,6 +28,7 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> randomButton;
         std::unique_ptr<raywtk::Button> clearAllButton;
         std::unique_ptr<raywtk::Button> repositionButton;
+        std::unique_ptr<raywtk::Button> loadFileButton;
         std::unique_ptr<raywtk::Button> searchByValueButton;
         std::unique_ptr<raywtk::Button> searchByIndexButton;
 
@@ -65,6 +66,7 @@ namespace ds_viz::pages
     void SearchByIndex(int index);
     void ResetColor();
     void RepositionNodes();
+    void OnLoadFileButtonClick();
     void Update(float dt) override;
     void Render() override;
     };
