@@ -24,7 +24,7 @@ win-msys2-dbg_build:
     mkdir -p {{bin-win-dir}}
     g++ {{prepend(src-dir, prepend('/', src-files))}} \
             -o {{bin-win-output}} \
-            -g -static-libgcc -static-libstdc++ \
+            -g -static-libgcc -static-libstdc++ -mwindows\
             {{prepend('$(pkg-config --libs --cflags --static ', append(')', libs))}} \
             {{prepend('-I', include-dirs)}}
 
