@@ -320,8 +320,18 @@ namespace ds_viz
                 return;
             }
 
-            (*currentStepInAnim)->Do(*this);
             ++currentStepInAnim;
+            (*currentStepInAnim)->Do(*this);
+        }
+
+        void StepBack () 
+        {
+            if (currentStepInAnim == animationTimeline.begin()) {
+                return;
+            }
+
+            (*currentStepInAnim)->Undo(*this);
+            --currentStepInAnim;
         }
     };
 }
