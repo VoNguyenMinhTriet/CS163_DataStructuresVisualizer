@@ -253,13 +253,18 @@ namespace ds_viz
         
         static void RenderUtil (TrieNode *node, raylib::Color color)
         {
-            for (int i = 0; i < TrieNode::ALPHABET_SIZE; ++i) {
+            for (int i = 0; i < TrieNode::ALPHABET_SIZE; ++i) 
+            {
                 if (!node->children[i]) continue;
+                
                 node->GetPosition().DrawLine(node->children[i]->GetPosition(), 2.0f, color);
+
                 RenderUtil(node->children[i].get(), color);
+
                 auto txt = raylib::Text(std::string(1, i), 10, raylib::Color::Black());
                 txt.Draw(node->children[i]->GetPosition() - raylib::Vector2{ txt.Measure() * 0.5f, 5 });
             }
+
             node->GetPosition().DrawCircle(10.0f, color);
         }
 
