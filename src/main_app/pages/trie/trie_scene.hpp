@@ -37,6 +37,19 @@ namespace ds_viz
                 return totalWidth >= 0 ? totalWidth : 0;
             }
 
+            double ComputeHeight () const 
+            {
+                double maxChildHeight = -SPACING_Y;
+                for (int i = 0; i < ALPHABET_SIZE; ++i) {
+                    if (!children[i]) continue;
+                    double childHeight = children[i]->ComputeHeight();
+                    if (childHeight > maxChildHeight) maxChildHeight = childHeight;
+                }
+
+                auto y = maxChildHeight + SPACING_Y;
+                return y >= 0 ? y : 0;
+            }
+
             raylib::Vector2 GetPosition () const { return _position;}
 
             void SetPosition (const raylib::Vector2& position) 
@@ -234,7 +247,9 @@ namespace ds_viz
         std::unique_ptr<TrieNode> root = std::make_unique<TrieNode>();
         TrieScene () : cam(raylib::Vector2 {640, 360}, raylib::Vector2 {0, 0}, 0, 2), currentStepInAnim(animationTimeline.begin()) { }
 
-        void Update (float deltaTime) override {}
+        void Update (float deltaTime) override {
+            cam.SetTarget(raylib::Vector2{ 0, (float)root->ComputeHeight() * 0.5f });
+        }
         
         static void RenderUtil (TrieNode *node, raylib::Color color)
         {
