@@ -284,6 +284,8 @@ namespace ds_viz
         {
             if (key.empty() || !root) return;
 
+            bool found = true;
+
             TrieNode *curNode = root.get();
             animationTimeline.clear();
             animationTimeline.push_back(std::make_unique<HighlightNodeAction>(curNode, nodeHighlightColor));
@@ -293,6 +295,7 @@ namespace ds_viz
                 if (curNode->children[c] == nullptr) 
                 {
                     animationTimeline.push_back(std::make_unique<NullAction>());
+                    found = false;
                     break;
                 }
                 animationTimeline.push_back(std::make_unique<HighlightEdgeAction>(curNode->children[c].get(), edgeHighlightColor));
@@ -301,14 +304,17 @@ namespace ds_viz
                 // Those two `push_back` lines are the same shit, just differ in Edge and Node
             }
 
-            animationTimeline.push_back(std::make_unique<HighlightNodeAction>(curNode, nodeReturnColor));
+            if (found) animationTimeline.push_back(std::make_unique<HighlightNodeAction>(curNode, nodeReturnColor));
 
             currentStepInAnim = animationTimeline.begin();
         }
 
         void StepForward () 
         {
-            if (currentStepInAnim == animationTimeline.end()) return;
+            if ((++currentStepInAnim)-- == animationTimeline.end()) {
+                return;
+            }
+
             (*currentStepInAnim)->Do(*this);
             ++currentStepInAnim;
         }
