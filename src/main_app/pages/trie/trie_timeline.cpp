@@ -6,24 +6,35 @@ ds_viz::pages::trie::SearchTimeline::SearchTimeline(TrieScene &scene,
 {
     auto curNode = scene.root.get();
     animationTimeline.push_back(std::make_unique<SetVariableAction<TrieNode *>>(
-            var_curNode, scene.root.get()));
+        var_curNode, 
+        [&scene]{ return scene.root.get(); }
+    ));
 
-    for (const char &c : key) {
-        if (curNode->children[c] == nullptr) {
+    for (const char &c : key) 
+    {
+        if (curNode->children[c] == nullptr) 
+        {
             animationTimeline.push_back(
-                    std::make_unique<SetVariableAction<std::optional<bool>>>(returnValue,
-                                                                             false));
+                std::make_unique<SetVariableAction<std::optional<bool>>>(
+                    returnValue,
+                    []{ return false; }
+                ));
             return;
         }
 
         animationTimeline.push_back(std::make_unique<SetVariableAction<TrieNode *>>(
-                var_curNode, curNode->children[c].get()));
+            var_curNode, 
+            [this, c] { return this->var_curNode->children[c].get(); }
+        ));
         curNode = curNode->children[c].get();
     }
 
     animationTimeline.push_back(
-            std::make_unique<SetVariableAction<std::optional<bool>>>(
-                    returnValue, curNode->isTerminal));
+        std::make_unique<SetVariableAction<std::optional<bool>>>(
+            returnValue,
+            [this] { return var_curNode->isTerminal; }
+        ));
+    
     currentStepInAnim = animationTimeline.begin();
 }
 

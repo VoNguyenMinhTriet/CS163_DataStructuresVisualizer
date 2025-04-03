@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <list>
 #include <memory>
 #include <optional>
@@ -34,17 +35,17 @@ namespace ds_viz::pages::trie
         {
             T &_variable;
             T _previousValue;
-            T _newValue;
+            std::function<T()> _newValueExpression;
         public:
-            SetVariableAction(T &variable, const T &newValue)
-                : _variable(variable), _newValue(newValue) {
+            SetVariableAction(T &variable, std::function<T()> newValueExpression)
+                : _variable(variable), _newValueExpression(newValueExpression) {
                 _previousValue = variable;
             }
 
             void Do (SearchTimeline& timeline) override 
             {
                 _previousValue = _variable;
-                _variable = _newValue;
+                _variable = _newValueExpression();
             }
 
             void Undo (SearchTimeline& timeline) override 
