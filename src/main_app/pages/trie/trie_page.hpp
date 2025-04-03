@@ -1,6 +1,6 @@
 #include "../page.hpp"
 
-namespace ds_viz 
+namespace ds_viz::pages
 {
     class TriePage : public Page
     {
