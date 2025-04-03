@@ -22,6 +22,9 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         showInsertAtIndexInput = true; 
         showRandomInput = false; 
         showSearchInput = false;
+        showDeleteAtHead = false;
+        showDeleteAtTail = false;
+        showDeleteAtIndexInput = false; 
     });
     insertAtIndexButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
@@ -35,6 +38,9 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         showInsertAtIndexInput = false; 
         showRandomInput = false; 
         showSearchInput = false;
+        showDeleteAtHead = false;
+        showDeleteAtTail = false;
+        showDeleteAtIndexInput = false; 
     });
     insertAtHeadButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
@@ -48,9 +54,42 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         showInsertAtIndexInput = false; 
         showRandomInput = false; 
         showSearchInput = false;
+        showDeleteAtHead = false;
+        showDeleteAtTail = false;
+        showDeleteAtIndexInput = false; 
     });
     insertAtTailButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
     
+    // delete at index button
+    deleteAtIndexButton = std::make_unique<raywtk::Button>();
+    deleteAtIndexButton->buttonText = "Delete At Index";
+    deleteAtIndexButton->buttonRect = raylib::Rectangle(1000, 700, 180, 50);
+    deleteAtIndexButton->Click.append([this]() { 
+        showInsertAtHead = false;
+        showInsertAtTail = false;
+        showInsertAtIndexInput = false; 
+        showRandomInput = false;
+        showDeleteAtHead = false;
+        showDeleteAtTail = false;
+        showDeleteAtIndexInput = true; 
+        showSearchInput = false;
+    });
+    deleteAtIndexButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // delete at head button
+    deleteAtHeadButton = std::make_unique<raywtk::Button>();
+    deleteAtHeadButton->buttonText = "Delete At Head";
+    deleteAtHeadButton->buttonRect = raylib::Rectangle(1000, 800, 180, 50);
+    deleteAtHeadButton->Click.append([this]() { DeleteAtHead(); });
+    deleteAtHeadButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // delete at tail button
+    deleteAtTailButton = std::make_unique<raywtk::Button>();
+    deleteAtTailButton->buttonText = "Delete At Tail";
+    deleteAtTailButton->buttonRect = raylib::Rectangle(1000, 900, 180, 50);
+    deleteAtTailButton->Click.append([this]() { DeleteAtTail(); });
+    deleteAtTailButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
     // random create button
     randomButton = std::make_unique<raywtk::Button>();
     randomButton->buttonText = "Create Random";
@@ -60,7 +99,10 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         showInsertAtTail = false;
         showRandomInput = true; 
         showInsertAtIndexInput = false; 
-        showSearchInput = false; 
+        showSearchInput = false;
+        showDeleteAtHead = false;
+        showDeleteAtTail = false;
+        showDeleteAtIndexInput = false; 
     });
     randomButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
@@ -96,6 +138,9 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         searchByValue = true; 
         showSearchInput = true; 
         showRandomInput = false;
+        showDeleteAtHead = false;
+        showDeleteAtTail = false;
+        showDeleteAtIndexInput = false; 
     });
     searchByValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
@@ -110,6 +155,9 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         searchByValue = false; 
         showSearchInput = true;
         showRandomInput = false; 
+        showDeleteAtHead = false;
+        showDeleteAtTail = false;
+        showDeleteAtIndexInput = false; 
     });
     searchByIndexButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
@@ -295,10 +343,44 @@ void ds_viz::pages::LinkedListPage::InsertAtIndex(int value, int index)
     insertValue = value;
     insertIndex = index;
     currentInsertIndex = 0;
-    insertTimer = 0.5f;
+    insertTimer = 0.3f;
     insertState = 0;
     
     size++;
+    RepositionNodes();
+}
+
+// Delete at head
+void ds_viz::pages::LinkedListPage::DeleteAtHead()
+{
+    DeleteAtIndex(0);   
+}
+
+// Delete at tail
+void ds_viz::pages::LinkedListPage::DeleteAtTail()
+{
+    DeleteAtIndex(size - 1);
+}
+
+// Delete at an index
+void ds_viz::pages::LinkedListPage::DeleteAtIndex(int index)
+{
+    if (!head)
+    {
+        errorMessage = "List is empty!";
+        errorTimer = 2.0f;
+        return;
+    }
+
+    ResetColor();
+    animatingDelete = true;
+    deleteCurrent = head.get();
+    deleteIndex = index;
+    currentdeleteIndex = 0;
+    deleteTimer = 0.3f;
+    deleteState = 0;
+    
+    size--;
     RepositionNodes();
 }
 
@@ -316,7 +398,7 @@ void ds_viz::pages::LinkedListPage::SearchByValue(int val)
     animatingSearch = true;
     searchCurrent = head.get();
     searchTarget = val;
-    searchTimer = 0.5f; // Delay per step
+    searchTimer = 0.3f; // Delay per step
     searchState = 0;
 }
 
@@ -324,16 +406,16 @@ void ds_viz::pages::LinkedListPage::SearchByValue(int val)
 void ds_viz::pages::LinkedListPage::SearchByIndex(int index)
 {   
     ResetColor();
-    if (index < 0 || index >= size)
+    if (!head)
     {
-        errorMessage = "Index is out of bounds!";
+        errorMessage = "List is empty!";
         errorTimer = 2.0f;
         return;
     }
 
-    if (!head)
+    if (index < 0 || index >= size)
     {
-        errorMessage = "List is empty!";
+        errorMessage = "Index is out of bounds!";
         errorTimer = 2.0f;
         return;
     }
@@ -342,8 +424,74 @@ void ds_viz::pages::LinkedListPage::SearchByIndex(int index)
     searchCurrent = head.get();
     searchIndex = index;
     currentSearchIndex = 0;
-    searchTimer = 0.5f;
+    searchTimer = 0.3f;
     searchState = 0;
+}
+
+void ds_viz::pages::LinkedListPage::AnimateDelete(float dt)
+{
+    if (animatingDelete)
+    {
+        deleteTimer -= dt;
+        if (deleteTimer <= 0)
+        {
+            if (deleteState == 0)
+            {
+                if (deleteCurrent)
+                {
+                    if (currentdeleteIndex == deleteIndex)
+                        deleteCurrent->color = raylib::Color::Maroon();                
+                    else
+                        deleteCurrent->color = raylib::Color::Orange();
+                }
+                
+                if (currentdeleteIndex == deleteIndex - 1)
+                    ToDelPrev = deleteCurrent;
+                
+                deleteState = 1;
+                deleteTimer = 0.3f;
+            }
+
+            else if (deleteState == 1)
+            {
+                if (currentdeleteIndex == deleteIndex)
+                {
+                    if (deleteIndex != 0)
+                    {
+                        if (deleteCurrent && deleteCurrent->next)
+                            ToDelPrev->next = std::move(deleteCurrent->next);
+                        else
+                            ToDelPrev->next = nullptr;
+                    }
+
+                    else
+                    {
+                        if (deleteCurrent)
+                            head = std::move(deleteCurrent->next);
+                    }
+
+
+                    float newposX = headX;
+                    raywtk::NodeWidget* temp = head.get();
+                    while (temp)
+                    {
+                        temp->position = raylib::Vector2(newposX, headY);
+                        newposX += spacing;
+                        temp = temp->next.get();
+                    }
+
+                    animatingDelete = false;
+                    return; 
+                }
+                
+                deleteCurrent->color = raylib::Color::Blue();
+                deleteCurrent = deleteCurrent->next.get();
+                currentdeleteIndex++;
+                deleteState = 0;
+                deleteTimer = 0.3f;
+            }
+        }
+    }
 }
 
 void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
@@ -357,7 +505,7 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
             {
                 searchCurrent->color = raylib::Color::Orange();
                 searchState = 1;
-                searchTimer = 0.5f; // Delay between each node
+                searchTimer = 0.3f; // Delay between each node
             } 
             else if (searchState == 1) 
             {
@@ -393,7 +541,7 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
                 }
 
                 searchState = 0;
-                searchTimer = 0.5f; // Delay between each node
+                searchTimer = 0.3f; // Delay between each node
             }
         }
     }
@@ -410,7 +558,7 @@ void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
             {
                 insertCurrent->color = raylib::Color::Orange();
                 insertState = 1;
-                insertTimer = 0.5f; // Delay between each node
+                insertTimer = 0.3f; // Delay between each node
             } 
             else if (insertState == 1) 
             {
@@ -442,7 +590,7 @@ void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
                 currentInsertIndex++;
 
                 insertState = 0;
-                insertTimer = 0.5f; // Delay between each node
+                insertTimer = 0.3f; // Delay between each node
             }
         }
     }
@@ -475,7 +623,7 @@ void ds_viz::pages::LinkedListPage::CreateNotification(std::string &Message)
 
 void ds_viz::pages::LinkedListPage::DrawInputBox(int X, int Y, std::string &input)
 {
-    DrawRectangle(X, Y, 90, 50, DARKGRAY);;
+    DrawRectangle(X, Y, 90, 50, DARKGRAY);
     DrawText(input.c_str(), X + 20, Y + 15, 20, RAYWHITE);
     DrawRectangleLines(X - 2, Y - 2, 94, 54, BLUE);
 }
@@ -507,36 +655,36 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
             FindTimer = 0; 
     }
 
-    if (showInsertAtHead || showInsertAtTail)
+    if (showInsertAtHead)
     {  
         int key = GetKeyPressed();
-        if (key >= '0' && key <= '9') 
-            inputValue += static_cast<char>(key);
-        else if (key == KEY_BACKSPACE && !inputValue.empty()) 
-            inputValue.pop_back();
-        else if (key == KEY_ENTER && !inputValue.empty()) 
+        if ((key >= '0' && key <= '9') || (key == '-' && inputInsertAtHead.empty())) 
+            inputInsertAtHead += static_cast<char>(key);
+        else if (key == KEY_BACKSPACE && !inputInsertAtHead.empty()) 
+            inputInsertAtHead.pop_back();
+        else if (key == KEY_ENTER && !inputInsertAtHead.empty()) 
         {
             try 
             {
-                int newVal = std::stoi(inputValue);
+                int newVal = std::stoi(inputInsertAtHead);
             
                 if (newVal < -999 || newVal > 999) 
                 {
-                    inputValue.clear();
+                    inputInsertAtHead.clear();
                     errorMessage = "Value must be between -999 and 999!";
                     errorTimer = 2.0f;
                 }
                 
                 else if (size == 18)
                 {
-                    inputValue.clear();
+                    inputInsertAtHead.clear();
                     errorMessage = "Maximum number of nodes is 18!";
                     errorTimer = 2.0f;
                 }
 
                 else 
                 {
-                    inputValue.clear();
+                    inputInsertAtHead.clear();
                     if (showInsertAtHead)
                         InsertAtHead(newVal);
                     else
@@ -552,6 +700,50 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
 
             // Hide input box after processing
             showInsertAtHead = false;
+        }
+    }
+
+    if (showInsertAtTail)
+    {  
+        int key = GetKeyPressed();
+        if ((key >= '0' && key <= '9') || (key == '-' && inputInsertAtTail.empty())) 
+            inputInsertAtTail += static_cast<char>(key);
+        else if (key == KEY_BACKSPACE && !inputInsertAtTail.empty()) 
+            inputInsertAtTail.pop_back();
+        else if (key == KEY_ENTER && !inputInsertAtTail.empty()) 
+        {
+            try 
+            {
+                int newVal = std::stoi(inputInsertAtTail);
+            
+                if (newVal < -999 || newVal > 999) 
+                {
+                    inputInsertAtTail.clear();
+                    errorMessage = "Value must be between -999 and 999!";
+                    errorTimer = 2.0f;
+                }
+                
+                else if (size == 18)
+                {
+                    inputInsertAtTail.clear();
+                    errorMessage = "Maximum number of nodes is 18!";
+                    errorTimer = 2.0f;
+                }
+
+                else 
+                {
+                    inputInsertAtTail.clear();
+                    InsertAtTail(newVal);
+                }
+            }
+            
+            catch (...)
+            {
+                errorMessage = "Please enter a valid integer between -999 and 999!";
+                errorTimer = 2.0f;
+            }
+
+            // Hide input box after processing
             showInsertAtTail = false;
         }
     }
@@ -631,18 +823,18 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
     {  
         int key = GetKeyPressed();
         if (key >= '0' && key <= '9') 
-            inputValue += static_cast<char>(key);
-        else if (key == KEY_BACKSPACE && !inputValue.empty()) 
-            inputValue.pop_back();
-        else if (key == KEY_ENTER && !inputValue.empty()) 
+            inputRandom += static_cast<char>(key);
+        else if (key == KEY_BACKSPACE && !inputRandom.empty()) 
+            inputRandom.pop_back();
+        else if (key == KEY_ENTER && !inputRandom.empty()) 
         {
             try 
             {
-                int numNodes = std::stoi(inputValue);
+                int numNodes = std::stoi(inputRandom);
             
                 if (numNodes < 1 || numNodes > 18) 
                 {
-                    inputValue.clear();
+                    inputRandom.clear();
                     errorMessage = "Maximum number of nodes is 18!";
                     errorTimer = 2.0f;
                 }
@@ -650,7 +842,7 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                 else 
                 {
                     OnRandomButtonClick(numNodes);
-                    inputValue.clear();
+                    inputRandom.clear();
                 }
             }
             
@@ -664,22 +856,32 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
         }
     }
 
-    if (showSearchInput)
+    if (showDeleteAtIndexInput)
     {
         int key = GetKeyPressed();
-        if ((key >= '0' && key <= '9') || (key == '-' && searchInput.empty())) 
-            searchInput += static_cast<char>(key);
-        else if (key == KEY_BACKSPACE && !searchInput.empty()) 
-            searchInput.pop_back();
-        else if (key == KEY_ENTER && !searchInput.empty()) 
+        if ((key >= '0' && key <= '9')) 
+            inputDeleteIndex += static_cast<char>(key);
+        else if (key == KEY_BACKSPACE && !inputDeleteIndex.empty()) 
+            inputDeleteIndex.pop_back();
+        else if (key == KEY_ENTER && !inputDeleteIndex.empty()) 
         {
             try 
             {
-                int searchValue = std::stoi(searchInput);
-                if (searchByValue) 
-                    SearchByValue(searchValue);
-                else 
-                    SearchByIndex(searchValue);
+                int DelIndex = std::stoi(inputDeleteIndex);
+                if (DelIndex < 0 || DelIndex >= size)
+                {
+                    inputDeleteIndex.clear();
+
+                    if (size == 0)
+                        errorMessage = "List is Empty!";
+                    else    
+                        errorMessage = "Index is out of bounds!";
+
+                    errorTimer = 2.0f;
+                }
+
+                else
+                    DeleteAtIndex(DelIndex);
             } 
             catch (...) 
             {
@@ -687,17 +889,80 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                 errorTimer = 2.0f;
             }
 
-            searchInput.clear();
+            inputDeleteIndex.clear();
+            showDeleteAtIndexInput = false;
+        }
+    }
+
+
+    if (showSearchInput && searchByValue)
+    {
+        int key = GetKeyPressed();
+        if ((key >= '0' && key <= '9') || (key == '-' && searchByValInput.empty())) 
+            searchByValInput += static_cast<char>(key);
+        else if (key == KEY_BACKSPACE && !searchByValInput.empty()) 
+            searchByValInput.pop_back();
+        else if (key == KEY_ENTER && !searchByValInput.empty()) 
+        {
+            try 
+            {
+                int searchValue = std::stoi(searchByValInput);
+                SearchByValue(searchValue);
+            } 
+            catch (...) 
+            {
+                errorMessage = "Invalid input!";
+                errorTimer = 2.0f;
+            }
+
+            searchByValInput.clear();
+            showSearchInput = false;
+        }
+    }
+
+    if (showSearchInput && !searchByValue)
+    {
+        int key = GetKeyPressed();
+        if ((key >= '0' && key <= '9')) 
+            searchByIndInput += static_cast<char>(key);
+        else if (key == KEY_BACKSPACE && !searchByIndInput.empty()) 
+            searchByIndInput.pop_back();
+        else if (key == KEY_ENTER && !searchByIndInput.empty()) 
+        {
+            try 
+            {
+                int searchIndex = std::stoi(searchByIndInput);
+
+                if (searchIndex < 0 || searchIndex >= size)
+                {
+                    errorMessage = "Index is out of bounds!";
+                    errorTimer = 2.0f;
+                }
+                
+                else
+                    SearchByIndex(searchIndex);
+            } 
+            catch (...) 
+            {
+                errorMessage = "Invalid input!";
+                errorTimer = 2.0f;
+            }
+
+            searchByIndInput.clear();
             showSearchInput = false;
         }
     }
 
     AnimateSearch(dt);
     AnimateInsert(dt);
+    AnimateDelete(dt);
 
     insertAtHeadButton->Update(dt);
     insertAtTailButton->Update(dt);
     insertAtIndexButton->Update(dt);
+    deleteAtHeadButton->Update(dt);
+    deleteAtTailButton->Update(dt);
+    deleteAtIndexButton->Update(dt);
     randomButton->Update(dt);
     clearAllButton->Update(dt);
     repositionButton->Update(dt);
@@ -736,25 +1001,31 @@ void ds_viz::pages::LinkedListPage::Render()
 
     // Draw input bar only if active
     if (showInsertAtHead)
-        DrawInputBox(690, 800, inputValue);
+        DrawInputBox(690, 800, inputInsertAtHead);
 
     if (showInsertAtTail)
-        DrawInputBox(690, 900, inputValue);
+        DrawInputBox(690, 900, inputInsertAtTail);
 
     if (showInsertAtIndexInput)
     {
         DrawInputBox(690, 700, inputValue);
         DrawInputBox(790, 700, inputIndex);
+
+        DrawText("Value:", 690, 680, 20, YELLOW);
+        DrawText("Index:", 790, 680, 20, YELLOW);
     }
 
+    if (showDeleteAtIndexInput)
+        DrawInputBox(1190, 700, inputDeleteIndex);
+
     if (showRandomInput)
-        DrawInputBox(100, 750, inputValue);
+        DrawInputBox(100, 750, inputRandom);
 
     if (showSearchInput && searchByValue)
-        DrawInputBox(300, 750, searchInput);
+        DrawInputBox(300, 750, searchByValInput);
     
     if (showSearchInput && !searchByValue)
-        DrawInputBox(300, 850, searchInput);
+        DrawInputBox(300, 850, searchByIndInput);
      
     // Draw error message if needed
     if (errorTimer > 0)
@@ -772,6 +1043,9 @@ void ds_viz::pages::LinkedListPage::Render()
     insertAtHeadButton->Render();
     insertAtTailButton->Render();
     insertAtIndexButton->Render();
+    deleteAtHeadButton->Render();
+    deleteAtTailButton->Render();
+    deleteAtIndexButton->Render();
     randomButton->Render();
     clearAllButton->Render();
     repositionButton->Render();

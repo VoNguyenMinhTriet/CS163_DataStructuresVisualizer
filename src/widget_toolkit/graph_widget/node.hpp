@@ -14,7 +14,7 @@ namespace raywtk
     public:
         raylib::Vector2 position;
         raylib::Camera2D *camera;
-        float radius = 25.0f;
+        float radius = 30.0f;
         raylib::Color color = raylib::Color::Blue();
         bool visible = true;
         std::function<void()> content; // Optional content function
@@ -82,7 +82,7 @@ namespace raywtk
 
                 // Draw arrowhead
                 float arrowSize = 12.0f;
-                float arrowAngle = 30.0f * DEG2RAD; // Angle of arrowhead
+                float arrowAngle = 60.0f * DEG2RAD; // Angle of arrowhead
 
                 raylib::Vector2 leftWing = endEdge - direction * arrowSize +
                 raylib::Vector2(cos(arrowAngle) * -direction.x - sin(arrowAngle) * -direction.y,

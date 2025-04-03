@@ -17,7 +17,7 @@ namespace ds_viz::pages
         raylib::Text title;
         
         std::unique_ptr<raywtk::NodeWidget> head = nullptr; // Head node
-        float headX = 100; // Default X-coordinate of head
+        float headX = 80; // Default X-coordinate of head
         float headY = 400; // Default Y-coordinate of head
         float spacing = 100; // Default spacing between nodes
         int size = 0; // Size of Linked List
@@ -26,6 +26,9 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> insertAtHeadButton;
         std::unique_ptr<raywtk::Button> insertAtTailButton;
         std::unique_ptr<raywtk::Button> insertAtIndexButton;
+        std::unique_ptr<raywtk::Button> deleteAtHeadButton;
+        std::unique_ptr<raywtk::Button> deleteAtTailButton;
+        std::unique_ptr<raywtk::Button> deleteAtIndexButton;
         std::unique_ptr<raywtk::Button> returnButton;
         std::unique_ptr<raywtk::Button> randomButton;
         std::unique_ptr<raywtk::Button> clearAllButton;
@@ -35,17 +38,29 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> searchByIndexButton;
 
         bool showInsertAtHead = false;
+        std::string inputInsertAtHead;
+
         bool showInsertAtTail = false;
+        std::string inputInsertAtTail;
+
         bool showInsertAtIndexInput  = false;
         std::string inputValue; // For value inputs
         std::string inputIndex; // For index inputs
         bool isEnteringValue = true;
 
         bool showRandomInput = false;  
+        std::string inputRandom;
+
+        bool showDeleteAtHead = false;
+        bool showDeleteAtTail = false;
+
+        bool showDeleteAtIndexInput = false;
+        std::string inputDeleteIndex;
 
         bool showSearchInput = false;
         bool searchByValue = true; // Toggle between value and index search
-        std::string searchInput;
+        std::string searchByValInput;
+        std::string searchByIndInput;
 
         // Insert Animation
         bool animatingInsert = false;
@@ -55,6 +70,16 @@ namespace ds_viz::pages
         int currentInsertIndex = 0;
         float insertTimer = 0.0f;
         int insertState = 0;
+
+        // Delete Animation
+        bool animatingDelete = false;
+        raywtk::NodeWidget* deleteCurrent = nullptr;
+        raywtk::NodeWidget* ToDelPrev = nullptr;
+        raywtk::NodeWidget* deleteShift = nullptr;
+        int deleteIndex = -1;
+        int currentdeleteIndex = 0;
+        float deleteTimer = 0.0f;
+        int deleteState = 0;
 
         // Search Animation
         bool animatingSearch = false;
@@ -87,12 +112,16 @@ namespace ds_viz::pages
     void InsertAtHead(int value);
     void InsertAtTail(int value);
     void InsertAtIndex(int value, int index); 
+    void DeleteAtHead();
+    void DeleteAtTail();
+    void DeleteAtIndex(int index);
     void SearchByValue(int value);
     void SearchByIndex(int index);
     void CreateNotification(std::string &Message);
     void DrawInputBox(int X, int Y, std::string &input);
     void AnimateSearch(float dt);
     void AnimateInsert(float dt);
+    void AnimateDelete(float dt);
     void Update(float dt) override;
     void Render() override;
     };
