@@ -14,23 +14,25 @@ namespace raywtk
     public:
         raylib::Vector2 position;
         raylib::Camera2D *camera;
-        float radius = 25.0f;
+        float radius = 30.0f;
         raylib::Color color = raylib::Color::Blue();
         bool visible = true;
         std::function<void()> content; // Optional content function
         eventpp::CallbackList<void()> Click; // Optional click handler
         int value; // Store node's value
         std::unique_ptr<NodeWidget> next = nullptr; // Pointer to next node
+        bool hightlighted; // In Kruskal's processing
 
         NodeWidget(int val): value(val), content([this]() 
         {
             std::string text = std::to_string(value);
-            int fontSize = 20;
+            int fontSize = 30;
             int textWidth = MeasureText(text.c_str(), fontSize);
             int textHeight = fontSize;
             float centeredX = position.x - (textWidth / 2);
             float centeredY = position.y - (textHeight / 2);
-            DrawText(text.c_str(), centeredX, centeredY, fontSize, RAYWHITE);
+            if(!hightlighted) DrawText(text.c_str(), centeredX, centeredY, fontSize, RAYWHITE);
+            else DrawText(text.c_str(), centeredX, centeredY, fontSize + 10, RED);
         }) {}
 
         void Update (float deltaTime) override

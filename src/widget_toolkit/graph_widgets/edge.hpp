@@ -14,6 +14,8 @@ namespace raywtk
         raylib::Color color = raylib::Color::White();
         bool visible = true;
 
+        
+
         void Update (float deltaTime) override
         {
             // No update logic for edges
