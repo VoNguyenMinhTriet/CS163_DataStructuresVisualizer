@@ -2,10 +2,10 @@
 
 ds_viz::pages::trie::SearchTimeline::SearchTimeline(TrieScene &scene,
                                                     const std::string &key)
-    : animationTimeline(), scene(scene)
+    : stepTimeline(), scene(scene)
 {
     auto curNode = scene.root.get();
-    animationTimeline.push_back(std::make_unique<SetVariableAction<TrieNode *>>(
+    stepTimeline.push_back(std::make_unique<SetVariableStep<TrieNode *>>(
         var_curNode, 
         [&scene]{ return scene.root.get(); }
     ));
@@ -14,28 +14,28 @@ ds_viz::pages::trie::SearchTimeline::SearchTimeline(TrieScene &scene,
     {
         if (curNode->children[c] == nullptr) 
         {
-            animationTimeline.push_back(
-                std::make_unique<SetVariableAction<std::optional<bool>>>(
+            stepTimeline.push_back(
+                std::make_unique<SetVariableStep<std::optional<bool>>>(
                     returnValue,
                     []{ return false; }
                 ));
             return;
         }
 
-        animationTimeline.push_back(std::make_unique<SetVariableAction<TrieNode *>>(
+        stepTimeline.push_back(std::make_unique<SetVariableStep<TrieNode *>>(
             var_curNode, 
             [this, c] { return this->var_curNode->children[c].get(); }
         ));
         curNode = curNode->children[c].get();
     }
 
-    animationTimeline.push_back(
-        std::make_unique<SetVariableAction<std::optional<bool>>>(
+    stepTimeline.push_back(
+        std::make_unique<SetVariableStep<std::optional<bool>>>(
             returnValue,
             [this] { return var_curNode->isTerminal; }
         ));
     
-    currentStepInAnim = animationTimeline.begin();
+    currentStep = stepTimeline.begin();
 }
 
 void ds_viz::pages::trie::SearchTimeline::RenderCurrentState(TrieScene &scene)
@@ -69,20 +69,20 @@ void ds_viz::pages::trie::SearchTimeline::RenderUtil(TrieNode *node)
 
 void ds_viz::pages::trie::SearchTimeline::StepForward() 
 {
-    if (currentStepInAnim == animationTimeline.end()) 
+    if (currentStep == stepTimeline.end()) 
         return;
 
-    (*currentStepInAnim)->Do(*this);
-    ++currentStepInAnim;
+    (*currentStep)->Do(*this);
+    ++currentStep;
 }
 
 void ds_viz::pages::trie::SearchTimeline::StepBackward()
 {
-    if (currentStepInAnim == animationTimeline.begin()) 
+    if (currentStep == stepTimeline.begin()) 
         return;
     
-    --currentStepInAnim;
-    (*currentStepInAnim)->Undo(*this);
+    --currentStep;
+    (*currentStep)->Undo(*this);
 }
 
 void ds_viz::pages::trie::SearchTimeline::ApplyTimeline(TrieScene &scene) {}

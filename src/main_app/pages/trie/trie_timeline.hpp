@@ -31,13 +31,13 @@ namespace ds_viz::pages::trie
             virtual void Undo (SearchTimeline& timeline) = 0;
         };
 
-        template<typename T> class SetVariableAction : public IAction 
+        template<typename T> class SetVariableStep : public IAction 
         {
             T &_variable;
             T _previousValue;
             std::function<T()> _newValueExpression;
         public:
-            SetVariableAction(T &variable, std::function<T()> newValueExpression)
+            SetVariableStep(T &variable, std::function<T()> newValueExpression)
                 : _variable(variable), _newValueExpression(newValueExpression) {
                 _previousValue = variable;
             }
@@ -60,8 +60,8 @@ namespace ds_viz::pages::trie
         raylib::Color edgeHighlightColor = raylib::Color::Yellow();
         raylib::Color nodeReturnColor = raylib::Color::Green();
 
-        std::list<std::unique_ptr<IAction>> animationTimeline;
-        std::list<std::unique_ptr<IAction>>::iterator currentStepInAnim;
+        std::list<std::unique_ptr<IAction>> stepTimeline;
+        std::list<std::unique_ptr<IAction>>::iterator currentStep;
 
         TrieScene &scene;
 
