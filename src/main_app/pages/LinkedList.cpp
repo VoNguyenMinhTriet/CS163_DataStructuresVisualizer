@@ -1,7 +1,7 @@
 #include "./LinkedList.hpp"
 #include "main_app/main_window.hpp"
 #include "./main_menu.hpp"
-#include "../themes/dark_simple/back_button.hpp"
+#include "../themes/dark_simple/image_button.hpp"
 #include <iostream>
 #include <fstream>
 #include <cstdlib> // For rand()
@@ -161,11 +161,30 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     });
     searchByIndexButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
-    // return button
+    undoButtonTex = raylib::Texture(raylib::Image("./images/undo_button.png"));
+    undoButton = std::make_unique<raywtk::Button>();
+    undoButton->buttonRect = raylib::Rectangle(1600, 30, 80, 80);
+    undoButton->Click.append([this]() { OnUndoButtonClick(); });
+    undoButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&undoButtonTex);
+
+    redoButtonTex = raylib::Texture(raylib::Image("./images/redo_button.png"));
+    redoButton = std::make_unique<raywtk::Button>();
+    redoButton->buttonRect = raylib::Rectangle(1700, 30, 80, 80);
+    redoButton->Click.append([this]() { OnRedoButtonClick(); });
+    redoButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&redoButtonTex);
+
+    returnButtonTex = raylib::Texture(raylib::Image("./images/return_button.png"));
     returnButton = std::make_unique<raywtk::Button>();
-    returnButton->buttonRect = raylib::Rectangle(1700, 800, 80, 80); 
+    returnButton->buttonRect = raylib::Rectangle(1800, 30, 80, 80);
     returnButton->Click.append([this]() { OnReturnButtonClick(); });
-    returnButton->style = std::make_unique<ds_viz::themes::dark_simple::BackButtonStyle>();
+    returnButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&returnButtonTex);
+}
+
+ds_viz::pages::LinkedListPage::~LinkedListPage()
+{
+    returnButtonTex.Unload();
+    undoButtonTex.Unload();
+    redoButtonTex.Unload();
 }
 
 
@@ -181,7 +200,9 @@ void ds_viz::pages::LinkedListPage::OnReturnButtonClick()
 // Generate Random List
 void ds_viz::pages::LinkedListPage::OnRandomButtonClick(int numNodes)
 { 
-    OnClearButtonClick();
+    head.reset();
+    size = 0;
+
     srand(time(nullptr)); // Start Generator
 
     for (int i = 0; i < numNodes; i++)
@@ -189,13 +210,23 @@ void ds_viz::pages::LinkedListPage::OnRandomButtonClick(int numNodes)
         int randomValue = rand() % 1999 - 999; 
         InsertRandom(randomValue);
     } 
+
+    Append();
 }
 
 // Clear All List
 void ds_viz::pages::LinkedListPage::OnClearButtonClick()
 {
+    if (!head)
+    {
+        errorMessage = "List is empty!";
+        errorTimer = 2.0f;
+        return;
+    }
+
     head.reset(); 
     size = 0;
+    Append();
 }
 
 void ds_viz::pages::LinkedListPage::ResetColor()
@@ -245,7 +276,8 @@ void ds_viz::pages::LinkedListPage::OnLoadFileButtonClick()
         int n;
         fin >> n; // read number of elements
        
-        OnClearButtonClick(); 
+        head.reset();
+        size = 0;
 
         for (int i = 0; i < std::min(n, 18); i++) 
         {
@@ -262,7 +294,64 @@ void ds_viz::pages::LinkedListPage::OnLoadFileButtonClick()
 
         fin.close();
         UnloadDroppedFiles(droppedFiles);
+        Append();
     }
+}
+
+void ds_viz::pages::LinkedListPage::Append()
+{
+    std::vector<int> ListState;
+    GetListState(ListState);
+    UndoStack.push(ListState);
+    
+    while(!RedoStack.empty())
+        RedoStack.pop();
+}
+
+// Function to get the current state of linked list
+void ds_viz::pages::LinkedListPage::GetListState(std::vector<int> &ListState)
+{   
+    raywtk::NodeWidget* temp = head.get();
+
+    while (temp)
+    {
+        ListState.push_back(temp->value);
+        temp = temp->next.get();
+    }
+}
+
+// Undo
+void ds_viz::pages::LinkedListPage::OnUndoButtonClick()
+{
+    if (UndoStack.empty())
+        return;
+    
+    RedoStack.push(UndoStack.top());
+    UndoStack.pop();
+    std::vector<int> PrevListState;
+
+    if (!UndoStack.empty())
+        PrevListState = UndoStack.top();
+
+    head.reset();
+    size = 0;
+    for (int i: PrevListState)
+        InsertRandom(i);
+}
+
+// Redo
+void ds_viz::pages::LinkedListPage::OnRedoButtonClick()
+{
+    if (RedoStack.empty())
+        return;
+    
+    UndoStack.push(RedoStack.top());
+    RedoStack.pop();
+    
+    head.reset();
+    size = 0;
+    for (int i: UndoStack.top())
+        InsertRandom(i);
 }
 
 // A.k.a insert at tail in 1 frame
@@ -335,6 +424,7 @@ void ds_viz::pages::LinkedListPage::InsertAtIndex(int value, int index)
         size++;
         head->color = raylib::Color::Maroon();
         RepositionNodes();
+        Append();
         return;
     }
     
@@ -462,6 +552,7 @@ void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
         
                     animatingInsert = false;
                     size++;
+                    Append();
                     return;
                 }
     
@@ -530,6 +621,7 @@ void ds_viz::pages::LinkedListPage::AnimateDelete(float dt)
 
                     animatingDelete = false;
                     size--;
+                    Append();
                     return; 
                 }
                 
@@ -629,11 +721,7 @@ void ds_viz::pages::LinkedListPage::DrawInputBox(int X, int Y, std::string &inpu
 void ds_viz::pages::LinkedListPage::DrawSpeedBar()
 {
     DrawRectangle(speedBarX, speedBarY, speedBarWidth, speedBarHeight, RAYWHITE);
-    
-    // Draw speed knob
     DrawCircle(speedKnobX, speedBarY + speedBarHeight / 2, speedKnobRadius, RED);
-
-    // Draw labels
     DrawText("Speed:", speedBarX - 80, speedBarY - 5, 20, WHITE);
     
     char speedText[10];
@@ -1018,6 +1106,8 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
     loadFileButton->Update(dt);
     searchByValueButton->Update(dt);
     searchByIndexButton->Update(dt);
+    undoButton->Update(dt);
+    redoButton->Update(dt);
     returnButton->Update(dt);
 }
 
@@ -1051,7 +1141,7 @@ void ds_viz::pages::LinkedListPage::Render()
     // Draw Speed Bar
     DrawSpeedBar();
 
-    // Draw input bar only if active
+    // Draw input bars only if active
     if (showInsertAtHead)
         DrawInputBox(690, 800, inputInsertAtHead);
 
@@ -1103,6 +1193,8 @@ void ds_viz::pages::LinkedListPage::Render()
     repositionButton->Render();
     loadFileButton->Render();
     searchByValueButton->Render();
-    searchByIndexButton->Render(); 
+    searchByIndexButton->Render();
+    undoButton->Render();
+    redoButton->Render(); 
     returnButton->Render();
 }

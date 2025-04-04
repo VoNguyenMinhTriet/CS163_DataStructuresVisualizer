@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <stack>
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "widget_toolkit/controls/button.hpp"
 #include "widget_toolkit/graph_widget/node.hpp"
@@ -22,6 +23,10 @@ namespace ds_viz::pages
         float headY = 400; // Default Y-coordinate of head
         float spacing = 100; // Default spacing between nodes
         int size = 0; // Size of Linked List
+        
+        // For undo and redo functions
+        std::stack<std::vector<int>> UndoStack; 
+        std::stack<std::vector<int>> RedoStack;
 
         // List of buttons
         std::unique_ptr<raywtk::Button> insertAtHeadButton;
@@ -30,13 +35,19 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> deleteAtHeadButton;
         std::unique_ptr<raywtk::Button> deleteAtTailButton;
         std::unique_ptr<raywtk::Button> deleteAtIndexButton;
-        std::unique_ptr<raywtk::Button> returnButton;
         std::unique_ptr<raywtk::Button> randomButton;
         std::unique_ptr<raywtk::Button> clearAllButton;
         std::unique_ptr<raywtk::Button> repositionButton;
         std::unique_ptr<raywtk::Button> loadFileButton;
         std::unique_ptr<raywtk::Button> searchByValueButton;
         std::unique_ptr<raywtk::Button> searchByIndexButton;
+        std::unique_ptr<raywtk::Button> returnButton;
+        std::unique_ptr<raywtk::Button> undoButton;
+        std::unique_ptr<raywtk::Button> redoButton;
+
+        raylib::Texture returnButtonTex;
+        raylib::Texture undoButtonTex;
+        raylib::Texture redoButtonTex;
 
         bool showInsertAtHead = false;
         std::string inputInsertAtHead;
@@ -91,7 +102,7 @@ namespace ds_viz::pages
         int searchState = 0;
 
         // Speed bar
-        float speedBarX = 100;  // Bar start position
+        float speedBarX = 100;  
         float speedBarY = 50;
         float speedBarWidth = 300;
         float speedBarHeight = 10;
@@ -102,9 +113,8 @@ namespace ds_viz::pages
         float speedKnobX = speedBarX;  // Start at the lowest speed
         bool isDraggingSpeedKnob = false;
 
-        // Current speed value
-        float animationSpeed = 1.0f;  // Default speed (1x)
-        std::vector<float> speedSteps = {0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f};
+        float animationSpeed = 1.0f;  // Default speed (1.0x)
+        std::vector<float> speedSteps = {0.25f, 0.5f, 1.0f, 1.5f, 2.0f};
 
         // Messages and notifications
         std::string errorMessage = "";
@@ -116,13 +126,19 @@ namespace ds_viz::pages
 
 
     public:
-    
+
     LinkedListPage(); 
+    ~LinkedListPage();
+
     void OnReturnButtonClick();
     void OnRandomButtonClick(int numNodes);
     void InsertRandom(int value);
     void OnClearButtonClick();
     void OnLoadFileButtonClick();
+    void OnUndoButtonClick();
+    void OnRedoButtonClick();
+    void GetListState(std::vector<int> &ListState);
+    void Append();
     void ResetColor();
     void RepositionNodes();
     void InsertAtHead(int value);
