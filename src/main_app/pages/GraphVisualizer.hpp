@@ -39,6 +39,23 @@ namespace ds_viz::pages
         // Kruskal
         std::unique_ptr<raywtk::Button> KruskalButton;
 
+        // Kruskal index processing
+        int indexProcessing;
+        
+        // Kruskal processing flag
+        bool kruskalFlag;
+
+        // Kruskal animation control
+        int animationStep;
+        float animationTimer;
+        const float animationDelay = 1.0f;
+        
+        // par and sz for kruskal
+        std::vector<int> par, sz;
+        
+        // in-mst edges list
+        std::set<int> inMstList;
+
         // set store node value
         std::set<int> setValue;
 
@@ -53,6 +70,7 @@ namespace ds_viz::pages
             GraphVisualizer();
             void InsertNewNode(); // insert new node
             void InsertNewEdge(int u, int v, int c); // insert new edge
+            void Kruskal();
             void Update(float dt) override;
             void Render() override;
     };

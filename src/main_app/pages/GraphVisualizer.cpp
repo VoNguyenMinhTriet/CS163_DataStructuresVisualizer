@@ -2,6 +2,7 @@
 #include "main_app/main_window.hpp"
 #include "./main_menu.hpp"
 #include "../themes/dark_simple/back_button.hpp"
+#include <algorithm>
 #include <iostream>
 #include <cstdlib> // For rand()
 #include <ctime>
@@ -43,13 +44,18 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     KruskalButton = std::make_unique<raywtk::Button>();
     KruskalButton->buttonText = "Kruskal";
     KruskalButton->buttonRect = raylib::Rectangle(100, 1200, 300, 200);
-    KruskalButton->Click.append([this]() { });
+    KruskalButton->Click.append([this]() { Kruskal(); });
     KruskalButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // Kruskal index processing
+    indexProcessing = 0;
+    animationStep = 0;
+    animationTimer = 0.0;
 
 }
 
 void ds_viz::pages::GraphVisualizer::InsertNewNode(){
-    int value = 1;
+    int value = 0;
     while(setValue.find(value) != setValue.end()) value++;
     setValue.insert(value);
     std::unique_ptr<raywtk::NodeWidget> newNode = std::make_unique<raywtk::NodeWidget>(value);
@@ -69,6 +75,19 @@ void ds_viz::pages::GraphVisualizer::InsertNewEdge(int u, int v, int c){
         foundV |= node->value == v;
     }
     if(foundU && foundV) edges.push_back(std::make_pair(std::make_pair(u, v), c));
+}
+
+void ds_viz::pages::GraphVisualizer::Kruskal(){
+    std::sort(edges.begin(), edges.end(), [](const std::pair<std::pair<int, int>, int> &x, const std::pair<std::pair<int, int>, int> &y){
+        return x.second < y.second;
+    });
+    par.resize(nodes.size()); sz.resize(nodes.size());
+    for(size_t i = 0; i < nodes.size(); i++) par[i] = i, sz[i] = 1;
+    kruskalFlag = true;
+    inMstList.clear();
+    indexProcessing = 0;
+    animationStep = 0;
+    animationTimer = 0.0;
 }
 
 void ds_viz::pages::GraphVisualizer::Update(float dt)
@@ -147,6 +166,47 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
 
     // Kruskal update
     KruskalButton->Update(dt);
+
+    if(kruskalFlag){
+        auto findPar = [&](auto self, int u) -> int {
+            return u == par[u] ? u : par[u] = self(self, par[u]);
+        };
+    
+        auto unions = [&](int x, int y) -> bool {
+            x = findPar(findPar, x);
+            y = findPar(findPar, y);
+            if (x == y) return false;
+            if(sz[x] < sz[y]) std::swap(x, y);
+            par[y] = x;
+            sz[x] += sz[y];
+            return true;
+        };
+        
+        animationTimer += dt;
+        if(animationTimer <= animationDelay){
+            if(animationStep < edges.size()){
+                indexProcessing = animationStep;
+            }
+        } else{
+            if(animationTimer <= 2.0 * animationDelay){
+                if(animationStep < edges.size()){
+                    int i = animationStep;
+                    auto [u, v] = edges[i].first;
+                    if(unions(u, v)){
+                        inMstList.insert(i);
+                    }
+                } else{
+                    kruskalFlag = false;
+                }
+            } else{
+                ++animationStep;
+                if(animationStep == edges.size()){
+                    kruskalFlag = false;
+                }
+                animationTimer = 0.0f;
+            }
+        }
+    }
     
     // vector nodes update
     for(auto &node : nodes){
@@ -174,20 +234,41 @@ void ds_viz::pages::GraphVisualizer::Render()
     insertEdgeButton->Render();
     
     // vector edges render
-    for(size_t i = 0; i < edges.size(); i++){
-        raylib::Vector2 startPos, endPos;
-        for(auto &node : nodes){
-            if(node->value == edges[i].first.first){
-                startPos = node->position;
+    if(!kruskalFlag){
+        for(size_t i = 0; i < edges.size(); i++){
+            raylib::Vector2 startPos, endPos;
+            for(auto &node : nodes){
+                if(node->value == edges[i].first.first){
+                    startPos = node->position;
+                }
+                if(node->value == edges[i].first.second){
+                    endPos = node->position;
+                }
             }
-            if(node->value == edges[i].first.second){
-                endPos = node->position;
-            }
+            startPos.DrawLine(endPos, 2.5f, WHITE);
+            raylib::Vector2 posText = {(startPos.x + endPos.x) / 2, (startPos.y + endPos.y) / 2};
+            std::string weight = std::to_string(edges[i].second);
+            raylib::DrawText(weight.c_str(), posText.x, posText.y, 20, WHITE);
         }
-        startPos.DrawLine(endPos, 2.5f, WHITE);
-        raylib::Vector2 posText = {(startPos.x + endPos.x) / 2, (startPos.y + endPos.y) / 2};
-        std::string weight = std::to_string(edges[i].second);
-        raylib::DrawText(weight.c_str(), posText.x, posText.y, 20, WHITE);
+    } else{
+        for(size_t i = 0; i < edges.size(); i++){
+            raylib::Vector2 startPos, endPos;
+            for(auto &node : nodes){
+                if(node->value == edges[i].first.first){
+                    startPos = node->position;
+                }
+                if(node->value == edges[i].first.second){
+                    endPos = node->position;
+                }
+            }
+            raylib::Color edgeColor = WHITE;
+            if(i == indexProcessing) edgeColor = YELLOW;
+            else if(inMstList.find(i) != inMstList.end()) edgeColor = RED;
+            startPos.DrawLine(endPos, 2.5f, edgeColor);
+            raylib::Vector2 posText = {(startPos.x + endPos.x) / 2, (startPos.y + endPos.y) / 2};
+            std::string weight = std::to_string(edges[i].second);
+            raylib::DrawText(weight.c_str(), posText.x, posText.y, 20, edgeColor);
+        }
     }
 
     // Kruskal render
