@@ -15,7 +15,7 @@ namespace ds_viz::themes::dark_simple
             if (buttonSelf->state == raywtk::ButtonClass::Hover)
                 buttonSelf->buttonRect.DrawRounded(0.5, 8, raylib::Color::Yellow());
             else
-                buttonSelf->buttonRect.DrawRounded(0.5, 8, raylib::Color::Pink());
+                buttonSelf->buttonRect.DrawRounded(0.5, 8, raylib::Color::DarkBlue());
             
             int fontSize = 20;
             raylib::Vector2 textSize = raylib::MeasureText(buttonSelf->buttonText.c_str(), fontSize);

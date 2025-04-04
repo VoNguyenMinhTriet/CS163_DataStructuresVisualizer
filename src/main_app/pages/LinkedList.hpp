@@ -17,6 +17,7 @@ namespace ds_viz::pages
         raylib::Text title;
         
         std::unique_ptr<raywtk::NodeWidget> head = nullptr; // Head node
+        std::shared_ptr<raylib::Font> sharedFont = std::make_shared<raylib::Font>(LoadFont("./ttf/InterDisplay-ExtraBold.ttf")); // Node font
         float headX = 80; // Default X-coordinate of head
         float headY = 400; // Default Y-coordinate of head
         float spacing = 100; // Default spacing between nodes
@@ -62,13 +63,14 @@ namespace ds_viz::pages
         std::string searchByValInput;
         std::string searchByIndInput;
 
+        float animatingTimer = 0.0f; // Timer for animations
+
         // Insert Animation
         bool animatingInsert = false;
         raywtk::NodeWidget* insertCurrent = nullptr;
         int insertIndex = -1;
         int insertValue = -1000;
         int currentInsertIndex = 0;
-        float insertTimer = 0.0f;
         int insertState = 0;
 
         // Delete Animation
@@ -78,7 +80,6 @@ namespace ds_viz::pages
         raywtk::NodeWidget* deleteShift = nullptr;
         int deleteIndex = -1;
         int currentdeleteIndex = 0;
-        float deleteTimer = 0.0f;
         int deleteState = 0;
 
         // Search Animation
@@ -87,8 +88,23 @@ namespace ds_viz::pages
         int searchTarget = -1000;
         int searchIndex = -1;
         int currentSearchIndex = 0;
-        float searchTimer = 0.0f;
         int searchState = 0;
+
+        // Speed bar
+        float speedBarX = 100;  // Bar start position
+        float speedBarY = 50;
+        float speedBarWidth = 300;
+        float speedBarHeight = 10;
+        float speedKnobRadius = 8;
+
+        float speedMin = 0.25f;  // Minimum speed factor
+        float speedMax = 2.0f;  // Maximum speed factor
+        float speedKnobX = speedBarX;  // Start at the lowest speed
+        bool isDraggingSpeedKnob = false;
+
+        // Current speed value
+        float animationSpeed = 1.0f;  // Default speed (1x)
+        std::vector<float> speedSteps = {0.25f, 0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 1.75f, 2.0f};
 
         // Messages and notifications
         std::string errorMessage = "";
@@ -119,6 +135,7 @@ namespace ds_viz::pages
     void SearchByIndex(int index);
     void CreateNotification(std::string &Message);
     void DrawInputBox(int X, int Y, std::string &input);
+    void DrawSpeedBar();
     void AnimateSearch(float dt);
     void AnimateInsert(float dt);
     void AnimateDelete(float dt);

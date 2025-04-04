@@ -16,22 +16,32 @@ namespace raywtk
         raylib::Camera2D *camera;
         float radius = 30.0f;
         raylib::Color color = raylib::Color::Blue();
+        std::shared_ptr<raylib::Font> nodefont; 
         bool visible = true;
         std::function<void()> content; // Optional content function
         eventpp::CallbackList<void()> Click; // Optional click handler
         int value; // Store node's value
         std::unique_ptr<NodeWidget> next = nullptr; // Pointer to next node
 
-        NodeWidget(int val): value(val), content([this]() 
+        NodeWidget(int val, std::shared_ptr<raylib::Font> font) : value(val), nodefont(font)  
         {
-            std::string text = std::to_string(value);
-            int fontSize = 20;
-            int textWidth = MeasureText(text.c_str(), fontSize);
-            int textHeight = fontSize;
-            float centeredX = position.x - (textWidth / 2);
-            float centeredY = position.y - (textHeight / 2);
-            DrawText(text.c_str(), centeredX, centeredY, fontSize, RAYWHITE);
-        }) {}
+            content = [this]()
+            {
+                std::string text = std::to_string(value);
+                int fontSize = 25;
+                raylib::Vector2 textSize = MeasureTextEx(*nodefont, text.c_str(), fontSize, 1);
+                
+                float textWidth = textSize.x;
+                float textHeight = textSize.y;
+                
+                float centeredX = position.x - (textWidth / 2);
+                float centeredY = position.y - (textHeight / 2);
+                raylib::Vector2 textPos = {centeredX, centeredY};
+                DrawTextEx(*nodefont, text, textPos, fontSize, 1, RAYWHITE);
+            };
+        }
+
+        ~NodeWidget() {}
 
         void Update (float deltaTime) override
         {
@@ -78,7 +88,7 @@ namespace raywtk
                 raylib::Vector2 endEdge = end - (direction * radius);
 
                 // Draw the line (edge)
-                DrawLineEx(startEdge, endEdge, 5, RAYWHITE);
+                DrawLineEx(startEdge, endEdge, 5, raylib::Color::Yellow());
 
                 // Draw arrowhead
                 float arrowSize = 12.0f;
@@ -93,7 +103,7 @@ namespace raywtk
                             sin(-arrowAngle) * -direction.x + cos(-arrowAngle) * -direction.y) * arrowSize;
 
                 // Draw arrowhead as a triangle
-                DrawTriangle(endEdge, leftWing, rightWing, RAYWHITE);
+                DrawTriangle(endEdge, leftWing, rightWing, raylib::Color::Yellow());
 
                 // Recursively render the next node
                 next->Render();

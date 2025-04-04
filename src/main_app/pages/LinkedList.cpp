@@ -270,7 +270,7 @@ void ds_viz::pages::LinkedListPage::InsertRandom(int value)
 {
     ResetColor();
 
-    auto newNode = std::make_unique<raywtk::NodeWidget>(value);
+    auto newNode = std::make_unique<raywtk::NodeWidget>(value, sharedFont);
     
     // Compute position
     if (!head) 
@@ -318,7 +318,7 @@ void ds_viz::pages::LinkedListPage::InsertAtIndex(int value, int index)
     ResetColor();
     if (index == 0)
     {
-        auto newNode = std::make_unique<raywtk::NodeWidget>(value);
+        auto newNode = std::make_unique<raywtk::NodeWidget>(value, sharedFont);
         newNode->position = raylib::Vector2(headX, headY);
         newNode->next = std::move(head);
         head = std::move(newNode);
@@ -343,10 +343,9 @@ void ds_viz::pages::LinkedListPage::InsertAtIndex(int value, int index)
     insertValue = value;
     insertIndex = index;
     currentInsertIndex = 0;
-    insertTimer = 0.3f;
+    animatingTimer = 0.3f;
     insertState = 0;
     
-    size++;
     RepositionNodes();
 }
 
@@ -377,10 +376,9 @@ void ds_viz::pages::LinkedListPage::DeleteAtIndex(int index)
     deleteCurrent = head.get();
     deleteIndex = index;
     currentdeleteIndex = 0;
-    deleteTimer = 0.3f;
+    animatingTimer = 0.3f;
     deleteState = 0;
     
-    size--;
     RepositionNodes();
 }
 
@@ -398,7 +396,7 @@ void ds_viz::pages::LinkedListPage::SearchByValue(int val)
     animatingSearch = true;
     searchCurrent = head.get();
     searchTarget = val;
-    searchTimer = 0.3f; // Delay per step
+    animatingTimer = 0.3f; // Delay per step
     searchState = 0;
 }
 
@@ -424,16 +422,66 @@ void ds_viz::pages::LinkedListPage::SearchByIndex(int index)
     searchCurrent = head.get();
     searchIndex = index;
     currentSearchIndex = 0;
-    searchTimer = 0.3f;
+    animatingTimer = 0.3f;
     searchState = 0;
+}
+
+void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
+{
+    if (animatingInsert && insertCurrent)
+    {
+        animatingTimer -= dt * animationSpeed;
+        if (animatingTimer <= 0)
+        {
+            if (insertState == 0) 
+            {
+                insertCurrent->color = raylib::Color::Orange();
+                insertState = 1;
+                animatingTimer = 0.3f / animationSpeed; // Delay between each node
+            } 
+            else if (insertState == 1) 
+            {
+                if (currentInsertIndex == insertIndex - 1)
+                {
+                    auto newNode = std::make_unique<raywtk::NodeWidget>(insertValue, sharedFont);
+                    float posX = headX + (insertIndex) * spacing;
+                    newNode->position = raylib::Vector2(posX, headY);
+                    insertCurrent->color = raylib::Color::Blue();
+                    newNode->color = raylib::Color::Maroon();
+                    newNode->next = std::move(insertCurrent->next);
+                    insertCurrent->next = std::move(newNode);
+
+                    auto shift = insertCurrent->next.get()->next.get();
+                    float newposX = posX + spacing;
+                    while (shift)
+                    {
+                        shift->position = raylib::Vector2(newposX, headY);
+                        newposX += spacing;
+                        shift = shift->next.get();
+                    }
+        
+                    animatingInsert = false;
+                    size++;
+                    return;
+                }
+    
+                insertCurrent->color = raylib::Color::Blue();
+                insertCurrent = insertCurrent->next.get();
+                currentInsertIndex++;
+
+                insertState = 0;
+                animatingTimer = 0.3f / animationSpeed; // Delay between each node
+            }
+        }
+    }
 }
 
 void ds_viz::pages::LinkedListPage::AnimateDelete(float dt)
 {
     if (animatingDelete)
     {
-        deleteTimer -= dt;
-        if (deleteTimer <= 0)
+        animatingTimer -= dt * animationSpeed;
+        if (animatingTimer <= 0)
         {
             if (deleteState == 0)
             {
@@ -449,7 +497,7 @@ void ds_viz::pages::LinkedListPage::AnimateDelete(float dt)
                     ToDelPrev = deleteCurrent;
                 
                 deleteState = 1;
-                deleteTimer = 0.3f;
+                animatingTimer = 0.3f / animationSpeed;
             }
 
             else if (deleteState == 1)
@@ -481,6 +529,7 @@ void ds_viz::pages::LinkedListPage::AnimateDelete(float dt)
                     }
 
                     animatingDelete = false;
+                    size--;
                     return; 
                 }
                 
@@ -488,7 +537,7 @@ void ds_viz::pages::LinkedListPage::AnimateDelete(float dt)
                 deleteCurrent = deleteCurrent->next.get();
                 currentdeleteIndex++;
                 deleteState = 0;
-                deleteTimer = 0.3f;
+                animatingTimer = 0.3f / animationSpeed;
             }
         }
     }
@@ -498,14 +547,14 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
 {
     if (animatingSearch && searchCurrent)
     {
-        searchTimer -= dt;
-        if (searchTimer <= 0)
+        animatingTimer -= dt * animationSpeed;
+        if (animatingTimer <= 0)
         {
             if (searchState == 0) 
             {
                 searchCurrent->color = raylib::Color::Orange();
                 searchState = 1;
-                searchTimer = 0.3f; // Delay between each node
+                animatingTimer = 0.3f / animationSpeed; // Delay between each node
             } 
             else if (searchState == 1) 
             {
@@ -541,61 +590,10 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
                 }
 
                 searchState = 0;
-                searchTimer = 0.3f; // Delay between each node
+                animatingTimer = 0.3f / animationSpeed; // Delay between each node
             }
         }
     }
-}
-
-void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
-{
-    if (animatingInsert && insertCurrent)
-    {
-        insertTimer -= dt;
-        if (insertTimer <= 0)
-        {
-            if (insertState == 0) 
-            {
-                insertCurrent->color = raylib::Color::Orange();
-                insertState = 1;
-                insertTimer = 0.3f; // Delay between each node
-            } 
-            else if (insertState == 1) 
-            {
-                if (currentInsertIndex == insertIndex - 1)
-                {
-                    auto newNode = std::make_unique<raywtk::NodeWidget>(insertValue);
-                    float posX = headX + (insertIndex) * spacing;
-                    newNode->position = raylib::Vector2(posX, headY);
-                    insertCurrent->color = raylib::Color::Blue();
-                    newNode->color = raylib::Color::Maroon();
-                    newNode->next = std::move(insertCurrent->next);
-                    insertCurrent->next = std::move(newNode);
-
-                    auto shift = insertCurrent->next.get()->next.get();
-                    float newposX = posX + spacing;
-                    while (shift)
-                    {
-                        shift->position = raylib::Vector2(newposX, headY);
-                        newposX += spacing;
-                        shift = shift->next.get();
-                    }
-        
-                    animatingInsert = false;
-                    return;
-                }
-    
-                insertCurrent->color = raylib::Color::Blue();
-                insertCurrent = insertCurrent->next.get();
-                currentInsertIndex++;
-
-                insertState = 0;
-                insertTimer = 0.3f; // Delay between each node
-            }
-        }
-    }
-
-    
 }
 
 void ds_viz::pages::LinkedListPage::CreateNotification(std::string &Message)
@@ -626,6 +624,21 @@ void ds_viz::pages::LinkedListPage::DrawInputBox(int X, int Y, std::string &inpu
     DrawRectangle(X, Y, 90, 50, DARKGRAY);
     DrawText(input.c_str(), X + 20, Y + 15, 20, RAYWHITE);
     DrawRectangleLines(X - 2, Y - 2, 94, 54, BLUE);
+}
+
+void ds_viz::pages::LinkedListPage::DrawSpeedBar()
+{
+    DrawRectangle(speedBarX, speedBarY, speedBarWidth, speedBarHeight, RAYWHITE);
+    
+    // Draw speed knob
+    DrawCircle(speedKnobX, speedBarY + speedBarHeight / 2, speedKnobRadius, RED);
+
+    // Draw labels
+    DrawText("Speed:", speedBarX - 80, speedBarY - 5, 20, WHITE);
+    
+    char speedText[10];
+    sprintf(speedText, "%.2fx", animationSpeed);
+    DrawText(speedText, speedBarX + speedBarWidth + 10, speedBarY - 5, 20, YELLOW);
 }
 
 void ds_viz::pages::LinkedListPage::Update(float dt)
@@ -953,6 +966,42 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
         }
     }
 
+    // Adjust speed
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+    {
+        Vector2 mousePos = GetMousePosition();
+
+        if (isDraggingSpeedKnob || CheckCollisionPointCircle(mousePos, {speedKnobX, speedBarY + speedBarHeight / 2}, speedKnobRadius))
+        {
+            isDraggingSpeedKnob = true;
+            speedKnobX = Clamp(mousePos.x, speedBarX, speedBarX + speedBarWidth);
+
+            // Update speed while dragging 
+            float t = (speedKnobX - speedBarX) / speedBarWidth;
+            animationSpeed = speedMin + t * (speedMax - speedMin);
+        }
+    }
+    
+    else if (isDraggingSpeedKnob) 
+    {
+        isDraggingSpeedKnob = false;
+
+        // Snap to nearest speed
+        float closest = speedSteps[0];
+        for (float step : speedSteps)
+        {
+            if (std::abs(step - animationSpeed) < std::abs(closest - animationSpeed))
+            closest = step;
+        }
+
+        animationSpeed = closest;
+
+        float t = (animationSpeed - speedMin) / (speedMax - speedMin);
+        speedKnobX = speedBarX + t * speedBarWidth;
+
+        animatingTimer = 0.3f / animationSpeed;
+    }
+
     AnimateSearch(dt);
     AnimateInsert(dt);
     AnimateDelete(dt);
@@ -998,6 +1047,9 @@ void ds_viz::pages::LinkedListPage::Render()
             DrawText("tail", tail->position.x - 20, tail->position.y + 30, 20, GREEN);
         }
     }
+
+    // Draw Speed Bar
+    DrawSpeedBar();
 
     // Draw input bar only if active
     if (showInsertAtHead)
