@@ -141,3 +141,7 @@ void ds_viz::pages::trie::TrieScene::StepForward() {
 void ds_viz::pages::trie::TrieScene::StepBackward() {
     animationTimeline->StepBackward();
 }
+std::string ds_viz::pages::trie::TrieScene::GetStatusMessage() const {
+  return animationTimeline ? animationTimeline->GetStatusMessage()
+                           : "No animation is currently on display.";
+}

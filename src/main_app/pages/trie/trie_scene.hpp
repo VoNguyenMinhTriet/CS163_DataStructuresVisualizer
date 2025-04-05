@@ -60,10 +60,10 @@ namespace ds_viz::pages::trie
         raylib::Color nodeReturnColor = raylib::Color::Green();
 
 
-        raylib::Camera2D cam;
         std::unique_ptr<ITimeline> animationTimeline = nullptr;
         
         public:
+        raylib::Camera2D cam;
         std::unique_ptr<TrieNode> root = std::make_unique<TrieNode>();
         TrieScene () : cam(raylib::Vector2 {640, 360}, raylib::Vector2 {0, 0}, 0, 2) { }
 
@@ -74,9 +74,9 @@ namespace ds_viz::pages::trie
         void DefaultRender();
 
         void Render() override;
-
         void BuildSearchTimeline(const std::string &key);
         void StepForward();
         void StepBackward();
+        std::string GetStatusMessage() const;
     };
 }
