@@ -14,6 +14,7 @@ namespace ds_viz::pages
 {
     class LinkedListPage : public Page 
     {
+        // Font and title of page
         std::unique_ptr<raylib::Font> font;
         raylib::Text title;
         
@@ -29,26 +30,37 @@ namespace ds_viz::pages
         std::stack<std::vector<int>> RedoStack;
 
         // List of buttons
-        std::unique_ptr<raywtk::Button> insertAtHeadButton;
-        std::unique_ptr<raywtk::Button> insertAtTailButton;
-        std::unique_ptr<raywtk::Button> insertAtIndexButton;
-        std::unique_ptr<raywtk::Button> deleteAtHeadButton;
-        std::unique_ptr<raywtk::Button> deleteAtTailButton;
-        std::unique_ptr<raywtk::Button> deleteAtIndexButton;
-        std::unique_ptr<raywtk::Button> randomButton;
-        std::unique_ptr<raywtk::Button> clearAllButton;
         std::unique_ptr<raywtk::Button> repositionButton;
-        std::unique_ptr<raywtk::Button> loadFileButton;
-        std::unique_ptr<raywtk::Button> searchByValueButton;
-        std::unique_ptr<raywtk::Button> searchByIndexButton;
-        std::unique_ptr<raywtk::Button> returnButton;
         std::unique_ptr<raywtk::Button> undoButton;
         std::unique_ptr<raywtk::Button> redoButton;
+        std::unique_ptr<raywtk::Button> returnButton;
 
-        raylib::Texture returnButtonTex;
+        std::unique_ptr<raywtk::Button> insertButton;
+        std::vector<std::unique_ptr<raywtk::Button>> insertDropdownButtons;
+        std::vector<std::string> insertOptions = { "At Head", "At Tail", "At Index" };
+        bool insertDropdownOpen = false;
+
+        std::unique_ptr<raywtk::Button> deleteButton;
+        std::vector<std::unique_ptr<raywtk::Button>> deleteDropdownButtons;
+        std::vector<std::string> deleteOptions = { "At Head", "At Tail", "At Index" };
+        bool deleteDropdownOpen = false;
+
+        std::unique_ptr<raywtk::Button> searchButton;
+        std::vector<std::unique_ptr<raywtk::Button>> searchDropdownButtons;
+        std::vector<std::string> searchOptions = { "By Value", "By Index" };
+        bool searchDropdownOpen = false;
+
+        std::unique_ptr<raywtk::Button> otherButton;
+        std::vector<std::unique_ptr<raywtk::Button>> otherDropdownButtons;
+        std::vector<std::string> otherOptions = { "Random", "Clear", "Load file" };
+        bool otherDropdownOpen = false;
+        
+        // For image buttons texture
         raylib::Texture undoButtonTex;
         raylib::Texture redoButtonTex;
-
+        raylib::Texture returnButtonTex;
+        
+        // flags to show input bars
         bool showInsertAtHead = false;
         std::string inputInsertAtHead;
 
@@ -62,9 +74,6 @@ namespace ds_viz::pages
 
         bool showRandomInput = false;  
         std::string inputRandom;
-
-        bool showDeleteAtHead = false;
-        bool showDeleteAtTail = false;
 
         bool showDeleteAtIndexInput = false;
         std::string inputDeleteIndex;
@@ -130,17 +139,17 @@ namespace ds_viz::pages
     LinkedListPage(); 
     ~LinkedListPage();
 
-    void OnReturnButtonClick();
     void OnRandomButtonClick(int numNodes);
     void InsertRandom(int value);
-    void OnClearButtonClick();
     void OnLoadFileButtonClick();
-    void OnUndoButtonClick();
-    void OnRedoButtonClick();
-    void GetListState(std::vector<int> &ListState);
-    void Append();
+    void OnClearButtonClick();
     void ResetColor();
     void RepositionNodes();
+    void GetListState(std::vector<int> &ListState);
+    void Append();
+    void OnUndoButtonClick();
+    void OnRedoButtonClick();
+    void OnReturnButtonClick();
     void InsertAtHead(int value);
     void InsertAtTail(int value);
     void InsertAtIndex(int value, int index); 
@@ -149,12 +158,13 @@ namespace ds_viz::pages
     void DeleteAtIndex(int index);
     void SearchByValue(int value);
     void SearchByIndex(int index);
-    void CreateNotification(std::string &Message);
-    void DrawInputBox(int X, int Y, std::string &input);
-    void DrawSpeedBar();
-    void AnimateSearch(float dt);
     void AnimateInsert(float dt);
     void AnimateDelete(float dt);
+    void AnimateSearch(float dt);
+    void CreateNotification(std::string &Message);
+    void DrawInputBox(int X, int Y, std::string &input);
+    void DrawInputBox2(int X, int Y, std::string &input);
+    void DrawSpeedBar();
     void Update(float dt) override;
     void Render() override;
     };
