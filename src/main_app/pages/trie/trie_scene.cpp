@@ -145,3 +145,11 @@ std::string ds_viz::pages::trie::TrieScene::GetStatusMessage() const {
   return animationTimeline ? animationTimeline->GetStatusMessage()
                            : "No animation is currently on display.";
 }
+void ds_viz::pages::trie::TrieScene::BuildAddTimeline(const std::string& key)
+{
+    animationTimeline = std::make_unique<AddTimeline>(*this, key);
+}
+void ds_viz::pages::trie::TrieScene::BuildRemoveTimeline(const std::string& key)
+{
+    animationTimeline = std::make_unique<RemoveTimeline>(*this, key);
+}

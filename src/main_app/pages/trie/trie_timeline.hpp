@@ -221,4 +221,262 @@ class SearchTimeline : public ITimeline
     void ApplyTimeline(TrieScene& scene) override;
 };
 
+class AddTimeline : public ITimeline
+{
+    class IAction
+    {
+      public:
+        virtual ~IAction() = default;
+        virtual std::string GetMessage() const = 0;
+        virtual void Do(AddTimeline& timeline) = 0;
+        virtual void Undo(AddTimeline& timeline) = 0;
+    };
+
+    class SetNodeVarToRootStep : public IAction
+    {
+        TrieNode*& _nodeVar;
+        std::string _varName;
+        TrieNode* _pPreviousNode;
+
+      public:
+        SetNodeVarToRootStep(TrieNode*& nodeVar, std::string varName);
+
+        std::string GetMessage() const override;
+
+        void Do(AddTimeline& timeline) override;
+
+        void Undo(AddTimeline& timeline) override;
+    };
+
+    class AddChildStep : public IAction
+    {
+        TrieNode*& _nodeVar;
+        char childChar;
+        std::string varName;
+        TrieNode* _pPreviousNode;
+
+      public:
+        AddChildStep(TrieNode*& nodeVar, std::string varName, char childChar);
+
+        std::string GetMessage() const override;
+
+        void Do(AddTimeline& timeline) override;
+
+        void Undo(AddTimeline& timeline) override;
+    };
+
+    class GoToChildStep : public IAction
+    {
+        TrieNode*& _nodeVar;
+        char childChar;
+        std::string varName;
+        TrieNode* _pPreviousNode;
+
+      public:
+        GoToChildStep(TrieNode*& nodeVar, std::string varName, char childChar) :
+            _nodeVar(nodeVar), childChar(childChar), _pPreviousNode(nodeVar),
+            varName(varName)
+        {}
+
+        std::string GetMessage() const override;
+
+        void Do(AddTimeline& timeline) override;
+
+        void Undo(AddTimeline& timeline) override;
+    };
+
+    class MessageOnlyStep : public IAction
+    {
+        std::function<std::string()> messageFunc;
+
+      public:
+        MessageOnlyStep(std::function<std::string()> messageFunc) :
+            messageFunc(messageFunc)
+        {}
+
+        std::string GetMessage() const override
+        {
+            return messageFunc();
+        }
+
+        void Do(AddTimeline& timeline) override {}
+
+        void Undo(AddTimeline& timeline) override {}
+    };
+
+    class MarkTerminalStep : public IAction
+    {
+        TrieNode*& _nodeVar;
+        std::string varName;
+        bool prevVal;
+
+      public:
+        MarkTerminalStep(TrieNode*& nodeVar, std::string varName);
+
+        std::string GetMessage() const override;
+
+        void Do(AddTimeline& timeline) override;
+
+        void Undo(AddTimeline& timeline) override;
+    };
+
+    TrieScene& scene;
+
+    std::string _key;
+    TrieNode* var_curNode = nullptr;
+
+    std::list<std::unique_ptr<IAction>> stepTimeline;
+    std::list<std::unique_ptr<IAction>>::iterator currentStep;
+
+    raylib::Color nodeDefaultColor = raylib::Color::White();
+    raylib::Color nodeHighlightColor = raylib::Color::Yellow();
+    raylib::Color edgeHighlightColor = raylib::Color::Yellow();
+    raylib::Color nodeReturnColor = raylib::Color::Green();
+    raylib::Color nodeUnavailColor = raylib::Color::Red();
+
+    void RenderUtil(TrieNode* node);
+
+    std::unique_ptr<MessageOnlyStep> CheckChildStep(char c);
+
+  public:
+    AddTimeline(TrieScene& scene, const std::string& key);
+
+    std::string GetStatusMessage() const override;
+
+    void RenderCurrentState(TrieScene& scene) override;
+
+    void StepForward() override;
+
+    void StepBackward() override;
+
+    void ApplyTimeline(TrieScene& scene) override {};
+};
+
+class RemoveTimeline : public ITimeline
+{
+    class IAction
+    {
+      public:
+        virtual ~IAction() = default;
+        virtual std::string GetMessage() const = 0;
+        virtual void Do(RemoveTimeline& timeline) = 0;
+        virtual void Undo(RemoveTimeline& timeline) = 0;
+    };
+
+    class MessageOnlyStep : public IAction
+    {
+        std::function<std::string()> messageFunc;
+
+      public:
+        MessageOnlyStep(std::function<std::string()> messageFunc) :
+            messageFunc(messageFunc)
+        {}
+
+        std::string GetMessage() const override
+        {
+            return messageFunc();
+        }
+
+        void Do(RemoveTimeline& timeline) override {}
+
+        void Undo(RemoveTimeline& timeline) override {}
+    };
+
+    class SetNodeVarToRootStep : public IAction
+    {
+        TrieNode*& _nodeVar;
+        std::string _varName;
+        TrieNode* _pPreviousNode;
+
+      public:
+        SetNodeVarToRootStep(TrieNode*& nodeVar, std::string varName);
+
+        std::string GetMessage() const override;
+
+        void Do(RemoveTimeline& timeline) override;
+
+        void Undo(RemoveTimeline& timeline) override;
+    };
+
+    class AddChildStep : public IAction
+    {
+        TrieNode*& _nodeVar;
+        char childChar;
+        std::string varName;
+        TrieNode* _pPreviousNode;
+
+      public:
+        AddChildStep(TrieNode*& nodeVar, std::string varName, char childChar);
+
+        std::string GetMessage() const override;
+
+        void Do(RemoveTimeline& timeline) override;
+
+        void Undo(RemoveTimeline& timeline) override;
+    };
+
+    class GoToChildStep : public IAction
+    {
+        TrieNode*& _nodeVar;
+        char childChar;
+        std::string varName;
+        TrieNode* _pPreviousNode;
+
+      public:
+        GoToChildStep(TrieNode*& nodeVar, std::string varName, char childChar) :
+            _nodeVar(nodeVar), childChar(childChar), _pPreviousNode(nodeVar),
+            varName(varName)
+        {}
+
+        std::string GetMessage() const override;
+
+        void Do(RemoveTimeline& timeline) override;
+
+        void Undo(RemoveTimeline& timeline) override;
+    };
+
+    class UnmarkTerminalStep : public IAction
+    {
+        TrieNode*& _nodeVar;
+        std::string varName;
+        bool prevVal;
+
+      public:
+        UnmarkTerminalStep(TrieNode*& nodeVar, std::string varName);
+
+        std::string GetMessage() const override;
+
+        void Do(RemoveTimeline& timeline) override;
+
+        void Undo(RemoveTimeline& timeline) override;
+    };
+
+    TrieScene& scene;
+
+    std::string _key;
+    TrieNode* var_curNode = nullptr;
+
+    std::list<std::unique_ptr<IAction>> stepTimeline;
+    std::list<std::unique_ptr<IAction>>::iterator currentStep;
+
+    raylib::Color nodeDefaultColor = raylib::Color::White();
+    raylib::Color nodeHighlightColor = raylib::Color::Yellow();
+
+    std::unique_ptr<MessageOnlyStep> CheckChildStep(char c);
+    void RenderUtil(TrieNode* node);
+
+  public:
+    RemoveTimeline(TrieScene& scene, const std::string& key);
+
+    std::string GetStatusMessage() const override;
+
+    void RenderCurrentState(TrieScene& scene) override;
+
+    void StepForward() override;
+
+    void StepBackward() override;
+
+    void ApplyTimeline(TrieScene& scene) override {};
+};
+
 } // namespace ds_viz::pages::trie

@@ -75,6 +75,8 @@ namespace ds_viz::pages::trie
 
         void Render() override;
         void BuildSearchTimeline(const std::string &key);
+        void BuildAddTimeline(const std::string& key);
+        void BuildRemoveTimeline(const std::string& key);
         void StepForward();
         void StepBackward();
         std::string GetStatusMessage() const;
