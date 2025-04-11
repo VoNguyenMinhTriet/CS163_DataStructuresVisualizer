@@ -1,8 +1,11 @@
 #pragma once
 
 #include <memory>
+#include "raylib-cpp/Rectangle.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "./page.hpp"
+#include "./trie/trie_page.hpp"
+#include "widget_toolkit/controls/button.hpp"
 
 namespace ds_viz::pages
 {
@@ -11,18 +14,14 @@ namespace ds_viz::pages
         std::unique_ptr<raylib::Font> font;
         raylib::Text title;
 
-        public:
+        // Controls
+        raywtk::Button _trieButton;
 
-        MainMenuPage () {
-            font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
-            title = raylib::Text("DATA LA VISTA", 128, raylib::Color::White(), *font, 0);
-        }
+      public:
+        MainMenuPage(MainWindow &context);
 
-        void Update (float dt) override
-        {
+        void Update(float dt) override;
 
-        }
-
-        void Render () override;
+        void Render() override;
     };
 }

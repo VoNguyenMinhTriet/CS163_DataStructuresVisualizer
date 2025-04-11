@@ -1,8 +1,6 @@
 #pragma once
 
-#include "main_app/pages/trie/trie_timeline.hpp"
-#include "raylib-cpp/Color.hpp"
-#include "raylib-cpp/Vector2.hpp"
+#include "./trie_timeline.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "widget_toolkit/interfaces.hpp"
 #include <array>
@@ -60,12 +58,12 @@ namespace ds_viz::pages::trie
         raylib::Color nodeReturnColor = raylib::Color::Green();
 
 
-        std::unique_ptr<ITimeline> animationTimeline = nullptr;
+        std::unique_ptr<ITimeline> animationTimeline;
         
         public:
         raylib::Camera2D cam;
         std::unique_ptr<TrieNode> root = std::make_unique<TrieNode>();
-        TrieScene () : cam(raylib::Vector2 {640, 360}, raylib::Vector2 {0, 0}, 0, 2) { }
+        TrieScene () : cam(raylib::Vector2 {640, 360}, raylib::Vector2 {0, 0}, 0, 2), animationTimeline(nullptr) { }
 
         void Update(float deltaTime) override;
 

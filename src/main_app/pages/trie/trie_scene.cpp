@@ -1,14 +1,16 @@
 #include "./trie_scene.hpp"
 #include "./trie_timeline.hpp"
+#include "raylib-cpp/Vector2.hpp"
+#include <cmath>
 
 void ds_viz::pages::trie::TrieScene::Render() {
     cam.BeginMode();
-    if (animationTimeline == nullptr) {
-        DefaultRender();
-        return;
-    }
 
-    animationTimeline->RenderCurrentState(*this);
+    if (animationTimeline == nullptr) 
+        DefaultRender();
+    else
+        animationTimeline->RenderCurrentState(*this);
+
     cam.EndMode();
 }
 
@@ -85,6 +87,7 @@ void ds_viz::pages::trie::TrieNode::Add(std::string key) {
         curNode = curNode->children[c].get();
     }
     curNode->isTerminal = true;
+    RecomputePosition();
 }
 
 void ds_viz::pages::trie::TrieNode::Remove(std::string key) {
@@ -131,7 +134,15 @@ void ds_viz::pages::trie::TrieScene::DefaultRender() {
 }
 
 void ds_viz::pages::trie::TrieScene::Update(float deltaTime) {
-    cam.SetTarget(raylib::Vector2{0, (float)root->ComputeHeight() * 0.5f});
+    // Camera smoothing
+    float timeConstant = 10.0f;
+    
+    raylib::Vector2 target {0, (float)root->ComputeHeight() * 0.5f};
+    raylib::Vector2 toTarget = target - cam.GetTarget();
+    raylib::Vector2 deltaTarget =
+        toTarget * (1.0f - std::exp(-timeConstant * deltaTime));
+
+    cam.SetTarget((raylib::Vector2)cam.GetTarget() + deltaTarget);
 }
 
 void ds_viz::pages::trie::TrieScene::StepForward() {

@@ -5,7 +5,8 @@ bin-linux-dir := bin-dir / "linux"
 bin-linux-output := bin-linux-dir / app-name
 libs := "raylib"
 include-dirs := "extern/include src"
-src-files := "main_app/main.cpp main_app/main_window.cpp main_app/pages/main_menu.cpp"
+src-files := "main_app/main.cpp main_app/main_window.cpp main_app/pages/main_menu.cpp \
+main_app/pages/trie/trie_page.cpp main_app/pages/trie/trie_scene.cpp main_app/pages/trie/trie_timeline.cpp"
 
 linux-dbg_build:
     mkdir -p {{bin-linux-dir}}
