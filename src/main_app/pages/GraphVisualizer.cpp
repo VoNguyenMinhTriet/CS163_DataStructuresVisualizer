@@ -37,8 +37,11 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     insertEdgeButton = std::make_unique<raywtk::Button>();
     insertEdgeButton->buttonText = "Insert New Edge";
     insertEdgeButton->buttonRect = raylib::Rectangle(INSERT_EDGE_BUTTON_POSX, INSERT_EDGE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
-    insertEdgeButton->Click.append([this]() { inputInsertEdgeButtonFlag = true; });
+    insertEdgeButton->Click.append([this]() { inputInsertEdgeButtonFlag = true; inputBoxInsertEdge->processing = true; });
     insertEdgeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // Input box insert new edge initialize
+    inputBoxInsertEdge = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_INSERT_EDGE_POSX, INPUT_BOX_INSERT_EDGE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::Black(), raylib::Color::White(), raylib::Color::Gray(), 3, false);
 
     // Kruskal initialize
     KruskalButton = std::make_unique<raywtk::Button>();
@@ -57,6 +60,17 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
 
     // text input delete node string initialize
     textInputDeleteNode[0] = '\0';
+
+    // Delete node initialize
+    inputDeleteEdgeButtonFlag = false;
+    deleteEdgeButton = std::make_unique<raywtk::Button>();
+    deleteEdgeButton->buttonText = "Delete Edge";
+    deleteEdgeButton->buttonRect = raylib::Rectangle(DELETE_EDGE_BUTTON_POSX, DELETE_EDGE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
+    deleteEdgeButton->Click.append([this]() { inputDeleteEdgeButtonFlag = true; });
+    deleteEdgeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // text input delete Edge string initialize
+    textInputDeleteEdge[0] = '\0';
 
     // Kruskal index processing
     indexProcessing = 0;
@@ -125,6 +139,15 @@ void ds_viz::pages::GraphVisualizer::DeleteNode(int node){
     }
 }
 
+void ds_viz::pages::GraphVisualizer::DeleteEdge(int u, int v){
+    for(size_t i = 0; i < edges.size(); i++){
+        if(edges[i].first == std::make_pair(u, v) || edges[i].first == std::make_pair(v, u)){
+            edges.erase(edges.begin() + i);
+            break;
+        }
+    }
+}
+
 void ds_viz::pages::GraphVisualizer::Update(float dt)
 {
     // Display Frame update
@@ -138,63 +161,70 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
 
     //input box insert edge button update
     if(inputInsertEdgeButtonFlag){
-        int x = INSERT_EDGE_BUTTON_POSX + BUTTON_WIDTH, y = INSERT_EDGE_BUTTON_POSY, height = 100, width = 200;
-        raylib::Rectangle rect = raylib::Rectangle(x, y, height, width);
-        raylib::Color textColor = raylib::Color::Black(), bgColor = raylib::Color::White(), borderColor = raylib::Color::Gray();
-        DrawRectangleRec(rect, bgColor);
-        DrawRectangleLinesEx(rect, 2, borderColor);
-        bool focused = true;
-        int spaceLimit = 2;
+        // int x = INSERT_EDGE_BUTTON_POSX + BUTTON_WIDTH, y = INSERT_EDGE_BUTTON_POSY, height = 100, width = 200;
+        // raylib::Rectangle rect = raylib::Rectangle(x, y, height, width);
+        // raylib::Color textColor = raylib::Color::Black(), bgColor = raylib::Color::White(), borderColor = raylib::Color::Gray();
+        // DrawRectangleRec(rect, bgColor);
+        // DrawRectangleLinesEx(rect, 2, borderColor);
+        // bool focused = true;
+        // int spaceLimit = 2;
 
-        if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
-            focused = raylib::Mouse::GetPosition().CheckCollision(rect);
-        }
+        // if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
+        //     focused = raylib::Mouse::GetPosition().CheckCollision(rect);
+        // }
 
-        if (focused) {
-            int key = GetCharPressed();
-            while (key > 0) {
-                bool getNewChar = false;
-                if(key == (int)' '){
-                    if(std::count(textInputInsertEdge, textInputInsertEdge + strlen(textInputInsertEdge), ' ') + 1 <= spaceLimit){
-                        getNewChar = 1;
-                    }
-                }
-                else{
-                    if ((key >= '0') && (key <= '9') && (strlen(textInputInsertEdge) < 127)) {
-                        getNewChar = 1;
-                    }
-                }
-                if(getNewChar){
-                    int x = strlen(textInputInsertEdge);
-                    int k = strlen(textInputInsertEdge);
-                    textInputInsertEdge[k] = (char)key;
-                    textInputInsertEdge[k + 1] = '\0';
-                }
-                key = GetCharPressed();
-            }
+        // if (focused) {
+        //     int key = GetCharPressed();
+        //     while (key > 0) {
+        //         bool getNewChar = false;
+        //         if(key == (int)' '){
+        //             if(std::count(textInputInsertEdge, textInputInsertEdge + strlen(textInputInsertEdge), ' ') + 1 <= spaceLimit){
+        //                 getNewChar = 1;
+        //             }
+        //         }
+        //         else{
+        //             if ((key >= '0') && (key <= '9') && (strlen(textInputInsertEdge) < 127)) {
+        //                 getNewChar = 1;
+        //             }
+        //         }
+        //         if(getNewChar){
+        //             int x = strlen(textInputInsertEdge);
+        //             int k = strlen(textInputInsertEdge);
+        //             textInputInsertEdge[k] = (char)key;
+        //             textInputInsertEdge[k + 1] = '\0';
+        //         }
+        //         key = GetCharPressed();
+        //     }
 
-            if (IsKeyPressed(KEY_BACKSPACE)) {
-                if (strlen(textInputInsertEdge) > 0) {
-                    textInputInsertEdge[strlen(textInputInsertEdge) - 1] = '\0';
-                }
-            }
-            if(IsKeyPressed(KEY_ENTER) && std::count(textInputInsertEdge, textInputInsertEdge + strlen(textInputInsertEdge), ' ') == 2){
-                inputInsertEdgeButtonFlag = false;
-            }
-            raylib::DrawText(textInputInsertEdge, (int)(rect.x + 10), (int)(rect.y + 10), 20, textColor);
-        }
-        if(!inputInsertEdgeButtonFlag){
-            int values[3]; for(int i = 0; i < 3; i++) values[i] = 0;
-            int cnt = 0;
-            for(size_t i = 0; textInputInsertEdge[i] != '\0'; i++){
-                if(textInputInsertEdge[i] != ' '){
-                    values[cnt] = values[cnt] * 10 + (textInputInsertEdge[i] - '0');
-                }
-                else ++cnt;
-            }
-            textInputInsertEdge[0] = '\0';
+        //     if (IsKeyPressed(KEY_BACKSPACE)) {
+        //         if (strlen(textInputInsertEdge) > 0) {
+        //             textInputInsertEdge[strlen(textInputInsertEdge) - 1] = '\0';
+        //         }
+        //     }
+        //     if(IsKeyPressed(KEY_ENTER) && std::count(textInputInsertEdge, textInputInsertEdge + strlen(textInputInsertEdge), ' ') == 2){
+        //         inputInsertEdgeButtonFlag = false;
+        //     }
+        //     raylib::DrawText(textInputInsertEdge, (int)(rect.x + 10), (int)(rect.y + 10), 20, textColor);
+        // }
+        inputBoxInsertEdge->Update(dt);
+        if(!inputBoxInsertEdge->processing){
+            auto values = inputBoxInsertEdge->values;
             InsertNewEdge(values[0], values[1], values[2]);
+            inputInsertEdgeButtonFlag = false;
+            inputBoxInsertEdge->Reset();
         }
+        // if(!inputInsertEdgeButtonFlag){
+        //     int values[3]; for(int i = 0; i < 3; i++) values[i] = 0;
+        //     int cnt = 0;
+        //     for(size_t i = 0; textInputInsertEdge[i] != '\0'; i++){
+        //         if(textInputInsertEdge[i] != ' '){
+        //             values[cnt] = values[cnt] * 10 + (textInputInsertEdge[i] - '0');
+        //         }
+        //         else ++cnt;
+        //     }
+        //     textInputInsertEdge[0] = '\0';
+        //     InsertNewEdge(values[0], values[1], values[2]);
+        // }
         
 
     }
@@ -255,7 +285,7 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
         bool focused = true;
         int spaceLimit = 2;
 
-        if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
+        if (raylib::Mouse::IsButtonDown(MOUSE_LEFT_BUTTON)) {
             focused = raylib::Mouse::GetPosition().CheckCollision(rect);
         }
 
@@ -292,6 +322,71 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
             }
             textInputDeleteNode[0] = '\0';
             DeleteNode(nodeToDelete);
+        }
+        
+
+    }
+
+    deleteEdgeButton->Update(dt);
+
+    // input box delete edge button update
+    if(inputDeleteEdgeButtonFlag){
+        int x = DELETE_EDGE_BUTTON_POSX + BUTTON_WIDTH, y = DELETE_EDGE_BUTTON_POSY, height = 100, width = 200;
+        raylib::Rectangle rect = raylib::Rectangle(x, y, height, width);
+        raylib::Color textColor = raylib::Color::Black(), bgColor = raylib::Color::White(), borderColor = raylib::Color::Gray();
+        DrawRectangleRec(rect, bgColor);
+        DrawRectangleLinesEx(rect, 2, borderColor);
+        bool focused = true;
+        int spaceLimit = 1;
+
+        if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
+            focused = raylib::Mouse::GetPosition().CheckCollision(rect);
+        }
+
+        if (focused) {
+            int key = GetCharPressed();
+            while (key > 0) {
+                bool getNewChar = false;
+                if(key == (int)' '){
+                    if(std::count(textInputDeleteEdge, textInputDeleteEdge + strlen(textInputDeleteEdge), ' ') + 1 <= spaceLimit){
+                        getNewChar = 1;
+                    }
+                }
+                else{
+                    if ((key >= '0') && (key <= '9') && (strlen(textInputDeleteEdge) < 127)) {
+                        getNewChar = 1;
+                    }
+                }
+                if(getNewChar){
+                    int x = strlen(textInputDeleteEdge);
+                    int k = strlen(textInputDeleteEdge);
+                    textInputDeleteEdge[k] = (char)key;
+                    textInputDeleteEdge[k + 1] = '\0';
+                }
+                key = GetCharPressed();
+            }
+
+            if (IsKeyPressed(KEY_BACKSPACE)) {
+                if (strlen(textInputDeleteEdge) > 0) {
+                    textInputDeleteEdge[strlen(textInputDeleteEdge) - 1] = '\0';
+                }
+            }
+            if(IsKeyPressed(KEY_ENTER) && std::count(textInputDeleteEdge, textInputDeleteEdge + strlen(textInputDeleteEdge), ' ') == spaceLimit){
+                inputDeleteEdgeButtonFlag = false;
+            }
+            raylib::DrawText(textInputDeleteEdge, (int)(rect.x + 10), (int)(rect.y + 10), 20, textColor);
+        }
+        if(!inputDeleteEdgeButtonFlag){
+            int values[2]; for(int i = 0; i < 2; i++) values[i] = 0;
+            int cnt = 0;
+            for(size_t i = 0; textInputDeleteEdge[i] != '\0'; i++){
+                if(textInputDeleteEdge[i] != ' '){
+                    values[cnt] = values[cnt] * 10 + (textInputDeleteEdge[i] - '0');
+                }
+                else ++cnt;
+            }
+            textInputDeleteEdge[0] = '\0';
+            DeleteEdge(values[0], values[1]);
         }
         
 
@@ -365,6 +460,12 @@ void ds_viz::pages::GraphVisualizer::Render()
 
     // Delete node render
     deleteNodeButton->Render();
+
+    // Delete edge render
+    deleteEdgeButton->Render();
+
+    // Input box insert new edge render
+    inputBoxInsertEdge->Render();
 
     // vector nodes render
     for(auto &node : nodes){

@@ -7,18 +7,19 @@ namespace raywtk {
     class InputBox : public IScreenElement
     {
     public:
-        raylib::Rectangle rect; 
+        raylib::Rectangle rect;
         char text[128];
-        int spaceLimit;
-        int fontSize;
-        bool done;
+        int number; // number of numbers to extract
+        bool processing;
+        std::vector<int> values;
         raylib::Color textColor;
         raylib::Color bgColor;
         raylib::Color borderColor;
-        bool focused;
 
-        InputBox(raylib::Rectangle rect, int fontSize, raylib::Color textColor, raylib::Color bgColor, raylib::Color borderColor, int spaceLimit, bool done);
-
+        InputBox(raylib::Rectangle rect, raylib::Color textColor, raylib::Color bgColor, raylib::Color borderColor, int number, bool processing);
+        
+        void Reset();
+        std::vector<int> GetValues();
         void Update(float dt) override;
         void Render() override;
         const char* GetText() const;

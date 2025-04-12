@@ -16,17 +16,27 @@
 const int BUTTON_WIDTH = 300;
 const int BUTTON_HEIGHT = 200;
 
+const int INPUT_BOX_WIDTH = 100;
+const int INPUT_BOX_HEIGHT = 200;
+
 const int INSERT_NODE_BUTTON_POSX = 100;
 const int INSERT_NODE_BUTTON_POSY = 200;
 
 const int INSERT_EDGE_BUTTON_POSX = 100;
 const int INSERT_EDGE_BUTTON_POSY = 450;
 
+const int INPUT_BOX_INSERT_EDGE_POSX = INSERT_EDGE_BUTTON_POSX + BUTTON_WIDTH;
+const int INPUT_BOX_INSERT_EDGE_POSY = INSERT_EDGE_BUTTON_POSY;
+
+
 const int KRUSKAL_BUTTON_POSX = 100;
 const int KRUSKAL_BUTTON_POSY = 700;
 
 const int DELETE_NODE_BUTTON_POSX = 100;
 const int DELETE_NODE_BUTTON_POSY = 950;
+
+const int DELETE_EDGE_BUTTON_POSX = 100;
+const int DELETE_EDGE_BUTTON_POSY = 1200;
 
 namespace ds_viz::pages 
 {
@@ -45,6 +55,9 @@ namespace ds_viz::pages
         // Insert new edge
         std::unique_ptr<raywtk::Button> insertEdgeButton;
 
+        // Input box for insert new edge
+        std::unique_ptr<raywtk::InputBox> inputBoxInsertEdge;
+
         // Input insert edge button flag
         bool inputInsertEdgeButtonFlag;
 
@@ -62,6 +75,15 @@ namespace ds_viz::pages
 
         // Input delete node button flag
         bool inputDeleteNodeButtonFlag;
+
+        // Delete edge button
+        std::unique_ptr<raywtk::Button> deleteEdgeButton;
+
+        // Input delete edge string
+        char textInputDeleteEdge[128];
+
+        // Input delete edge button flag
+        bool inputDeleteEdgeButtonFlag;
 
         // Kruskal index processing
         int indexProcessing;
@@ -96,6 +118,7 @@ namespace ds_viz::pages
             void InsertNewEdge(int u, int v, int c); // insert new edge
             void Kruskal();
             void DeleteNode(int node); // delete node
+            void DeleteEdge(int u, int v); // delete edge
             void Update(float dt) override;
             void Render() override;
     };
