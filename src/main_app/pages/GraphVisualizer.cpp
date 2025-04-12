@@ -25,7 +25,7 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     // Insert new node initialize
     insertNodeButton = std::make_unique<raywtk::Button>();
     insertNodeButton->buttonText = "Insert New Node";
-    insertNodeButton->buttonRect = raylib::Rectangle(100, 500, 300, 200);
+    insertNodeButton->buttonRect = raylib::Rectangle(INSERT_NODE_BUTTON_POSX, INSERT_NODE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     insertNodeButton->Click.append([this]() { InsertNewNode(); });
     insertNodeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
@@ -36,16 +36,27 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     inputInsertEdgeButtonFlag = false;
     insertEdgeButton = std::make_unique<raywtk::Button>();
     insertEdgeButton->buttonText = "Insert New Edge";
-    insertEdgeButton->buttonRect = raylib::Rectangle(100, 850, 300, 200);
+    insertEdgeButton->buttonRect = raylib::Rectangle(INSERT_EDGE_BUTTON_POSX, INSERT_EDGE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     insertEdgeButton->Click.append([this]() { inputInsertEdgeButtonFlag = true; });
     insertEdgeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
     // Kruskal initialize
     KruskalButton = std::make_unique<raywtk::Button>();
     KruskalButton->buttonText = "Kruskal";
-    KruskalButton->buttonRect = raylib::Rectangle(100, 1200, 300, 200);
+    KruskalButton->buttonRect = raylib::Rectangle(KRUSKAL_BUTTON_POSX, KRUSKAL_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     KruskalButton->Click.append([this]() { Kruskal(); });
     KruskalButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // Delete node initialize
+    inputDeleteNodeButtonFlag = false;
+    deleteNodeButton = std::make_unique<raywtk::Button>();
+    deleteNodeButton->buttonText = "Delete Node";
+    deleteNodeButton->buttonRect = raylib::Rectangle(DELETE_NODE_BUTTON_POSX, DELETE_NODE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
+    deleteNodeButton->Click.append([this]() { inputDeleteNodeButtonFlag = true; });
+    deleteNodeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // text input delete node string initialize
+    textInputDeleteNode[0] = '\0';
 
     // Kruskal index processing
     indexProcessing = 0;
@@ -90,6 +101,30 @@ void ds_viz::pages::GraphVisualizer::Kruskal(){
     animationTimer = 0.0;
 }
 
+void ds_viz::pages::GraphVisualizer::DeleteNode(int node){
+    auto it = setValue.find(node);
+    if(it != setValue.end()){
+        setValue.erase(it);
+        for(size_t i = 0; i < nodes.size(); i++){
+            if(nodes[i]->value == node){
+                nodes.erase(nodes.begin() + i);
+                break;
+            }
+        }
+        while(true){
+            bool found = 0;
+            for(size_t i = 0; i < edges.size(); i++){
+                if(edges[i].first.first == node || edges[i].first.second == node){
+                    edges.erase(edges.begin() + i);
+                    found = 1;
+                    break;
+                }
+            }
+            if(!found) break;
+        }
+    }
+}
+
 void ds_viz::pages::GraphVisualizer::Update(float dt)
 {
     // Display Frame update
@@ -103,8 +138,8 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
 
     //input box insert edge button update
     if(inputInsertEdgeButtonFlag){
-        int x = 400, y = 850, height = 100, weight = 200;
-        raylib::Rectangle rect = raylib::Rectangle(x, y, height, weight);
+        int x = INSERT_EDGE_BUTTON_POSX + BUTTON_WIDTH, y = INSERT_EDGE_BUTTON_POSY, height = 100, width = 200;
+        raylib::Rectangle rect = raylib::Rectangle(x, y, height, width);
         raylib::Color textColor = raylib::Color::Black(), bgColor = raylib::Color::White(), borderColor = raylib::Color::Gray();
         DrawRectangleRec(rect, bgColor);
         DrawRectangleLinesEx(rect, 2, borderColor);
@@ -207,6 +242,60 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
             }
         }
     }
+
+    deleteNodeButton->Update(dt);
+
+    //input box delete node button update
+    if(inputDeleteNodeButtonFlag){
+        int x = DELETE_NODE_BUTTON_POSX + BUTTON_WIDTH, y = DELETE_NODE_BUTTON_POSY, height = 100, width = 200;
+        raylib::Rectangle rect = raylib::Rectangle(x, y, height, width);
+        raylib::Color textColor = raylib::Color::Black(), bgColor = raylib::Color::White(), borderColor = raylib::Color::Gray();
+        DrawRectangleRec(rect, bgColor);
+        DrawRectangleLinesEx(rect, 2, borderColor);
+        bool focused = true;
+        int spaceLimit = 2;
+
+        if (raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON)) {
+            focused = raylib::Mouse::GetPosition().CheckCollision(rect);
+        }
+
+        if (focused) {
+            int key = GetCharPressed();
+            while (key > 0) {
+                bool getNewChar = false;
+                if ((key >= '0') && (key <= '9') && (strlen(textInputDeleteNode) < 127)) {
+                    getNewChar = 1;
+                }
+                if(getNewChar){
+                    int x = strlen(textInputDeleteNode);
+                    int k = strlen(textInputDeleteNode);
+                    textInputDeleteNode[k] = (char)key;
+                    textInputDeleteNode[k + 1] = '\0';
+                }
+                key = GetCharPressed();
+            }
+
+            if (IsKeyPressed(KEY_BACKSPACE)) {
+                if (strlen(textInputDeleteNode) > 0) {
+                    textInputDeleteNode[strlen(textInputDeleteNode) - 1] = '\0';
+                }
+            }
+            if(IsKeyPressed(KEY_ENTER)){
+                inputDeleteNodeButtonFlag = false;
+            }
+            raylib::DrawText(textInputDeleteNode, (int)(rect.x + 10), (int)(rect.y + 10), 20, textColor);
+        }
+        if(!inputDeleteNodeButtonFlag){
+            int nodeToDelete = 0;
+            for(size_t i = 0; textInputDeleteNode[i] != '\0'; i++){
+                nodeToDelete = nodeToDelete * 10 + textInputDeleteNode[i] - '0';
+            }
+            textInputDeleteNode[0] = '\0';
+            DeleteNode(nodeToDelete);
+        }
+        
+
+    }
     
     // vector nodes update
     for(auto &node : nodes){
@@ -273,6 +362,9 @@ void ds_viz::pages::GraphVisualizer::Render()
 
     // Kruskal render
     KruskalButton->Render();
+
+    // Delete node render
+    deleteNodeButton->Render();
 
     // vector nodes render
     for(auto &node : nodes){

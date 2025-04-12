@@ -13,6 +13,21 @@
 #include "main_app/themes/dark_simple/text_button.hpp"
 #include "./page.hpp"
 
+const int BUTTON_WIDTH = 300;
+const int BUTTON_HEIGHT = 200;
+
+const int INSERT_NODE_BUTTON_POSX = 100;
+const int INSERT_NODE_BUTTON_POSY = 200;
+
+const int INSERT_EDGE_BUTTON_POSX = 100;
+const int INSERT_EDGE_BUTTON_POSY = 450;
+
+const int KRUSKAL_BUTTON_POSX = 100;
+const int KRUSKAL_BUTTON_POSY = 700;
+
+const int DELETE_NODE_BUTTON_POSX = 100;
+const int DELETE_NODE_BUTTON_POSY = 950;
+
 namespace ds_viz::pages 
 {
     class GraphVisualizer : public Page
@@ -38,6 +53,15 @@ namespace ds_viz::pages
 
         // Kruskal
         std::unique_ptr<raywtk::Button> KruskalButton;
+
+        // Delete node button
+        std::unique_ptr<raywtk::Button> deleteNodeButton;
+
+        // Input delete node string
+        char textInputDeleteNode[128];
+
+        // Input delete node button flag
+        bool inputDeleteNodeButtonFlag;
 
         // Kruskal index processing
         int indexProcessing;
@@ -71,6 +95,7 @@ namespace ds_viz::pages
             void InsertNewNode(); // insert new node
             void InsertNewEdge(int u, int v, int c); // insert new edge
             void Kruskal();
+            void DeleteNode(int node); // delete node
             void Update(float dt) override;
             void Render() override;
     };
