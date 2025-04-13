@@ -1,6 +1,10 @@
 #include "../page.hpp"
 #include "main_app/pages/trie/trie_scene.hpp"
+#include "raylib-cpp/Font.hpp"
+#include "raylib-cpp/Rectangle.hpp"
+#include "raylib-cpp/Vector2.hpp"
 #include "widget_toolkit/controls/button.hpp"
+#include "widget_toolkit/controls/text_box.hpp"
 
 #include <vector>
 #include <algorithm>
@@ -224,26 +228,51 @@ class TriePage : public Page
 
     raywtk::Button _toggleShowActionsButton;
     raywtk::Button _initializeButton;
+    raywtk::Button _searchButton;
     raywtk::Button _addButton;
     raywtk::Button _removeButton;
-    raywtk::Button _searchButton;
     raywtk::Button _clearButton;
 
+    raywtk::TextBox _searchTextBox; bool _searchBoxVisible = false;
+    raywtk::TextBox _addTextBox; bool _addBoxVisible = false;
+    raywtk::TextBox _removeTextBox; bool _removeBoxVisible = false;
+    
     raywtk::Button _showCodeBoxButton;
 
+    raywtk::Button _prevStepButton;
+    raywtk::Button _nextStepButton;
+    raywtk::Button _playPauseButton;
+
     trie::TrieScene _scene;
+
+    std::unique_ptr<raylib::Font> buttonFont = std::make_unique<raylib::Font>("./ttf/Inter-Regular.ttf", 16);
+
+    void RenderTextInCenter (const raylib::Rectangle& rect, const raylib::Font& font,
+        const std::string& text, raylib::Color color)
+    {
+        auto txt = raylib::Text(text, font.GetBaseSize(), color, font, 0);
+        txt.Draw(rect.x + rect.width / 2 - txt.MeasureEx().x / 2,
+            rect.y + rect.height / 2 - txt.MeasureEx().y / 2);
+    }
+
+    void RenderTextOnRight (const raylib::Vector2& topRightAnchor, const raylib::Font& font,
+        const std::string& text, raylib::Color color)
+    {
+        auto txt = raylib::Text(text, font.GetBaseSize(), color, font, 0);
+        txt.Draw(topRightAnchor.x - txt.MeasureEx().x, topRightAnchor.y);
+    }
 
     void ToggleShowActions()
     {
         actionsShown = !actionsShown;
     }
 
-    void Initialize() 
+    void InitializeRandomly() 
     {
         std::vector<int> chosenWords;
         _scene.root = std::make_unique<trie::TrieNode>();
-        for (int i = 0; i < 10; ++i) {
-            
+        for (int i = 0; i < 10; ++i) 
+        {    
             int randomIndex;
             do randomIndex = GetRandomValue(0, wordList.size() - 1);
                 while (std::find(chosenWords.begin(), chosenWords.end(), randomIndex) != chosenWords.end());

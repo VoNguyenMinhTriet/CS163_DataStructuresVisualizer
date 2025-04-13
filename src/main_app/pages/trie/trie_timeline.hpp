@@ -5,11 +5,13 @@
 
 #include <functional>
 #include <ios>
+#include <iterator>
 #include <list>
 #include <memory>
 #include <optional>
 #include <sstream>
 #include <string>
+#include <utility>
 
 namespace ds_viz::pages::trie
 {
@@ -20,6 +22,9 @@ class TrieScene;
 class ITimeline
 {
   public:
+    virtual ~ITimeline() = default;
+    virtual std::pair<int, int> Progress() const = 0;
+    virtual std::string GetCaption() const = 0;
     virtual std::string GetStatusMessage() const = 0;
     virtual void RenderCurrentState(TrieScene& scene) = 0;
     virtual void StepForward() = 0;
@@ -194,7 +199,7 @@ class SearchTimeline : public ITimeline
     raylib::Color nodeUnavailColor = raylib::Color::Red();
 
     std::list<std::unique_ptr<IAction>> stepTimeline;
-    std::list<std::unique_ptr<IAction>>::iterator currentStep;
+    std::list<std::unique_ptr<IAction>>::const_iterator currentStep;
 
     TrieScene& scene;
 
@@ -207,6 +212,17 @@ class SearchTimeline : public ITimeline
 
   public:
     SearchTimeline(TrieScene& scene, const std::string& key);
+
+    std::pair<int, int> Progress() const override
+    {
+        return {std::distance(stepTimeline.begin(), currentStep),
+                stepTimeline.size()};
+    }
+
+    std::string GetCaption() const override
+    {
+        return "Searching for \"" + _key + "\" in the trie";
+    }
 
     std::string GetStatusMessage() const override;
 
@@ -326,7 +342,7 @@ class AddTimeline : public ITimeline
     TrieNode* var_curNode = nullptr;
 
     std::list<std::unique_ptr<IAction>> stepTimeline;
-    std::list<std::unique_ptr<IAction>>::iterator currentStep;
+    std::list<std::unique_ptr<IAction>>::const_iterator currentStep;
 
     raylib::Color nodeDefaultColor = raylib::Color::White();
     raylib::Color nodeHighlightColor = raylib::Color::Yellow();
@@ -340,6 +356,17 @@ class AddTimeline : public ITimeline
 
   public:
     AddTimeline(TrieScene& scene, const std::string& key);
+
+    std::pair<int, int> Progress() const override
+    {
+        return {std::distance(stepTimeline.begin(), currentStep),
+                stepTimeline.size()};
+    }
+
+    std::string GetCaption() const override
+    {
+        return "Adding \"" + _key + "\"";
+    }
 
     std::string GetStatusMessage() const override;
 
@@ -457,7 +484,7 @@ class RemoveTimeline : public ITimeline
     TrieNode* var_curNode = nullptr;
 
     std::list<std::unique_ptr<IAction>> stepTimeline;
-    std::list<std::unique_ptr<IAction>>::iterator currentStep;
+    std::list<std::unique_ptr<IAction>>::const_iterator currentStep;
 
     raylib::Color nodeDefaultColor = raylib::Color::White();
     raylib::Color nodeHighlightColor = raylib::Color::Yellow();
@@ -467,6 +494,17 @@ class RemoveTimeline : public ITimeline
 
   public:
     RemoveTimeline(TrieScene& scene, const std::string& key);
+
+    std::pair<int, int> Progress() const override
+    {
+        return {std::distance(stepTimeline.begin(), currentStep),
+                stepTimeline.size()};
+    }
+
+    std::string GetCaption() const override
+    {
+        return "Removing \"" + _key + "\" from the trie";
+    }
 
     std::string GetStatusMessage() const override;
 

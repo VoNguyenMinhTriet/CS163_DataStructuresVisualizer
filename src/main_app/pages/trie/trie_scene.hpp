@@ -71,12 +71,24 @@ namespace ds_viz::pages::trie
 
         void DefaultRender();
 
+        static void RenderNodeNormal(TrieNode *node, raylib::Color color)
+        {
+            node->GetPosition().DrawCircle(10.0f, color);
+            node->GetPosition().DrawCircle(9.0f, raylib::Color::Black());
+        }
+        static void RenderNodeTerminal(TrieNode *node, raylib::Color color)
+        {
+            node->GetPosition().DrawCircle(10.0f, color);
+        }
+
+        std::pair<int, int> Progress() const;
         void Render() override;
         void BuildSearchTimeline(const std::string &key);
         void BuildAddTimeline(const std::string& key);
         void BuildRemoveTimeline(const std::string& key);
         void StepForward();
         void StepBackward();
+        std::string GetCaption() const;
         std::string GetStatusMessage() const;
     };
 }

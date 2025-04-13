@@ -14,7 +14,7 @@ ds_viz::pages::MainMenuPage::MainMenuPage(ds_viz::MainWindow &context)
     : Page(context)
 {
     font = std::unique_ptr<raylib::Font>(
-        new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
+        new raylib::Font("./ttf/InterDisplay-Black.ttf", 128));
     title =
         raylib::Text("DATA LA VISTA", 128, raylib::Color::White(), *font, 0);
 
