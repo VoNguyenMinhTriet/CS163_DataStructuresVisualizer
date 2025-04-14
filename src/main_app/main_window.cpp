@@ -28,7 +28,7 @@ int ds_viz::MainWindow::Run ()
     raywtk::ThemeManager::currentTheme = std::unique_ptr<raywtk::Theme>(ds_viz::themes::dark_simple::DarkSimpleTheme());
     ref_raylib_window = std::make_unique<raylib::Window>(initScreenWidth, initScreenHeight, title, raylibFlags);
     ref_raylib_window->SetTargetFPS(fixedFPS);
-    ref_raylib_window->SetMinSize(1280, 720);
+    ref_raylib_window->SetMinSize(DEFAULT_WIN_WIDTH, DEFAULT_WIN_HEIGHT);
 
     ChangePage(std::make_shared<pages::MainMenuPage>());
 
