@@ -8,6 +8,8 @@
 #include <memory>
 #include <raylib.h>
 
+using namespace std;
+
 namespace raywtk
 {
     enum class ButtonClass
@@ -23,6 +25,9 @@ namespace raywtk
     public:
         raylib::Rectangle buttonRect;
         bool enabled = true;
+
+        // Text for button
+        string buttonText = "Button";
 
         // Events
         eventpp::CallbackList<void()> Click;

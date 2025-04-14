@@ -5,7 +5,7 @@
 #include "widget_toolkit/controls/button.hpp"
 #include "widget_toolkit/interfaces.hpp"
 #include "widget_toolkit/theme_manager.hpp"
-#include "./button.hpp"
+#include "./text_button.hpp"
 #include <memory>
 
 namespace ds_viz::themes::dark_simple
