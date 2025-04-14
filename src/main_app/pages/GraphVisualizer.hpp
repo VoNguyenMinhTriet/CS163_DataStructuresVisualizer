@@ -25,10 +25,6 @@ const int INSERT_NODE_BUTTON_POSY = 200;
 const int INSERT_EDGE_BUTTON_POSX = 100;
 const int INSERT_EDGE_BUTTON_POSY = 450;
 
-const int INPUT_BOX_INSERT_EDGE_POSX = INSERT_EDGE_BUTTON_POSX + BUTTON_WIDTH;
-const int INPUT_BOX_INSERT_EDGE_POSY = INSERT_EDGE_BUTTON_POSY;
-
-
 const int KRUSKAL_BUTTON_POSX = 100;
 const int KRUSKAL_BUTTON_POSY = 700;
 
@@ -37,6 +33,15 @@ const int DELETE_NODE_BUTTON_POSY = 950;
 
 const int DELETE_EDGE_BUTTON_POSX = 100;
 const int DELETE_EDGE_BUTTON_POSY = 1200;
+
+const int INPUT_BOX_INSERT_EDGE_POSX = INSERT_EDGE_BUTTON_POSX + BUTTON_WIDTH;
+const int INPUT_BOX_INSERT_EDGE_POSY = INSERT_EDGE_BUTTON_POSY;
+
+const int INPUT_BOX_DELETE_NODE_POSX = DELETE_NODE_BUTTON_POSX + BUTTON_WIDTH;
+const int INPUT_BOX_DELETE_NODE_POSY = DELETE_NODE_BUTTON_POSY;
+
+const int INPUT_BOX_DELETE_EDGE_POSX = DELETE_EDGE_BUTTON_POSX + BUTTON_WIDTH;
+const int INPUT_BOX_DELETE_EDGE_POSY = DELETE_EDGE_BUTTON_POSY;
 
 namespace ds_viz::pages 
 {
@@ -48,41 +53,25 @@ namespace ds_viz::pages
         
         // Display frame
         std::unique_ptr<raywtk::DisplayFrame> displayFrame;
-
         // Insert new node
         std::unique_ptr<raywtk::Button> insertNodeButton;
-
         // Insert new edge
         std::unique_ptr<raywtk::Button> insertEdgeButton;
-
-        // Input box for insert new edge
-        std::unique_ptr<raywtk::InputBox> inputBoxInsertEdge;
-
-        // Input insert edge button flag
-        bool inputInsertEdgeButtonFlag;
-
-        // Input insert edge string
-        char textInputInsertEdge[128];
-
         // Kruskal
         std::unique_ptr<raywtk::Button> KruskalButton;
-
         // Delete node button
         std::unique_ptr<raywtk::Button> deleteNodeButton;
-
-        // Input delete node string
-        char textInputDeleteNode[128];
-
-        // Input delete node button flag
-        bool inputDeleteNodeButtonFlag;
-
         // Delete edge button
         std::unique_ptr<raywtk::Button> deleteEdgeButton;
 
-        // Input delete edge string
-        char textInputDeleteEdge[128];
-
-        // Input delete edge button flag
+        // Input box for insert new edge
+        std::unique_ptr<raywtk::InputBox> inputBoxInsertEdge;
+        bool inputInsertEdgeButtonFlag;
+        // Input box for delete node
+        std::unique_ptr<raywtk::InputBox> inputBoxDeleteNode;
+        bool inputDeleteNodeButtonFlag;
+        // Input box for delete edge
+        std::unique_ptr<raywtk::InputBox> inputBoxDeleteEdge;
         bool inputDeleteEdgeButtonFlag;
 
         // Kruskal index processing
