@@ -3,10 +3,15 @@
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "../interfaces.hpp"
 
-static const int WORKING_FRAME_HEIGHT = 1100;
-static const int WORKING_FRAME_WIDTH = 2000;
+static const int WORKING_FRAME_HEIGHT = 700;
+static const int WORKING_FRAME_WIDTH = 1000;
 static const int WORKING_FRAME_COORDX = 500;
 static const int WORKING_FRAME_COORDY = 200;
+
+static const int NOTIFICATION_FRAME_HEIGHT = 200;
+static const int NOTIFICATION_FRAME_WIDTH = 700;
+static const int NOTIFICATION_FRAME_COORDX = 500;
+static const int NOTIFICATION_FRAME_COORDY = 1000;
 
 namespace raywtk 
 {
@@ -14,12 +19,11 @@ namespace raywtk
     {
         public:
         raylib::Rectangle frame;
-        raylib::Vector2 pos;
         raylib::Color color = raylib::Color::Gray();
-        float thickness = 2.0f;
+        float thickness = 5.0f;
         bool visible = true;
 
-        DisplayFrame(raylib::Rectangle frame = raylib::Rectangle(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY, WORKING_FRAME_WIDTH, WORKING_FRAME_HEIGHT)) : frame(frame) {}
+        DisplayFrame(raylib::Rectangle frame, raylib::Color color, float thickness) : frame(frame), color(color), thickness(thickness) {}
 
         void Update(float deltaTime) override
         {

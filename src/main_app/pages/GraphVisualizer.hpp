@@ -8,10 +8,11 @@
 #include "widget_toolkit/controls/button.hpp"
 #include "widget_toolkit/graph_widgets/node.hpp"
 #include "widget_toolkit/graph_widgets/edge.hpp"
-#include "InputBox.hpp"
 #include "widget_toolkit/display_frame/display_frame.hpp"
+#include "widget_toolkit/input_box/InputBox.hpp"
 #include "main_app/themes/dark_simple/text_button.hpp"
 #include "./page.hpp"
+#include "widget_toolkit/notification/Notification.hpp"
 
 const int BUTTON_WIDTH = 300;
 const int BUTTON_HEIGHT = 200;
@@ -43,6 +44,9 @@ const int INPUT_BOX_DELETE_NODE_POSY = DELETE_NODE_BUTTON_POSY;
 const int INPUT_BOX_DELETE_EDGE_POSX = DELETE_EDGE_BUTTON_POSX + BUTTON_WIDTH;
 const int INPUT_BOX_DELETE_EDGE_POSY = DELETE_EDGE_BUTTON_POSY;
 
+const int NOTIFICATION_COORDX = NOTIFICATION_FRAME_COORDX + 20;
+const int NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 20;
+
 namespace ds_viz::pages 
 {
     class GraphVisualizer : public Page
@@ -52,7 +56,9 @@ namespace ds_viz::pages
         raylib::Text title;
         
         // Display frame
-        std::unique_ptr<raywtk::DisplayFrame> displayFrame;
+        std::unique_ptr<raywtk::DisplayFrame> workingFrame;
+        // Notification frame
+        std::unique_ptr<raywtk::DisplayFrame> notificationFrame;
         // Insert new node
         std::unique_ptr<raywtk::Button> insertNodeButton;
         // Insert new edge
@@ -64,6 +70,9 @@ namespace ds_viz::pages
         // Delete edge button
         std::unique_ptr<raywtk::Button> deleteEdgeButton;
 
+        // Notification
+        std::unique_ptr<raywtk::Notification> currentNotification;
+
         // Input box for insert new edge
         std::unique_ptr<raywtk::InputBox> inputBoxInsertEdge;
         bool inputInsertEdgeButtonFlag;
@@ -73,6 +82,9 @@ namespace ds_viz::pages
         // Input box for delete edge
         std::unique_ptr<raywtk::InputBox> inputBoxDeleteEdge;
         bool inputDeleteEdgeButtonFlag;
+
+        // Notification
+        std::unique_ptr<raywtk::Notification> notification = nullptr;
 
         // Kruskal index processing
         int indexProcessing;

@@ -19,8 +19,10 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     font = std::make_unique<raylib::Font>("./ttf/InterDisplay-Black.ttf", 128, nullptr, 250);
     title = raylib::Text("Graph Visualizer", 64, raylib::Color::White(), *font, 0);
     
-    // displayFrame initialize
-    displayFrame = std::make_unique<raywtk::DisplayFrame>();
+    // workingFrame initialize
+    workingFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY, WORKING_FRAME_WIDTH, WORKING_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
+    // notificationFrame initialize
+    notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
     // Insert new node button initialize
     insertNodeButton = std::make_unique<raywtk::Button>();
@@ -34,7 +36,10 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     insertEdgeButton = std::make_unique<raywtk::Button>();
     insertEdgeButton->buttonText = "Insert New Edge";
     insertEdgeButton->buttonRect = raylib::Rectangle(INSERT_EDGE_BUTTON_POSX, INSERT_EDGE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
-    insertEdgeButton->Click.append([this]() { inputInsertEdgeButtonFlag = true; inputBoxInsertEdge->processing = true; });
+    insertEdgeButton->Click.append([this]() { if(inputInsertEdgeButtonFlag == false && inputDeleteNodeButtonFlag == false && inputDeleteEdgeButtonFlag == false){
+                                                inputInsertEdgeButtonFlag = true; inputBoxInsertEdge->processing = true;
+                                                notification = std::make_unique<raywtk::Notification>("Insert new edge", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+                                            } });
     insertEdgeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
     // Kruskal initialize
@@ -49,7 +54,10 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     deleteNodeButton = std::make_unique<raywtk::Button>();
     deleteNodeButton->buttonText = "Delete Node";
     deleteNodeButton->buttonRect = raylib::Rectangle(DELETE_NODE_BUTTON_POSX, DELETE_NODE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
-    deleteNodeButton->Click.append([this]() { inputDeleteNodeButtonFlag = true; inputBoxDeleteNode->processing = true; });
+    deleteNodeButton->Click.append([this]() { if(inputInsertEdgeButtonFlag == false && inputDeleteNodeButtonFlag == false && inputDeleteEdgeButtonFlag == false){
+                                                inputDeleteNodeButtonFlag = true; inputBoxDeleteNode->processing = true;
+                                                notification = std::make_unique<raywtk::Notification>("Delete node", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+                                            } });
     deleteNodeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
     // Delete edges button initialize
@@ -57,7 +65,10 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     deleteEdgeButton = std::make_unique<raywtk::Button>();
     deleteEdgeButton->buttonText = "Delete Edge";
     deleteEdgeButton->buttonRect = raylib::Rectangle(DELETE_EDGE_BUTTON_POSX, DELETE_EDGE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
-    deleteEdgeButton->Click.append([this]() { inputDeleteEdgeButtonFlag = true; inputBoxDeleteEdge->processing = true; });
+    deleteEdgeButton->Click.append([this]() { if(inputInsertEdgeButtonFlag == false && inputDeleteNodeButtonFlag == false && inputDeleteEdgeButtonFlag == false){
+                                                inputDeleteEdgeButtonFlag = true; inputBoxDeleteEdge->processing = true; 
+                                                notification = std::make_unique<raywtk::Notification>("Delete edge", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+                                            } });
     deleteEdgeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
     // Input box insert new edge initialize
@@ -74,27 +85,52 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
 
 }
 
-void ds_viz::pages::GraphVisualizer::InsertNewNode(){
+void ds_viz::pages::GraphVisualizer::InsertNewNode() {
     int value = 0;
-    while(setValue.find(value) != setValue.end()) value++;
+    while (setValue.find(value) != setValue.end()) value++;
     setValue.insert(value);
     std::unique_ptr<raywtk::NodeWidget> newNode = std::make_unique<raywtk::NodeWidget>(value);
     raylib::Vector2 randomPosition = raylib::Vector2(WORKING_FRAME_COORDX + rand() % WORKING_FRAME_WIDTH, WORKING_FRAME_COORDY + rand() % WORKING_FRAME_HEIGHT);
-    if(randomPosition.x - newNode->radius < WORKING_FRAME_COORDX) randomPosition.x += newNode->radius;
-    if(randomPosition.x + newNode->radius > WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH) randomPosition.x -= newNode->radius;
-    if(randomPosition.y - newNode->radius < WORKING_FRAME_COORDY) randomPosition.y += newNode->radius;
-    if(randomPosition.y + newNode->radius > WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT) randomPosition.y -= newNode->radius;
+    if (randomPosition.x - newNode->radius < WORKING_FRAME_COORDX) randomPosition.x += newNode->radius;
+    if (randomPosition.x + newNode->radius > WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH) randomPosition.x -= newNode->radius;
+    if (randomPosition.y - newNode->radius < WORKING_FRAME_COORDY) randomPosition.y += newNode->radius;
+    if (randomPosition.y + newNode->radius > WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT) randomPosition.y -= newNode->radius;
     newNode->position = randomPosition;
     nodes.push_back(std::move(newNode));
+
+    // Notification for node addition
+    notification = std::make_unique<raywtk::Notification>(
+        "Node " + std::to_string(value) + " added successfully",
+        raywtk::NotificationType::SUCCESS,
+        NOTIFICATION_COORDX,
+        NOTIFICATION_COORDY
+    );
 }
 
-void ds_viz::pages::GraphVisualizer::InsertNewEdge(int u, int v, int c){
-    bool foundU = 0, foundV = 0;
-    for(auto &node : nodes){
+void ds_viz::pages::GraphVisualizer::InsertNewEdge(int u, int v, int c) {
+    bool foundU = false, foundV = false;
+    for (auto &node : nodes) {
         foundU |= node->value == u;
         foundV |= node->value == v;
     }
-    if(foundU && foundV) edges.push_back(std::make_pair(std::make_pair(u, v), c));
+    if (foundU && foundV) {
+        edges.push_back(std::make_pair(std::make_pair(u, v), c));
+        // Notification for edge addition success
+        notification = std::make_unique<raywtk::Notification>(
+            "Edge (" + std::to_string(u) + ", " + std::to_string(v) + ", " + std::to_string(c) + ") added successfully",
+            raywtk::NotificationType::SUCCESS,
+            NOTIFICATION_COORDX,
+            NOTIFICATION_COORDY
+        );
+    } else {
+        // Notification for edge addition failure
+        notification = std::make_unique<raywtk::Notification>(
+            "Failed to add edge (" + std::to_string(u) + ", " + std::to_string(v) + ", " + std::to_string(c) + ")",
+            raywtk::NotificationType::ERROR,
+            NOTIFICATION_COORDX,
+            NOTIFICATION_COORDY
+        );
+    }
 }
 
 void ds_viz::pages::GraphVisualizer::Kruskal(){
@@ -110,43 +146,77 @@ void ds_viz::pages::GraphVisualizer::Kruskal(){
     animationTimer = 0.0;
 }
 
-void ds_viz::pages::GraphVisualizer::DeleteNode(int node){
+void ds_viz::pages::GraphVisualizer::DeleteNode(int node) {
     auto it = setValue.find(node);
-    if(it != setValue.end()){
+    if (it != setValue.end()) {
         setValue.erase(it);
-        for(size_t i = 0; i < nodes.size(); i++){
-            if(nodes[i]->value == node){
+        for (size_t i = 0; i < nodes.size(); i++) {
+            if (nodes[i]->value == node) {
                 nodes.erase(nodes.begin() + i);
                 break;
             }
         }
-        while(true){
-            bool found = 0;
-            for(size_t i = 0; i < edges.size(); i++){
-                if(edges[i].first.first == node || edges[i].first.second == node){
+        while (true) {
+            bool found = false;
+            for (size_t i = 0; i < edges.size(); i++) {
+                if (edges[i].first.first == node || edges[i].first.second == node) {
                     edges.erase(edges.begin() + i);
-                    found = 1;
+                    found = true;
                     break;
                 }
             }
-            if(!found) break;
+            if (!found) break;
         }
+        // Notification for node deletion success
+        notification = std::make_unique<raywtk::Notification>(
+            "Node " + std::to_string(node) + " deleted successfully",
+            raywtk::NotificationType::SUCCESS,
+            NOTIFICATION_COORDX,
+            NOTIFICATION_COORDY
+        );
+    } else {
+        // Notification for node deletion failure
+        notification = std::make_unique<raywtk::Notification>(
+            "Failed to delete node " + std::to_string(node),
+            raywtk::NotificationType::ERROR,
+            NOTIFICATION_COORDX,
+            NOTIFICATION_COORDY
+        );
     }
 }
 
-void ds_viz::pages::GraphVisualizer::DeleteEdge(int u, int v){
-    for(size_t i = 0; i < edges.size(); i++){
-        if(edges[i].first == std::make_pair(u, v) || edges[i].first == std::make_pair(v, u)){
+void ds_viz::pages::GraphVisualizer::DeleteEdge(int u, int v) {
+    bool deleted = false;
+    for (size_t i = 0; i < edges.size(); i++) {
+        if (edges[i].first == std::make_pair(u, v) || edges[i].first == std::make_pair(v, u)) {
             edges.erase(edges.begin() + i);
+            deleted = true;
             break;
         }
+    }
+    if (deleted) {
+        // Notification for edge deletion success
+        notification = std::make_unique<raywtk::Notification>(
+            "Edge (" + std::to_string(u) + ", " + std::to_string(v) + ") deleted successfully",
+            raywtk::NotificationType::SUCCESS,
+            NOTIFICATION_COORDX,
+            NOTIFICATION_COORDY
+        );
+    } else {
+        // Notification for edge deletion failure
+        notification = std::make_unique<raywtk::Notification>(
+            "Failed to delete edge (" + std::to_string(u) + ", " + std::to_string(v) + ")",
+            raywtk::NotificationType::ERROR,
+            NOTIFICATION_COORDX,
+            NOTIFICATION_COORDY
+        );
     }
 }
 
 void ds_viz::pages::GraphVisualizer::Update(float dt)
 {
     // Display Frame update
-    displayFrame->Update(dt);
+    workingFrame->Update(dt);
 
     // Insert node button update
     insertNodeButton->Update(dt);
@@ -155,7 +225,7 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
     insertEdgeButton->Update(dt);
 
     // Input box insert edge button update
-    if (inputInsertEdgeButtonFlag) {
+    if (inputInsertEdgeButtonFlag && !inputDeleteNodeButtonFlag && !inputDeleteEdgeButtonFlag) {
         inputBoxInsertEdge->Update(dt);
         if (!inputBoxInsertEdge->processing) {
             auto values = inputBoxInsertEdge->values;
@@ -214,7 +284,7 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
     deleteNodeButton->Update(dt);
 
     // Input box delete node button update
-    if (inputDeleteNodeButtonFlag) {
+    if (inputDeleteNodeButtonFlag && !inputInsertEdgeButtonFlag && !inputDeleteEdgeButtonFlag) {
         inputBoxDeleteNode->Update(dt);
         if (!inputBoxDeleteNode->processing) {
             int nodeToDelete = inputBoxDeleteNode->values[0];
@@ -228,7 +298,7 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
     deleteEdgeButton->Update(dt);
 
     // Input box delete edge button update
-    if (inputDeleteEdgeButtonFlag) {
+    if (inputDeleteEdgeButtonFlag && !inputInsertEdgeButtonFlag && !inputDeleteNodeButtonFlag) {
         inputBoxDeleteEdge->Update(dt);
         if (!inputBoxDeleteEdge->processing) {
             auto values = inputBoxDeleteEdge->values;
@@ -249,7 +319,10 @@ void ds_viz::pages::GraphVisualizer::Render()
     title.Draw(200, 100);
 
     // display frame render
-    displayFrame->Render();
+    workingFrame->Render();
+
+    // notification frame render
+    notificationFrame->Render();
 
     // Insert new node render
     insertNodeButton->Render();
@@ -317,6 +390,11 @@ void ds_viz::pages::GraphVisualizer::Render()
 
     // Input box delete edge render
     inputBoxDeleteEdge->Render();
+
+    // Notification render
+    if(notification != nullptr){
+        notification->Render();
+    }
 
     // vector nodes render
     for(auto &node : nodes){
