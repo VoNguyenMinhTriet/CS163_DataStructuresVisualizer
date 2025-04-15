@@ -6,6 +6,7 @@
 #include <cstdlib> // For rand()
 #include <ctime>
 #include <cstring>
+#include <cassert>
 
 using namespace ds_viz::pages;
 
@@ -18,24 +19,24 @@ HeapVisualizer::HeapVisualizer()
     // displayFrame initialize
     displayFrame = std::make_unique<raywtk::DisplayFrame>();
  
-    // Push new value initialize
+    // Push new value button initialize
+    inputPushNewValueButtonFlag = false;
     pushValueButton = std::make_unique<raywtk::Button>();
     pushValueButton->buttonText = "Push New Value";
     pushValueButton->buttonRect = raylib::Rectangle(75, 250, 250, 170);
-    pushValueButton->Click.append([this]() { showInputBar = true; });
+    pushValueButton->Click.append([this]() { inputPushNewValueButtonFlag = true; inputBoxPushNewValue->processing = true; });
     pushValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
  
-    // Pop max value initialize
+    // Pop max value button initialize
     popMaxValueButton = std::make_unique<raywtk::Button>();
     popMaxValueButton->buttonText = "Pop Max Value";
     popMaxValueButton->buttonRect = raylib::Rectangle(75, 450, 250, 170);
     popMaxValueButton->Click.append([this]() { PopMaxValue(); });
     popMaxValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
-    // Show input bar initialize
-    showInputBar = false;
-    inputBoxRect = raylib::Rectangle(pushValueButton->buttonRect.x + pushValueButton->buttonRect.width + 10, pushValueButton->buttonRect.y, 150, 50);
-    inputBoxText[0] = '\0';
+    // Input box push new value initialize
+    inputPushNewValueButtonFlag = false;
+    inputBoxPushNewValue = std::make_unique<raywtk::InputBox>(raylib::Rectangle(330, 280, 150, 100), raylib::Color::Black(), raylib::Color::White(), raylib::Color::Gray(), 1, false);
 }
 
 int HeapVisualizer::parent(int i)
@@ -95,6 +96,9 @@ void HeapVisualizer::PushNewValue(int value)
 
 void HeapVisualizer::PopMaxValue()
 {
+    if(sz(values) == 0)
+        return;
+
     int i = sz(values) - 1;
     swapNodes(i, 0);
     values.pop_back();
@@ -126,45 +130,29 @@ void HeapVisualizer::Update(float dt)
     // Display Frame render
     displayFrame->Render();
     
-    // insert node button update
+    // Push new value button update
     pushValueButton->Update(dt);
 
-    // pop max value button update
+    // Pop max value button update
     popMaxValueButton->Update(dt);
     
-    // show input bar update
-    if (showInputBar)
+    // Show input box push new value update
+    if (inputPushNewValueButtonFlag)
     {
-        int key = GetCharPressed();
-        while (key > 0)
+        if(raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON) && !raylib::Mouse::GetPosition().CheckCollision(pushValueButton->buttonRect)) 
         {
-            if ((key >= 32) && (key <= 125) && (strlen(inputBoxText) < 127))
-            {
-                inputBoxText[strlen(inputBoxText) + 1] = '\0';
-                inputBoxText[strlen(inputBoxText)] = (char)key;
-            }
-            key = GetCharPressed();
-        }
-        
-        if (IsKeyPressed(KEY_BACKSPACE))
+            inputPushNewValueButtonFlag = false;
+            inputBoxPushNewValue->Reset();
+        } else 
         {
-            if (strlen(inputBoxText) > 0)
+            inputBoxPushNewValue->Update(dt);
+            if(!inputBoxPushNewValue->processing) 
             {
-                
-                inputBoxText[strlen(inputBoxText) - 1] = '\0';
+                auto values = inputBoxPushNewValue->values;
+                PushNewValue(values[0]);
+                inputBoxPushNewValue->Reset();
+                inputPushNewValueButtonFlag = false;
             }
-        }
-
-        if (IsKeyPressed(KEY_ENTER)) {
-            
-            int value = atoi(inputBoxText);
-            if(value != 0 || (strlen(inputBoxText) == 1 && inputBoxText[0] == '0'))
-            {
-                PushNewValue(value);
-            }
-            
-            showInputBar = false;
-            inputBoxText[0] = '\0';
         }
     }
 
@@ -184,14 +172,9 @@ void HeapVisualizer::Render()
 
     // Pop max value render
     popMaxValueButton->Render();
- 
-    // Show input bar render
-    if (showInputBar)
-    {
-        DrawRectangleRec(inputBoxRect, LIGHTGRAY);
-        DrawRectangleLinesEx(inputBoxRect, 2, DARKGRAY);
-        DrawText(inputBoxText, inputBoxRect.x + 10, inputBoxRect.y + 10, 20, WHITE);
-    }
+
+    // Input box push new value render
+    inputBoxPushNewValue->Render();
 
     // vector nodes render
     for(auto &node : nodes)

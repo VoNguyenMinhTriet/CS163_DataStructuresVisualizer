@@ -8,6 +8,7 @@
 #include "widget_toolkit/tree_widgets/edge.hpp"
 #include "widget_toolkit/display_frame/display_frame.hpp"
 #include "main_app/themes/dark_simple/text_button.hpp"
+#include "InputBox.hpp"
 #include "./page.hpp"
 
 
@@ -28,10 +29,14 @@ namespace ds_viz::pages
         // Pop max value
         std::unique_ptr<raywtk::Button> popMaxValueButton;
 
-        // Show input bar
-        bool showInputBar;
-        raylib::Rectangle inputBoxRect;
-        char inputBoxText[128];
+        // Input box for push new value
+        std::unique_ptr<raywtk::InputBox> inputBoxPushNewValue;
+
+        // Input new value button flag
+        bool inputPushNewValueButtonFlag;
+
+        // Input new value string
+        char textInputPushNewValue[128];
 
         // vector store node to perform heap operator
         std::vector<int> values;
