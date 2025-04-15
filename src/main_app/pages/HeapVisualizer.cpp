@@ -20,10 +20,17 @@ HeapVisualizer::HeapVisualizer()
  
     // Push new value initialize
     pushValueButton = std::make_unique<raywtk::Button>();
-    pushValueButton->buttonText = "Push New Node";
-    pushValueButton->buttonRect = raylib::Rectangle(50, 400, 280, 200);
+    pushValueButton->buttonText = "Push New Value";
+    pushValueButton->buttonRect = raylib::Rectangle(75, 250, 250, 170);
     pushValueButton->Click.append([this]() { showInputBar = true; });
     pushValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+ 
+    // Pop max value initialize
+    popMaxValueButton = std::make_unique<raywtk::Button>();
+    popMaxValueButton->buttonText = "Pop Max Value";
+    popMaxValueButton->buttonRect = raylib::Rectangle(75, 450, 250, 170);
+    popMaxValueButton->Click.append([this]() { PopMaxValue(); });
+    popMaxValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
     // Show input bar initialize
     showInputBar = false;
@@ -46,40 +53,72 @@ int HeapVisualizer::right_child(int i)
     return i * 2 + 2;
 }
 
-void HeapVisualizer::maxHeapify(int i, int n) 
-{
-    if(i >= n)
-        return;
-
-    int L = left_child(i), R = right_child(i);
-    int pos_max = i;
-
-    if(L < n && values[L] > values[pos_max])
-        pos_max = L;
-
-    if(R < n && values[R] > values[pos_max])
-        pos_max = R;
-
-    swap(values[i], values[pos_max]);
-    if(pos_max != i)
-        maxHeapify(pos_max, n); // recursive call to subtree to heapify for subtree
+void HeapVisualizer::swapNodes(int i, int j) {
+    swap(values[i], values[j]);
+    swap(nodes[i]->position, nodes[j]->position);
+    swap(nodes[i], nodes[j]);
 }
 
+#define sz(x) int((x).size())
 void HeapVisualizer::PushNewValue(int value) 
 {
+    int index = sz(values), depth = 0;
+    if(index > 31)
+        return;
+
+    while(index >= (1 << depth)) {
+        index -= (1 << depth);
+        ++depth;
+    }
+
     std::unique_ptr<raywtk::NodeWidget> newNode = std::make_unique<raywtk::NodeWidget>(value);
-    raylib::Vector2 randomPosition = raylib::Vector2(WORKING_FRAME_COORDX + rand() % WORKING_FRAME_WIDTH, WORKING_FRAME_COORDY + rand() % WORKING_FRAME_HEIGHT);
-    if(randomPosition.x - newNode->radius < WORKING_FRAME_COORDX) randomPosition.x += newNode->radius;
-    if(randomPosition.x + newNode->radius > WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH) randomPosition.x -= newNode->radius;
-    if(randomPosition.y - newNode->radius < WORKING_FRAME_COORDY) randomPosition.y += newNode->radius;
-    if(randomPosition.y + newNode->radius > WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT) randomPosition.y -= newNode->radius;
-    newNode->position = randomPosition;
+    raylib::Vector2 position = raylib::Vector2(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY);
+    position.x += 60 + double(WORKING_FRAME_WIDTH - 120) / ((1 << depth)) / 2 + double(WORKING_FRAME_WIDTH - 120) / ((1 << depth)) * (index);
+    position.y += double(WORKING_FRAME_HEIGHT) / 6 * (depth + 1);
+    
+    newNode->position = position;
     nodes.push_back(std::move(newNode));
 
-    #define sz(x) int((x).size())
-
     values.push_back(value);
-    maxHeapify(values[sz(values) - 1], sz(values));
+    
+    int i = sz(values) - 1;
+    while(i > 0) {
+        int par_i = parent(i);
+        if(values[i] > values[par_i]) {
+            swapNodes(i, par_i);
+            i = par_i;
+        } else {
+            break;
+        }
+    }
+}
+
+void HeapVisualizer::PopMaxValue()
+{
+    int i = sz(values) - 1;
+    swapNodes(i, 0);
+    values.pop_back();
+    nodes.pop_back();
+
+    i = 0;
+    while(1) {
+        int L = left_child(i), R = right_child(i);
+        int pos_max = i;
+
+        if(L < sz(values) && values[L] > values[pos_max])
+            pos_max = L;
+
+        if(R < sz(values) && values[R] > values[pos_max])
+            pos_max = R;
+
+        if(i != pos_max) {
+            swapNodes(i, pos_max);
+            i = pos_max;
+        } else {
+            break;
+        }
+    }
+
 }
 
 void HeapVisualizer::Update(float dt) 
@@ -89,6 +128,9 @@ void HeapVisualizer::Update(float dt)
     
     // insert node button update
     pushValueButton->Update(dt);
+
+    // pop max value button update
+    popMaxValueButton->Update(dt);
     
     // show input bar update
     if (showInputBar)
@@ -112,6 +154,7 @@ void HeapVisualizer::Update(float dt)
                 inputBoxText[strlen(inputBoxText) - 1] = '\0';
             }
         }
+
         if (IsKeyPressed(KEY_ENTER)) {
             
             int value = atoi(inputBoxText);
@@ -126,7 +169,8 @@ void HeapVisualizer::Update(float dt)
     }
 
     // vector nodes update
-    for(auto &node : nodes){
+    for(auto &node : nodes)
+    {
         node->Update(dt);
     }
 }
@@ -137,6 +181,9 @@ void HeapVisualizer::Render()
 
     // Insert new value render
     pushValueButton->Render();
+
+    // Pop max value render
+    popMaxValueButton->Render();
  
     // Show input bar render
     if (showInputBar)
@@ -147,7 +194,8 @@ void HeapVisualizer::Render()
     }
 
     // vector nodes render
-    for(auto &node : nodes){
+    for(auto &node : nodes)
+    {
         node->Render();
     }
 }

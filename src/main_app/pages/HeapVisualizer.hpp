@@ -24,6 +24,9 @@ namespace ds_viz::pages
  
         // Push new value
         std::unique_ptr<raywtk::Button> pushValueButton;
+ 
+        // Pop max value
+        std::unique_ptr<raywtk::Button> popMaxValueButton;
 
         // Show input bar
         bool showInputBar;
@@ -41,7 +44,8 @@ namespace ds_viz::pages
             int parent(int i); // parent of node with index i on heap
             int left_child(int i); // left child of node with index i on heap
             int right_child(int i); // right child of node with index i on heap
-            void maxHeapify(int x, int n); // heapify for subtree of node with index x of heap with size n 
+            void swapNodes(int i, int j); // swap two nodes i and j on heap
+            void PopMaxValue(); // pop the max value out of heap (root of heap)
             void PushNewValue(int value); // push 'value' into heap
             void Update(float dt) override;
             void Render() override;

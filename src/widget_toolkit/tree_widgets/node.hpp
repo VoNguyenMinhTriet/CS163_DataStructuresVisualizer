@@ -5,6 +5,8 @@
 #include "eventpp/callbacklist.h"
 #include "../interfaces.hpp"
 
+const float NODE_RADIUS = 25.0f;
+
 namespace raywtk 
 {
     class NodeWidget : public IScreenElement
@@ -14,7 +16,7 @@ namespace raywtk
     public:
         raylib::Vector2 position;
         raylib::Camera2D *camera;
-        float radius = 25.0f;
+        float radius = NODE_RADIUS;
         raylib::Color color = raylib::Color::Blue();
         bool visible = true;
         std::function<void()> content; // Optional content function
@@ -50,10 +52,10 @@ namespace raywtk
 
                 if (held)                
                     position += raylib::Mouse::GetDelta();
-            }
+            }*/
 
             if (raylib::Mouse::IsButtonReleased(MOUSE_LEFT_BUTTON))
-                held = false;*/ 
+                held = false;
 
             if (next)
                 next->Update(deltaTime); // Recursively update the next node
