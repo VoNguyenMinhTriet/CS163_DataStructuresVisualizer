@@ -260,6 +260,14 @@ void HeapVisualizer::Render()
     // Clear heap button render
     clearHeapButton->Render();
 
+    // edges render
+    for (int i = 1; i < sz(nodes); ++i) {
+        int par_i = parent(i);
+        raylib::Vector2 startPos = nodes[par_i]->position;
+        raylib::Vector2 endPos = nodes[i]->position;
+        startPos.DrawLine(endPos, 2.5f, WHITE);
+    }
+
     // vector nodes render
     for(auto &node : nodes)
     {
