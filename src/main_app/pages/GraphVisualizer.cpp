@@ -80,17 +80,14 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
 
     // Kruskal index processing
     indexProcessing = 0;
-    animationStep = 0;
     animationTimer = 0.0;
 
     kruskalPseudoCode = {
-        "1. Sort all edges in non-decreasing order of their weight.",
-        "2. Initialize parent and size arrays for union-find.",
-        "3. For each edge (u, v, w):",
-        "   a. If u and v are in different sets:",
-        "      i. Add edge (u, v, w) to MST.",
-        "      ii. Union the sets of u and v.",
-        "4. Stop when MST contains (N-1) edges."
+        "   For each edge (u, v, w) in increasing order of weight:",
+        "   If (u, v, w) does not form a cycle in MST:",
+        "      Add edge (u, v, w) to MST.",
+        "   else: ignore edge (u, v, w).",
+        "   Stop when MST contains (N-1) edges."
     };
 
     pseudoCodeDisplay = std::make_unique<raywtk::PseudoCodeDisplay>(raylib::Vector2(WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH, WORKING_FRAME_COORDY), kruskalPseudoCode.size(), PSEUDOCODE_LINE_WIDTH, PSEUDOCODE_LINE_HEIGHT, raylib::Color::White(), raylib::Color::Yellow(), raylib::Color::Green());    
@@ -155,8 +152,118 @@ void ds_viz::pages::GraphVisualizer::Kruskal(){
     kruskalFlag = true;
     inMstList.clear();
     indexProcessing = 0;
-    animationStep = 0;
     animationTimer = 0.0;
+    currentAnimationStep = 0;
+
+    // Union-Find logic
+    std::function<int(int)> findPar = [&](int x) -> int {
+        return x == par[x] ? x : par[x] = findPar(par[x]);
+    };
+
+    // Check if the graph is disconnected
+    int mstEdges = 0;
+    for (const auto &edge : edges) {
+        int u = edge.first.first;
+        int v = edge.first.second;
+
+        if (findPar(u) != findPar(v)) {
+            mstEdges++;
+            par[findPar(u)] = findPar(v);
+        }
+    }
+
+    if (mstEdges < nodes.size() - 1) {
+        // Graph is disconnected
+        kruskalFlag = false;
+        notification = std::make_unique<raywtk::Notification>(
+            "Kruskal's algorithm failed: Graph is disconnected.",
+            raywtk::NotificationType::ERROR,
+            NOTIFICATION_COORDX,
+            NOTIFICATION_COORDY
+        );
+    } else{
+        animationSteps.clear();
+        for(size_t i = 0; i < nodes.size(); i++) par[i] = i, sz[i] = 1;
+        kruskalFlag = true;
+        int current_edge_index;               // Index of the edge being processed
+        std::set<int> edges_in_mst;           // Indices of edges in the MST
+        std::set<int> nodes_in_mst;           // Indices of nodes in the MST
+        int pseudo_code_line;                 // Index of the pseudo-code line to highlight
+        for(size_t i = 0; i < edges.size(); i++){
+            current_edge_index = i;
+            int u = edges[i].first.first;
+            int v = edges[i].first.second;
+            int w = edges[i].second;
+            pseudo_code_line = 1; // Highlight the line for considering edge
+            animationSteps.push_back({current_edge_index, edges_in_mst, nodes_in_mst, pseudo_code_line});
+
+            if (findPar(u) != findPar(v)) {
+                edges_in_mst.insert(i);
+                nodes_in_mst.insert(u);
+                nodes_in_mst.insert(v);
+                par[findPar(u)] = findPar(v);
+                sz[findPar(v)] += sz[findPar(u)];
+                pseudo_code_line = 2; // Highlight the line for adding edge to MST
+                animationSteps.push_back({current_edge_index, edges_in_mst, nodes_in_mst, pseudo_code_line});
+            } else {
+                pseudo_code_line = 3; // Highlight the line for ignoring edge
+                animationSteps.push_back({current_edge_index, edges_in_mst, nodes_in_mst, pseudo_code_line});
+            }
+        }        
+        animationSteps.push_back({-1, edges_in_mst, nodes_in_mst, 4}); // Highlight the line for stopping when MST is complete  
+    }
+}
+
+void ds_viz::pages::GraphVisualizer::RenderAnimationStep(const AnimationStep& step, const std::vector<std::pair<std::pair<int, int>, int>>& sortedEdges) {
+    // Render edges
+    for (size_t i = 0; i < sortedEdges.size(); ++i) {
+        raylib::Vector2 startPos, endPos;
+        for (auto& node : nodes) {
+            if (node->value == sortedEdges[i].first.first) startPos = node->position;
+            if (node->value == sortedEdges[i].first.second) endPos = node->position;
+        }
+
+        raylib::Color edgeColor = WHITE; // Default color
+        if (step.edges_in_mst.find(i) != step.edges_in_mst.end()) {
+            edgeColor = GREEN; // "In MST" color
+        } else if (i == step.current_edge_index) {
+            if(step.pseudo_code_line == 3){
+                edgeColor = RED;
+            }
+            else{
+                edgeColor = YELLOW; // "Considering" color
+            }
+        }
+
+        startPos.DrawLine(endPos, 2.5f, edgeColor);
+        raylib::Vector2 posText = {(startPos.x + endPos.x) / 2, (startPos.y + endPos.y) / 2};
+        std::string weight = std::to_string(sortedEdges[i].second);
+        raylib::DrawText(weight.c_str(), posText.x, posText.y, 20, edgeColor);
+    }
+
+    // Render nodes
+    for (auto& node : nodes) {
+        raylib::Color nodeColor = BLUE; // Default color
+        if (step.nodes_in_mst.find(node->value) != step.nodes_in_mst.end()) {
+            nodeColor = GREEN; // "In MST" color
+        } else if (node->value == sortedEdges[step.current_edge_index].first.first ||
+                   node->value == sortedEdges[step.current_edge_index].first.second) {
+            nodeColor = YELLOW; // "Considering" color
+        }
+
+        node->color = nodeColor;
+        node->Render();
+    }
+
+    // Highlight pseudo-code line
+    for (size_t i = 0; i < kruskalPseudoCode.size(); ++i) {
+        if (i == step.pseudo_code_line) {
+            pseudoCodeDisplay->SetLineState(i, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
+        } else {
+            pseudoCodeDisplay->SetLineState(i, raywtk::PseudoCodeDisplay::LineState::DEFAULT);
+        }
+    }
+    pseudoCodeDisplay->Render();
 }
 
 void ds_viz::pages::GraphVisualizer::DeleteNode(int node) {
@@ -250,101 +357,7 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
 
     // Kruskal button update
     KruskalButton->Update(dt);
-
-    // Kruskal animation update
-    // if (kruskalFlag) {
-    //     auto findPar = [&](auto self, int u) -> int {
-    //         return u == par[u] ? u : par[u] = self(self, par[u]);
-    //     };
-
-    //     auto unions = [&](int x, int y) -> bool {
-    //         x = findPar(findPar, x);
-    //         y = findPar(findPar, y);
-    //         if (x == y) return false;
-    //         if (sz[x] < sz[y]) std::swap(x, y);
-    //         par[y] = x;
-    //         sz[x] += sz[y];
-    //         return true;
-    //     };
-
-    //     animationTimer += dt;
-    //     if (animationTimer <= animationDelay) {
-    //         if (animationStep < edges.size()) {
-    //             indexProcessing = animationStep;
-    //             pseudoCodeDisplay->SetLineState(0, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
-    //         }
-    //     } else {
-    //         if (animationTimer <= 2.0 * animationDelay) {
-    //             if (animationStep < edges.size()) {
-    //                 int i = animationStep;
-    //                 auto [u, v] = edges[i].first;
-    //                 // Highlight step 3: Processing edge
-    //                 pseudoCodeDisplay->SetLineState(2, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
-    //                 if (unions(u, v)) {
-    //                     pseudoCodeDisplay->SetLineState(3, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
-    //                     inMstList.insert(i);
-    //                 }
-    //             } else {
-    //                 kruskalFlag = false;
-    //             }
-    //         } else {
-    //             ++animationStep;
-    //             if (animationStep == edges.size()) {
-    //                 kruskalFlag = false;
-    //             }
-    //             animationTimer = 0.0f;
-    //         }
-    //     }
-    // }
-
-    if (kruskalFlag) {
-        auto findPar = [&](auto self, int u) -> int {
-            return u == par[u] ? u : par[u] = self(self, par[u]);
-        };
-
-        auto unions = [&](int x, int y) -> bool {
-            x = findPar(findPar, x);
-            y = findPar(findPar, y);
-            if (x == y) return false;
-            if (sz[x] < sz[y]) std::swap(x, y);
-            par[y] = x;
-            sz[x] += sz[y];
-            return true;
-        };
-
-        animationTimer += dt;
-
-        if (animationTimer <= animationDelay) {
-            // Highlight step 1: Sorting edges
-            pseudoCodeDisplay->SetLineState(0, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
-        } else if (animationStep < edges.size()) {
-            int i = animationStep;
-            auto [u, v] = edges[i].first;
-
-            if (animationTimer <= 2.0 * animationDelay) {
-                // Highlight step 3: Processing edge
-                pseudoCodeDisplay->SetLineState(2, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
-
-                if (unions(u, v)) {
-                    // Highlight step 3a: Adding edge to MST
-                    pseudoCodeDisplay->SetLineState(3, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
-                    inMstList.insert(i);
-                }
-            } else {
-                // Move to the next edge
-                ++animationStep;
-                if (animationStep == edges.size()) {
-                    kruskalFlag = false;
-                }
-                animationTimer = 0.0f;
-            }
-        } else {
-            // Highlight step 4: MST complete
-            pseudoCodeDisplay->SetLineState(4, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
-            kruskalFlag = false;
-        }
-    }
-
+    
     // Delete node button update
     deleteNodeButton->Update(dt);
 
@@ -370,6 +383,31 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
             DeleteEdge(values[0], values[1]);
             inputDeleteEdgeButtonFlag = false;
             inputBoxDeleteEdge->Reset();
+        }
+    }
+
+    // Animation step update
+    if (kruskalFlag && currentAnimationStep < animationSteps.size() - 1) {
+        animationTimer += dt;
+        if (animationTimer >= animationStepDuration) {
+            animationTimer = 0.0f;
+            ++currentAnimationStep;
+        }
+    } else{
+        if(kruskalFlag){
+            notification = std::make_unique<raywtk::Notification>(
+                "Press enter to continue",
+                raywtk::NotificationType::INFO,
+                NOTIFICATION_COORDX,
+                NOTIFICATION_COORDY
+            );
+            if(IsKeyPressed(KEY_ENTER)){
+                kruskalFlag = false;
+                animationSteps.clear();
+                for(auto &node : nodes){
+                    node->color = BLUE;
+                }
+            }
         }
     }
 
@@ -463,6 +501,11 @@ void ds_viz::pages::GraphVisualizer::Render()
 
     // Psuedo code display render
     pseudoCodeDisplay->Render();
+
+    // Animation step render
+    if (currentAnimationStep < animationSteps.size()) {
+        RenderAnimationStep(animationSteps[currentAnimationStep], edges);
+    }
 
     // vector nodes render
     for(auto &node : nodes){

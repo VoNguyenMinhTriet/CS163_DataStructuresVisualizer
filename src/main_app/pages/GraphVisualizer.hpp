@@ -95,11 +95,6 @@ namespace ds_viz::pages
         
         // Kruskal processing flag
         bool kruskalFlag;
-
-        // Kruskal animation control
-        int animationStep;
-        float animationTimer;
-        const float animationDelay = 1.0f;
         
         // par and sz for kruskal
         std::vector<int> par, sz;
@@ -119,12 +114,24 @@ namespace ds_viz::pages
         std::vector<std::string> kruskalPseudoCode;
         std::unique_ptr<raywtk::PseudoCodeDisplay> pseudoCodeDisplay;
 
+        struct AnimationStep {
+            int current_edge_index;               // Index of the edge being processed
+            std::set<int> edges_in_mst;           // Indices of edges in the MST
+            std::set<int> nodes_in_mst;           // Indices of nodes in the MST
+            int pseudo_code_line;                 // Index of the pseudo-code line to highlight
+        };
+        std::vector<AnimationStep> animationSteps;
+        float animationTimer = 0.0f;
+        float animationStepDuration = 2.0f; // Duration of each step in seconds
+        size_t currentAnimationStep = 0;
+
 
         public:
             GraphVisualizer();
             void InsertNewNode(); // insert new node
             void InsertNewEdge(int u, int v, int c); // insert new edge
             void Kruskal();
+            void RenderAnimationStep(const AnimationStep& step, const std::vector<std::pair<std::pair<int, int>, int>>& sortedEdges);
             void DeleteNode(int node); // delete node
             void DeleteEdge(int u, int v); // delete edge
             void Update(float dt) override;
