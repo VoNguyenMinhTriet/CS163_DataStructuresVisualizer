@@ -12,24 +12,26 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
     title = raylib::Text("Singly-Linked List", 128, raylib::Color::White(), *font, 0);
     
-    
+    textFont = std::make_shared<raylib::Font>("./ttf/Inter-Regular.ttf", 16);
+
     // repositioning nodes button
     repositionButton = std::make_unique<raywtk::Button>();
     repositionButton->buttonText = "Reposition";
-    repositionButton->buttonRect = raylib::Rectangle(100, 820, 180, 50);
+    repositionButton->buttonRect = raylib::Rectangle(60, 820, 180, 50);
     repositionButton->Click.append([this]() { RepositionNodes(); });
-    repositionButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    repositionButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
-    
-    // Insert button (Main button)
-    insertButton = std::make_unique<raywtk::Button>();
-    insertButton->buttonText = "Insert";
-    insertButton->buttonRect = raylib::Rectangle(100, 600, 180, 50);
-    insertButton->Click.append([this]() { 
-        insertDropdownOpen = !insertDropdownOpen;
+    // action bar toggle
+    actionBarButton = std::make_unique<raywtk::Button>();
+    actionBarButton->buttonText = " ";
+    actionBarButton->buttonRect = raylib::Rectangle(20, 600, 30, 270); 
+    actionBarButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
+    actionBarButton->Click.append([this]() { 
+        actionBarVisible = !actionBarVisible; // Toggle visibility
+        insertDropdownOpen = false;
         deleteDropdownOpen = false; 
         searchDropdownOpen = false;
-        otherDropdownOpen = false;
+        createDropdownOpen = false;
         showInsertAtHead = false;
         showInsertAtTail = false;
         showInsertAtIndexInput = false;
@@ -37,15 +39,32 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         showSearchInput  = false;
         showRandomInput = false;
     });
-    insertButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // Insert buttons (Main button)
+    insertButton = std::make_unique<raywtk::Button>();
+    insertButton->buttonText = "Insert";
+    insertButton->buttonRect = raylib::Rectangle(60, 600, 180, 50);
+    insertButton->Click.append([this]() { 
+        insertDropdownOpen = !insertDropdownOpen;
+        deleteDropdownOpen = false; 
+        searchDropdownOpen = false;
+        createDropdownOpen = false;
+        showInsertAtHead = false;
+        showInsertAtTail = false;
+        showInsertAtIndexInput = false;
+        showDeleteAtIndexInput = false;
+        showSearchInput  = false;
+        showRandomInput = false;
+    });
+    insertButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
     // Dropdown insert buttons
     for (size_t i = 0; i < insertOptions.size(); i++)
     {
         auto btn = std::make_unique<raywtk::Button>();
         btn->buttonText = insertOptions[i];
-        btn->buttonRect = raylib::Rectangle(100 + (i + 1) * 180, 600, 180, 50);
-        btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+        btn->buttonRect = raylib::Rectangle(60 + (i + 1) * 180, 600, 180, 50);
+        btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
         if (insertOptions[i] == "At Head")
         {
@@ -77,15 +96,15 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         insertDropdownButtons.push_back(std::move(btn));
     }
 
-    // delete button (Main button)
+    // delete buttons (Main button)
     deleteButton = std::make_unique<raywtk::Button>();
     deleteButton->buttonText = "Delete";
-    deleteButton->buttonRect = raylib::Rectangle(100, 655, 180, 50);
+    deleteButton->buttonRect = raylib::Rectangle(60, 655, 180, 50);
     deleteButton->Click.append([this]() { 
         insertDropdownOpen = false;
         deleteDropdownOpen = !deleteDropdownOpen; 
         searchDropdownOpen = false;
-        otherDropdownOpen = false;
+        createDropdownOpen = false;
         showInsertAtHead = false;
         showInsertAtTail = false;
         showInsertAtIndexInput = false;
@@ -93,15 +112,15 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         showSearchInput  = false;
         showRandomInput = false;
     });
-    deleteButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    deleteButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
     // Dropdown buttons
     for (size_t i = 0; i < deleteOptions.size(); i++)
     {
         auto btn = std::make_unique<raywtk::Button>();
         btn->buttonText = deleteOptions[i];
-        btn->buttonRect = raylib::Rectangle(100 + (i + 1) * 180, 655, 180, 50);
-        btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+        btn->buttonRect = raylib::Rectangle(60 + (i + 1) * 180, 655, 180, 50);
+        btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
         if (deleteOptions[i] == "At Head")
         {
@@ -129,15 +148,15 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         deleteDropdownButtons.push_back(std::move(btn));
     }
 
-    // search button (Main button)
+    // search buttons (Main button)
     searchButton = std::make_unique<raywtk::Button>();
     searchButton->buttonText = "Search";
-    searchButton->buttonRect = raylib::Rectangle(100, 710, 180, 50);
+    searchButton->buttonRect = raylib::Rectangle(60, 710, 180, 50);
     searchButton->Click.append([this]() { 
         insertDropdownOpen = false;
         deleteDropdownOpen = false; 
         searchDropdownOpen = !searchDropdownOpen;
-        otherDropdownOpen = false;
+        createDropdownOpen = false;
         showInsertAtHead = false;
         showInsertAtTail = false;
         showInsertAtIndexInput = false;
@@ -145,15 +164,15 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         showSearchInput  = false;
         showRandomInput = false;
     });
-    searchButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    searchButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
     // Dropdown buttons
     for (size_t i = 0; i < searchOptions.size(); i++)
     {
         auto btn = std::make_unique<raywtk::Button>();
         btn->buttonText = searchOptions[i];
-        btn->buttonRect = raylib::Rectangle(100 + (i + 1) * 180, 710, 180, 50);
-        btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+        btn->buttonRect = raylib::Rectangle(60 + (i + 1) * 180, 710, 180, 50);
+        btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
         if (searchOptions[i] == "By Value")
         {
@@ -174,15 +193,15 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         searchDropdownButtons.push_back(std::move(btn));
     }
 
-    // other button (Main button)
-    otherButton = std::make_unique<raywtk::Button>();
-    otherButton->buttonText = "Other";
-    otherButton->buttonRect = raylib::Rectangle(100, 765, 180, 50);
-    otherButton->Click.append([this]() { 
+    // Create buttons (Main button)
+    createButton = std::make_unique<raywtk::Button>();
+    createButton->buttonText = "Create";
+    createButton->buttonRect = raylib::Rectangle(60, 765, 180, 50);
+    createButton->Click.append([this]() { 
         insertDropdownOpen = false;
         deleteDropdownOpen = false; 
         searchDropdownOpen = false;
-        otherDropdownOpen = !otherDropdownOpen;
+        createDropdownOpen = !createDropdownOpen;
         showInsertAtHead = false;
         showInsertAtTail = false;
         showInsertAtIndexInput = false;
@@ -190,24 +209,24 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         showSearchInput  = false;
         showRandomInput = false;
     });
-    otherButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    createButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
     // Dropdown buttons
-    for (size_t i = 0; i < otherOptions.size(); i++)
+    for (size_t i = 0; i < createOptions.size(); i++)
     {
         auto btn = std::make_unique<raywtk::Button>();
-        btn->buttonText = otherOptions[i];
-        btn->buttonRect = raylib::Rectangle(100 + (i + 1) * 180, 765, 180, 50);
-        btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+        btn->buttonText = createOptions[i];
+        btn->buttonRect = raylib::Rectangle(60 + (i + 1) * 180, 765, 180, 50);
+        btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
-        if (otherOptions[i] == "Random")
+        if (createOptions[i] == "Random")
         {
             btn->Click.append([this]() {
                 showRandomInput = true;
             });
         }
 
-        else if (otherOptions[i] == "Clear")
+        else if (createOptions[i] == "Clear")
         {
             btn->Click.append([this]() {
                 showRandomInput = false;
@@ -215,7 +234,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
             });
         }
 
-        else if (otherOptions[i] == "Load file")
+        else if (createOptions[i] == "Load file")
         {
             btn->Click.append([this]() {
                 showRandomInput = false;
@@ -223,7 +242,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
             });
         }
 
-        otherDropdownButtons.push_back(std::move(btn));
+        createDropdownButtons.push_back(std::move(btn));
     }
 
     // undo button
@@ -782,16 +801,22 @@ void ds_viz::pages::LinkedListPage::CreateNotification(std::string &Message)
 
 void ds_viz::pages::LinkedListPage::DrawInputBox(int X, int Y, std::string &input)
 {
-    DrawRectangle(X, Y, 85, 50, DARKGRAY);
+    float roundness = 0.2f; 
+    int segments = 8;       
+
+    DrawRectangleRounded(raylib::Rectangle(X, Y, 85, 50), roundness, segments, raylib::Color::Black());
     DrawText(input.c_str(), X + 10, Y + 15, 20, RAYWHITE);
-    DrawRectangleLines(X - 2, Y - 2, 89, 54, BLUE);
+    DrawRectangleRoundedLines(raylib::Rectangle(X, Y, 85, 50), roundness, segments, raylib::Color::Pink());
 }
 
 void ds_viz::pages::LinkedListPage::DrawInputBox2(int X, int Y, std::string &input)
 {
-    DrawRectangle(X, Y, 180, 50, DARKGRAY);
+    float roundness = 0.2f; 
+    int segments = 8;       
+
+    DrawRectangleRounded(raylib::Rectangle(X, Y, 180, 50), roundness, segments, raylib::Color::Black());
     DrawText(input.c_str(), X + 10, Y + 15, 20, RAYWHITE);
-    DrawRectangleLines(X - 2, Y - 2, 184, 54, BLUE);
+    DrawRectangleRoundedLines(raylib::Rectangle(X, Y, 180, 50), roundness, segments, raylib::Color::Pink());
 }
 
 void ds_viz::pages::LinkedListPage::DrawSpeedBar()
@@ -1170,33 +1195,38 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
     AnimateInsert(dt);
     AnimateDelete(dt);
 
-    repositionButton->Update(dt);
-    
-    insertButton->Update(dt);
+    actionBarButton->Update(dt);
+
+    if (actionBarVisible) 
+    {
+        insertButton->Update(dt);
+        deleteButton->Update(dt);
+        searchButton->Update(dt);
+        createButton->Update(dt);
+        repositionButton->Update(dt);
+    }
+
     if (insertDropdownOpen)
     {
         for (auto& btn : insertDropdownButtons)
             btn->Update(dt);
     }
 
-    deleteButton->Update(dt);
     if (deleteDropdownOpen)
     {
         for (auto& btn : deleteDropdownButtons)
             btn->Update(dt);
     }
 
-    searchButton->Update(dt);
     if (searchDropdownOpen)
     {
         for (auto& btn : searchDropdownButtons)
             btn->Update(dt);
     }
 
-    otherButton->Update(dt);
-    if (otherDropdownOpen)
+    if (createDropdownOpen)
     {
-        for (auto& btn : otherDropdownButtons)
+        for (auto& btn : createDropdownButtons)
             btn->Update(dt);
     }
 
@@ -1237,31 +1267,31 @@ void ds_viz::pages::LinkedListPage::Render()
 
     // Draw input bars only if active
     if (showInsertAtHead && insertDropdownOpen)
-        DrawInputBox2(280, 655, inputInsertAtHead);
+        DrawInputBox2(240, 655, inputInsertAtHead);
 
     if (showInsertAtTail && insertDropdownOpen)
-        DrawInputBox2(460, 655, inputInsertAtTail);
+        DrawInputBox2(420, 655, inputInsertAtTail);
 
     if (showInsertAtIndexInput && insertDropdownOpen)
     {
-        DrawInputBox(643, 655, inputValue);
-        DrawInputBox(732, 655, inputIndex);
+        DrawInputBox(603, 655, inputValue);
+        DrawInputBox(692, 655, inputIndex);
 
-        DrawText("Value", 643, 715, 20, YELLOW);
-        DrawText("Index", 732, 715, 20, YELLOW);
+        DrawText("Value", 603, 715, 20, YELLOW);
+        DrawText("Index", 692, 715, 20, YELLOW);
     }
 
     if (showDeleteAtIndexInput && deleteDropdownOpen)
-        DrawInputBox2(640, 710, inputDeleteIndex);
+        DrawInputBox2(600, 710, inputDeleteIndex);
 
     if (showRandomInput)
-        DrawInputBox2(280, 820, inputRandom);
+        DrawInputBox2(240, 820, inputRandom);
 
     if (showSearchInput && searchByValue)
-        DrawInputBox2(280, 765, searchByValInput);
+        DrawInputBox2(240, 765, searchByValInput);
     
     if (showSearchInput && !searchByValue)
-        DrawInputBox2(460, 765, searchByIndInput);
+        DrawInputBox2(420, 765, searchByIndInput);
      
     // Draw error message if needed
     if (errorTimer > 0)
@@ -1275,34 +1305,38 @@ void ds_viz::pages::LinkedListPage::Render()
     if (FindTimer > 0)
         CreateNotification(FindMessage);
 
-    // Render buttons
-    repositionButton->Render();
+    actionBarButton->Render();
 
-    insertButton->Render();
+    if (actionBarVisible) 
+    {
+        insertButton->Render();
+        deleteButton->Render();
+        searchButton->Render();
+        createButton->Render();
+        repositionButton->Render();
+    }
+
     if (insertDropdownOpen)
     {
         for (auto& btn : insertDropdownButtons)
             btn->Render();
     }
 
-    deleteButton->Render();
     if (deleteDropdownOpen)
     {
         for (auto& btn: deleteDropdownButtons)
             btn->Render();
     }
 
-    searchButton->Render();
     if (searchDropdownOpen)
     {
         for (auto& btn: searchDropdownButtons)
             btn->Render();
     }
 
-    otherButton->Render();
-    if (otherDropdownOpen)
+    if (createDropdownOpen)
     {
-        for (auto& btn: otherDropdownButtons)
+        for (auto& btn: createDropdownButtons)
             btn->Render();
     }
 

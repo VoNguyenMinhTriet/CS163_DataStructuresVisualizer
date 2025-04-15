@@ -20,6 +20,7 @@ namespace ds_viz::pages
         
         std::unique_ptr<raywtk::NodeWidget> head = nullptr; // Head node
         std::shared_ptr<raylib::Font> sharedFont = std::make_shared<raylib::Font>(LoadFont("./ttf/InterDisplay-ExtraBold.ttf")); // Node font
+        std::shared_ptr<raylib::Font> textFont; // Text font
         float headX = 80; // Default X-coordinate of head
         float headY = 400; // Default Y-coordinate of head
         float spacing = 100; // Default spacing between nodes
@@ -34,7 +35,9 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> undoButton;
         std::unique_ptr<raywtk::Button> redoButton;
         std::unique_ptr<raywtk::Button> returnButton;
+        std::unique_ptr<raywtk::Button> actionBarButton;
 
+        bool actionBarVisible = false; 
         std::unique_ptr<raywtk::Button> insertButton;
         std::vector<std::unique_ptr<raywtk::Button>> insertDropdownButtons;
         std::vector<std::string> insertOptions = { "At Head", "At Tail", "At Index" };
@@ -50,10 +53,10 @@ namespace ds_viz::pages
         std::vector<std::string> searchOptions = { "By Value", "By Index" };
         bool searchDropdownOpen = false;
 
-        std::unique_ptr<raywtk::Button> otherButton;
-        std::vector<std::unique_ptr<raywtk::Button>> otherDropdownButtons;
-        std::vector<std::string> otherOptions = { "Random", "Clear", "Load file" };
-        bool otherDropdownOpen = false;
+        std::unique_ptr<raywtk::Button> createButton;
+        std::vector<std::unique_ptr<raywtk::Button>> createDropdownButtons;
+        std::vector<std::string> createOptions = { "Random", "Clear", "Load file" };
+        bool createDropdownOpen = false;
         
         // For image buttons texture
         raylib::Texture undoButtonTex;
