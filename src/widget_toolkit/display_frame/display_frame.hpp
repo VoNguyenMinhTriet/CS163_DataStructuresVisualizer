@@ -8,6 +8,11 @@ static const int WORKING_FRAME_WIDTH = 1500;
 static const int WORKING_FRAME_COORDX = 400;
 static const int WORKING_FRAME_COORDY = 200;
 
+static const int NOTIFICATION_FRAME_HEIGHT = 200;
+static const int NOTIFICATION_FRAME_WIDTH = 700;
+static const int NOTIFICATION_FRAME_COORDX = 1180;
+static const int NOTIFICATION_FRAME_COORDY = 0;
+
 namespace raywtk 
 {
     class DisplayFrame : public IScreenElement
@@ -19,11 +24,10 @@ namespace raywtk
         float thickness = 2.0f;
         bool visible = true;
 
-        DisplayFrame(raylib::Rectangle frame = raylib::Rectangle(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY, WORKING_FRAME_WIDTH, WORKING_FRAME_HEIGHT)) : frame(frame) {}
+        DisplayFrame(raylib::Rectangle frame, raylib::Color color, float thickness) : frame(frame), color(color), thickness(thickness) {}
 
         void Update(float deltaTime) override
         {
-            
         }
 
         void Render() override

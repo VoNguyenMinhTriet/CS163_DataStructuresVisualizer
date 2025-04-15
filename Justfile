@@ -7,7 +7,7 @@ bin-win-dir := bin-dir / "win"
 bin-win-output := bin-win-dir / app-name
 libs := "raylib"
 include-dirs := "extern/include src"
-src-files := "main_app/main.cpp main_app/main_window.cpp main_app/pages/main_menu.cpp main_app/pages/HeapVisualizer.cpp  main_app/pages/InputBox.cpp"
+src-files := "main_app/main.cpp main_app/main_window.cpp main_app/pages/main_menu.cpp main_app/pages/HeapVisualizer.cpp widget_toolkit/input_box/InputBox.cpp widget_toolkit/notification/Notification.cpp"
 
 linux-dbg_build:
     mkdir -p {{bin-linux-dir}}
