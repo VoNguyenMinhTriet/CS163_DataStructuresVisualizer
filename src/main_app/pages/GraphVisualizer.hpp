@@ -13,6 +13,7 @@
 #include "main_app/themes/dark_simple/text_button.hpp"
 #include "./page.hpp"
 #include "widget_toolkit/notification/Notification.hpp"
+#include "widget_toolkit/pseudo_code_display/PseudoCode.hpp"
 
 const int BUTTON_WIDTH = 300;
 const int BUTTON_HEIGHT = 200;
@@ -46,6 +47,9 @@ const int INPUT_BOX_DELETE_EDGE_POSY = DELETE_EDGE_BUTTON_POSY;
 
 const int NOTIFICATION_COORDX = NOTIFICATION_FRAME_COORDX + 20;
 const int NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 20;
+
+const int PSEUDOCODE_LINE_WIDTH = 700;
+const int PSEUDOCODE_LINE_HEIGHT = 50;
 
 namespace ds_viz::pages 
 {
@@ -111,6 +115,9 @@ namespace ds_viz::pages
 
         // vector store edges
         std::vector<std::pair<std::pair<int, int>, int>> edges;
+        
+        std::vector<std::string> kruskalPseudoCode;
+        std::unique_ptr<raywtk::PseudoCodeDisplay> pseudoCodeDisplay;
 
 
         public:

@@ -83,6 +83,19 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     animationStep = 0;
     animationTimer = 0.0;
 
+    kruskalPseudoCode = {
+        "1. Sort all edges in non-decreasing order of their weight.",
+        "2. Initialize parent and size arrays for union-find.",
+        "3. For each edge (u, v, w):",
+        "   a. If u and v are in different sets:",
+        "      i. Add edge (u, v, w) to MST.",
+        "      ii. Union the sets of u and v.",
+        "4. Stop when MST contains (N-1) edges."
+    };
+
+    pseudoCodeDisplay = std::make_unique<raywtk::PseudoCodeDisplay>(raylib::Vector2(WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH, WORKING_FRAME_COORDY), kruskalPseudoCode.size(), PSEUDOCODE_LINE_WIDTH, PSEUDOCODE_LINE_HEIGHT, raylib::Color::White(), raylib::Color::Yellow(), raylib::Color::Green());    
+    pseudoCodeDisplay->SetPseudoCodeLines(kruskalPseudoCode);
+
 }
 
 void ds_viz::pages::GraphVisualizer::InsertNewNode() {
@@ -239,6 +252,51 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
     KruskalButton->Update(dt);
 
     // Kruskal animation update
+    // if (kruskalFlag) {
+    //     auto findPar = [&](auto self, int u) -> int {
+    //         return u == par[u] ? u : par[u] = self(self, par[u]);
+    //     };
+
+    //     auto unions = [&](int x, int y) -> bool {
+    //         x = findPar(findPar, x);
+    //         y = findPar(findPar, y);
+    //         if (x == y) return false;
+    //         if (sz[x] < sz[y]) std::swap(x, y);
+    //         par[y] = x;
+    //         sz[x] += sz[y];
+    //         return true;
+    //     };
+
+    //     animationTimer += dt;
+    //     if (animationTimer <= animationDelay) {
+    //         if (animationStep < edges.size()) {
+    //             indexProcessing = animationStep;
+    //             pseudoCodeDisplay->SetLineState(0, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
+    //         }
+    //     } else {
+    //         if (animationTimer <= 2.0 * animationDelay) {
+    //             if (animationStep < edges.size()) {
+    //                 int i = animationStep;
+    //                 auto [u, v] = edges[i].first;
+    //                 // Highlight step 3: Processing edge
+    //                 pseudoCodeDisplay->SetLineState(2, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
+    //                 if (unions(u, v)) {
+    //                     pseudoCodeDisplay->SetLineState(3, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
+    //                     inMstList.insert(i);
+    //                 }
+    //             } else {
+    //                 kruskalFlag = false;
+    //             }
+    //         } else {
+    //             ++animationStep;
+    //             if (animationStep == edges.size()) {
+    //                 kruskalFlag = false;
+    //             }
+    //             animationTimer = 0.0f;
+    //         }
+    //     }
+    // }
+
     if (kruskalFlag) {
         auto findPar = [&](auto self, int u) -> int {
             return u == par[u] ? u : par[u] = self(self, par[u]);
@@ -255,28 +313,35 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
         };
 
         animationTimer += dt;
+
         if (animationTimer <= animationDelay) {
-            if (animationStep < edges.size()) {
-                indexProcessing = animationStep;
-            }
-        } else {
+            // Highlight step 1: Sorting edges
+            pseudoCodeDisplay->SetLineState(0, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
+        } else if (animationStep < edges.size()) {
+            int i = animationStep;
+            auto [u, v] = edges[i].first;
+
             if (animationTimer <= 2.0 * animationDelay) {
-                if (animationStep < edges.size()) {
-                    int i = animationStep;
-                    auto [u, v] = edges[i].first;
-                    if (unions(u, v)) {
-                        inMstList.insert(i);
-                    }
-                } else {
-                    kruskalFlag = false;
+                // Highlight step 3: Processing edge
+                pseudoCodeDisplay->SetLineState(2, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
+
+                if (unions(u, v)) {
+                    // Highlight step 3a: Adding edge to MST
+                    pseudoCodeDisplay->SetLineState(3, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
+                    inMstList.insert(i);
                 }
             } else {
+                // Move to the next edge
                 ++animationStep;
                 if (animationStep == edges.size()) {
                     kruskalFlag = false;
                 }
                 animationTimer = 0.0f;
             }
+        } else {
+            // Highlight step 4: MST complete
+            pseudoCodeDisplay->SetLineState(4, raywtk::PseudoCodeDisplay::LineState::HIGHLIGHTED);
+            kruskalFlag = false;
         }
     }
 
@@ -395,6 +460,9 @@ void ds_viz::pages::GraphVisualizer::Render()
     if(notification != nullptr){
         notification->Render();
     }
+
+    // Psuedo code display render
+    pseudoCodeDisplay->Render();
 
     // vector nodes render
     for(auto &node : nodes){
