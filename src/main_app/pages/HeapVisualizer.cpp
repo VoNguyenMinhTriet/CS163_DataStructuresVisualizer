@@ -18,25 +18,42 @@ HeapVisualizer::HeapVisualizer()
 
     // displayFrame initialize
     displayFrame = std::make_unique<raywtk::DisplayFrame>();
- 
+
+    // Build heap button initialize
+    buildHeapButton = std::make_unique<raywtk::Button>();
+    buildHeapButton->buttonText = "Build Heap";
+    buildHeapButton->buttonRect = raylib::Rectangle(BUILD_HEAP_BUTTON_COORDX, BUILD_HEAP_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
+    buildHeapButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    buildHeapButton->Click.append([this]() { inputBuildHeapButtonFlag = true; inputBoxBuildHeap->processing = true; });
+
     // Push new value button initialize
-    inputPushNewValueButtonFlag = false;
     pushValueButton = std::make_unique<raywtk::Button>();
     pushValueButton->buttonText = "Push New Value";
-    pushValueButton->buttonRect = raylib::Rectangle(75, 250, 250, 170);
+    pushValueButton->buttonRect = raylib::Rectangle(PUSH_VALUE_BUTTON_COORDX, PUSH_VALUE_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
     pushValueButton->Click.append([this]() { inputPushNewValueButtonFlag = true; inputBoxPushNewValue->processing = true; });
     pushValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
  
     // Pop max value button initialize
     popMaxValueButton = std::make_unique<raywtk::Button>();
     popMaxValueButton->buttonText = "Pop Max Value";
-    popMaxValueButton->buttonRect = raylib::Rectangle(75, 450, 250, 170);
+    popMaxValueButton->buttonRect = raylib::Rectangle(POP_VALUE_BUTTON_COORDX, POP_VALUE_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
     popMaxValueButton->Click.append([this]() { PopMaxValue(); });
     popMaxValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
+    // Clear heap button initialize
+    clearHeapButton = std::make_unique<raywtk::Button>();
+    clearHeapButton->buttonText = "Clear Heap";
+    clearHeapButton->buttonRect = raylib::Rectangle(CLEAR_HEAP_BUTTON_COORDX, CLEAR_HEAP_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
+    clearHeapButton->Click.append([this]() { ClearHeap(); });
+    clearHeapButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // Input box build heap initialize
+    inputBuildHeapButtonFlag = false;
+    inputBoxBuildHeap = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_BUILD_HEAP_COORDX, INPUT_BOX_BUILD_HEAP_COORDY, INPUT_BOX_BUILD_HEAP_WIDTH, INPUT_BOX_BUILD_HEAP_HEIGHT), raylib::Color::Black(), raylib::Color::White(), raylib::Color::Gray(), 31, false);
+    
     // Input box push new value initialize
     inputPushNewValueButtonFlag = false;
-    inputBoxPushNewValue = std::make_unique<raywtk::InputBox>(raylib::Rectangle(330, 280, 150, 100), raylib::Color::Black(), raylib::Color::White(), raylib::Color::Gray(), 1, false);
+    inputBoxPushNewValue = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_PUSH_VALUE_COORDX, INPUT_BOX_PUSH_VALUE_COORDY, INPUT_BOX_PUSH_VALUE_WIDTH, INPUT_BOX_PUSH_VALUE_HEIGHT), raylib::Color::Black(), raylib::Color::White(), raylib::Color::Gray(), 1, false);
 }
 
 int HeapVisualizer::parent(int i)
@@ -54,32 +71,76 @@ int HeapVisualizer::right_child(int i)
     return i * 2 + 2;
 }
 
-void HeapVisualizer::swapNodes(int i, int j) {
+void HeapVisualizer::swapNodes(int i, int j) 
+{
     swap(values[i], values[j]);
     swap(nodes[i]->position, nodes[j]->position);
     swap(nodes[i], nodes[j]);
 }
 
-#define sz(x) int((x).size())
-void HeapVisualizer::PushNewValue(int value) 
+void HeapVisualizer::maxHeapify(int i) 
 {
-    int index = sz(values), depth = 0;
-    if(index > 31)
+    if(i >= sz(values))
         return;
 
-    while(index >= (1 << depth)) {
+    int L = left_child(i), R = right_child(i);
+    int pos_max = i;
+
+    if(L < sz(values) && values[L] > values[pos_max])
+        pos_max = L;
+
+    if(R < sz(values) && values[R] > values[pos_max])
+        pos_max = R;
+
+    if(i != pos_max) {
+        swapNodes(i, pos_max);
+        maxHeapify(pos_max);
+    }
+}
+
+raylib::Vector2 HeapVisualizer::GetPositionInDisplay(int &index, int &depth) 
+{
+    while(index >= (1 << depth)) 
+    {
         index -= (1 << depth);
         ++depth;
     }
-
-    std::unique_ptr<raywtk::NodeWidget> newNode = std::make_unique<raywtk::NodeWidget>(value);
+    
     raylib::Vector2 position = raylib::Vector2(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY);
     position.x += 60 + double(WORKING_FRAME_WIDTH - 120) / ((1 << depth)) / 2 + double(WORKING_FRAME_WIDTH - 120) / ((1 << depth)) * (index);
-    position.y += double(WORKING_FRAME_HEIGHT) / 6 * (depth + 1);
+    position.y += (WORKING_FRAME_HEIGHT) / 6 * (depth + 1);
+    return position;
+}
+
+void HeapVisualizer::BuildHeap(const vector<int> &val) 
+{
+    ClearHeap();
+    for (int i = 0; i < sz(val); ++i) {
+        int index = sz(values), depth = 0;
+        raylib::Vector2 position = GetPositionInDisplay(index, depth);
+
+        std::unique_ptr<raywtk::NodeWidget> newNode = std::make_unique<raywtk::NodeWidget>(val[i]);
+        newNode->position = position;
+        nodes.push_back(std::move(newNode));
+        values.push_back(val[i]);
+    }
+
+    int k = parent(sz(values) - 1); // parent of last leaf node on heap
+    for (int i = k; i >= 0; --i)
+        maxHeapify(i);
+}
+
+void HeapVisualizer::PushNewValue(int value) 
+{
+    if(sz(values) >= 31)
+        return;
+
+    int index = sz(values), depth = 0;
+    raylib::Vector2 position = GetPositionInDisplay(index, depth);
     
+    std::unique_ptr<raywtk::NodeWidget> newNode = std::make_unique<raywtk::NodeWidget>(value);
     newNode->position = position;
     nodes.push_back(std::move(newNode));
-
     values.push_back(value);
     
     int i = sz(values) - 1;
@@ -104,25 +165,13 @@ void HeapVisualizer::PopMaxValue()
     values.pop_back();
     nodes.pop_back();
 
-    i = 0;
-    while(1) {
-        int L = left_child(i), R = right_child(i);
-        int pos_max = i;
+    maxHeapify(0);
+}
 
-        if(L < sz(values) && values[L] > values[pos_max])
-            pos_max = L;
-
-        if(R < sz(values) && values[R] > values[pos_max])
-            pos_max = R;
-
-        if(i != pos_max) {
-            swapNodes(i, pos_max);
-            i = pos_max;
-        } else {
-            break;
-        }
-    }
-
+void HeapVisualizer::ClearHeap()
+{
+    values.clear();
+    nodes.clear();
 }
 
 void HeapVisualizer::Update(float dt) 
@@ -130,16 +179,36 @@ void HeapVisualizer::Update(float dt)
     // Display Frame render
     displayFrame->Render();
     
+    // Build heap button update
+    buildHeapButton->Update(dt);
+
+    // Show input box build heap update
+    if(inputBuildHeapButtonFlag) 
+    {
+        if(raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON) && !raylib::Mouse::GetPosition().CheckCollision(buildHeapButton->buttonRect) && !raylib::Mouse::GetPosition().CheckCollision(inputBoxBuildHeap->rect))
+        {
+            inputBuildHeapButtonFlag = false;
+            inputBoxBuildHeap->Reset();
+        } else 
+        {
+            inputBoxBuildHeap->Update(dt);
+            if(!inputBoxBuildHeap->processing)
+            {
+                auto values = inputBoxBuildHeap->values;
+                BuildHeap(values);
+                inputBuildHeapButtonFlag = false;
+                inputBoxBuildHeap->Reset();
+            }
+        }
+    }
+
     // Push new value button update
     pushValueButton->Update(dt);
-
-    // Pop max value button update
-    popMaxValueButton->Update(dt);
     
     // Show input box push new value update
     if (inputPushNewValueButtonFlag)
     {
-        if(raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON) && !raylib::Mouse::GetPosition().CheckCollision(pushValueButton->buttonRect)) 
+        if(raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON) && !raylib::Mouse::GetPosition().CheckCollision(pushValueButton->buttonRect) && !raylib::Mouse::GetPosition().CheckCollision(inputBoxPushNewValue->rect)) 
         {
             inputPushNewValueButtonFlag = false;
             inputBoxPushNewValue->Reset();
@@ -156,6 +225,12 @@ void HeapVisualizer::Update(float dt)
         }
     }
 
+    // Pop max value button update
+    popMaxValueButton->Update(dt);
+
+    // Clear heap button update
+    clearHeapButton->Update(dt);
+
     // vector nodes update
     for(auto &node : nodes)
     {
@@ -167,14 +242,23 @@ void HeapVisualizer::Render()
 {
     title.Draw(200, 100);
 
-    // Insert new value render
-    pushValueButton->Render();
+    // Build heap button render
+    buildHeapButton->Render();
 
-    // Pop max value render
+    // Input box push new value button render
+    inputBoxPushNewValue->Render();
+
+    // Insert new value button render
+    pushValueButton->Render();
+    
+    // Input box build heap button render
+    inputBoxBuildHeap->Render();
+
+    // Pop max value button render
     popMaxValueButton->Render();
 
-    // Input box push new value render
-    inputBoxPushNewValue->Render();
+    // Clear heap button render
+    clearHeapButton->Render();
 
     // vector nodes render
     for(auto &node : nodes)

@@ -24,21 +24,23 @@ namespace raywtk {
 
     void InputBox::Update(float dt) {
         int key = GetCharPressed();
-        while (key > 0) {
+        while (key > 0 && (strlen(text) < 127)) {
             bool getNewChar = false;
-            if(key == (int)' ')
+            if(strlen(text) > 0 && key == int(' '))
             {
-                if((strlen(text) > 1 && text[strlen(text) - 1] == ' ') || (strlen(text) > 0 && std::count(text, text + strlen(text), ' ') + 1 < number))
+                if(std::count(text, text + strlen(text), ' ') + 1 < number && text[strlen(text) - 1] != ' ')
                 {
                     getNewChar = true;
                 }
             }
 
-            if ((key >= 32) && (key <= 125) && (strlen(text) < 127)) 
+            bool check = (key == '0' && (strlen(text) > 1 && text[strlen(text) - 1] != ' ' && text[strlen(text) - 2] != ' ' || strlen(text) == 0 || text[strlen(text) - 1] != '0' && text[strlen(text) - 1] != '-'));
+            check |= (strlen(text) == 0 || text[strlen(text) - 1] != '0' || strlen(text) > 1 && text[strlen(text) - 1] != ' ' && text[strlen(text) - 2] != ' ') && (key >= '1') && (key <= '9');
+            if (check || (key == '-' && (strlen(text) == 0 || text[strlen(text) - 1] == ' ')))
             {
                 getNewChar = true;
             }
-
+            
             if(getNewChar)
             {
                 text[strlen(text) + 1] = '\0';
@@ -59,6 +61,8 @@ namespace raywtk {
         if(IsKeyPressed(KEY_ENTER))
         {
             values.push_back(0);
+
+            int sign = 1;
             for (int i = 0; text[i] != '\0'; ++i) 
             {
                 if(text[i] == '-')
@@ -68,14 +72,20 @@ namespace raywtk {
 
                 if(text[i] != ' ') 
                 {
-                    values.back() = values.back() * 10 + text[i] - '0';
-                    if(i > 0 && text[i - 1] == '-')
+                    values.back() = values.back() * 10 + (text[i] - '0') * sign;
+                    if(i > 0 && text[i - 1] == '-') {
+                        sign = -1;
                         values.back() *= -1;
+                    }
                 } else 
                 {
+                    sign = 1;
                     values.push_back(0);
                 }
             }
+
+            if(values.back() == 0 && (strlen(text) == 0 || text[strlen(text) - 1] == ' '))
+                values.pop_back();
 
             processing = false;
             return;
