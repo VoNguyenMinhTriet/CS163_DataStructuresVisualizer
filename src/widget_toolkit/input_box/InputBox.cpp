@@ -57,10 +57,56 @@ namespace raywtk {
         }
     }
 
+    void DrawRoundedRectangleBorder(Rectangle rec, float roundness, int segments, int lineThickness, Color color) {
+        // Calculate the radius for the rounded corners
+        float radius = roundness * fminf(rec.width, rec.height) / 2.0f;
+    
+        // Draw the straight edges of the rectangle
+        DrawRectangle(rec.x + radius, rec.y, rec.width - 2 * radius, lineThickness, color); // Top edge
+        DrawRectangle(rec.x + radius, rec.y + rec.height - lineThickness, rec.width - 2 * radius, lineThickness, color); // Bottom edge
+        DrawRectangle(rec.x, rec.y + radius, lineThickness, rec.height - 2 * radius, color); // Left edge
+        DrawRectangle(rec.x + rec.width - lineThickness, rec.y + radius, lineThickness, rec.height - 2 * radius, color); // Right edge
+    
+        // Draw the rounded corners
+        DrawCircleSector(
+            {rec.x + radius, rec.y + radius}, // Top-left corner
+            radius,
+            180,
+            270,
+            segments,
+            color
+        );
+        DrawCircleSector(
+            {rec.x + rec.width - radius, rec.y + radius}, // Top-right corner
+            radius,
+            270,
+            360,
+            segments,
+            color
+        );
+        DrawCircleSector(
+            {rec.x + radius, rec.y + rec.height - radius}, // Bottom-left corner
+            radius,
+            90,
+            180,
+            segments,
+            color
+        );
+        DrawCircleSector(
+            {rec.x + rec.width - radius, rec.y + rec.height - radius}, // Bottom-right corner
+            radius,
+            0,
+            90,
+            segments,
+            color
+        );
+    }
+    
+
     void InputBox::Render() {
         if(processing){
-            DrawRectangleRec(rect, bgColor);
-            DrawRectangleLinesEx(rect, 2, borderColor);
+            //DrawRectangleRec(rect, bgColor);
+            DrawRoundedRectangleBorder(rect, 0.3f, 10, 3, borderColor);
             raylib::DrawText(text, (int)(rect.x + 10), (int)(rect.y + 10), 20, textColor);
         }
     }

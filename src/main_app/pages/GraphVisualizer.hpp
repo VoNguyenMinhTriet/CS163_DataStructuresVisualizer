@@ -18,26 +18,49 @@
 #include "widget_toolkit/notification/Notification.hpp"
 #include "widget_toolkit/pseudo_code_display/PseudoCode.hpp"
 
-const int BUTTON_WIDTH = 300;
-const int BUTTON_HEIGHT = 200;
+const int BUTTON_WIDTH = 200;
+const int BUTTON_HEIGHT = 50;
 
-const int INPUT_BOX_WIDTH = 100;
-const int INPUT_BOX_HEIGHT = 200;
+const int DISTANCE_BETWEEN_BUTTONS = 10;
 
-const int INSERT_NODE_BUTTON_POSX = 100;
-const int INSERT_NODE_BUTTON_POSY = 200;
+const int INPUT_BOX_WIDTH = 200;
+const int INPUT_BOX_HEIGHT = 50;
 
-const int INSERT_EDGE_BUTTON_POSX = 100;
-const int INSERT_EDGE_BUTTON_POSY = 450;
+const int TOGGLE_BUTTON_WIDTH = 10;
+const int TOGGLE_BUTTON_HEIGHT = BUTTON_HEIGHT * 9 + DISTANCE_BETWEEN_BUTTONS * 8;
 
-const int KRUSKAL_BUTTON_POSX = 100;
-const int KRUSKAL_BUTTON_POSY = 700;
+const int INIT_GRAPH_BUTTON_POSX = 100;
+const int INIT_GRAPH_BUTTON_POSY = 200;
 
-const int DELETE_NODE_BUTTON_POSX = 100;
-const int DELETE_NODE_BUTTON_POSY = 950;
+const int TOGGLE_BUTTON_POSX = INIT_GRAPH_BUTTON_POSX - TOGGLE_BUTTON_WIDTH - 5;
+const int TOGGLE_BUTTON_POSY = INIT_GRAPH_BUTTON_POSY;
 
-const int DELETE_EDGE_BUTTON_POSX = 100;
-const int DELETE_EDGE_BUTTON_POSY = 1200;
+const int INSERT_NODE_BUTTON_POSX = INIT_GRAPH_BUTTON_POSX;
+const int INSERT_NODE_BUTTON_POSY = INIT_GRAPH_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+
+const int INSERT_EDGE_BUTTON_POSX = INSERT_NODE_BUTTON_POSX;
+const int INSERT_EDGE_BUTTON_POSY = INSERT_NODE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+
+const int DELETE_NODE_BUTTON_POSX = INSERT_EDGE_BUTTON_POSX;
+const int DELETE_NODE_BUTTON_POSY = INSERT_EDGE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+
+const int DELETE_EDGE_BUTTON_POSX = DELETE_NODE_BUTTON_POSX;
+const int DELETE_EDGE_BUTTON_POSY = DELETE_NODE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+
+const int KRUSKAL_BUTTON_POSX = DELETE_EDGE_BUTTON_POSX;
+const int KRUSKAL_BUTTON_POSY = DELETE_EDGE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+
+const int CLEAR_GRAPH_BUTTON_POSX = KRUSKAL_BUTTON_POSX;
+const int CLEAR_GRAPH_BUTTON_POSY = KRUSKAL_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+
+const int UNDO_BUTTON_POSX = CLEAR_GRAPH_BUTTON_POSX;
+const int UNDO_BUTTON_POSY = CLEAR_GRAPH_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+
+const int REDO_BUTTON_POSX = UNDO_BUTTON_POSX;
+const int REDO_BUTTON_POSY = UNDO_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+
+const int INPUT_BOX_INIT_GRAPH_POSX = INIT_GRAPH_BUTTON_POSX + BUTTON_WIDTH;
+const int INPUT_BOX_INIT_GRAPH_POSY = INIT_GRAPH_BUTTON_POSY;
 
 const int INPUT_BOX_INSERT_EDGE_POSX = INSERT_EDGE_BUTTON_POSX + BUTTON_WIDTH;
 const int INPUT_BOX_INSERT_EDGE_POSY = INSERT_EDGE_BUTTON_POSY;
@@ -48,17 +71,25 @@ const int INPUT_BOX_DELETE_NODE_POSY = DELETE_NODE_BUTTON_POSY;
 const int INPUT_BOX_DELETE_EDGE_POSX = DELETE_EDGE_BUTTON_POSX + BUTTON_WIDTH;
 const int INPUT_BOX_DELETE_EDGE_POSY = DELETE_EDGE_BUTTON_POSY;
 
-const int UNDO_BUTTON_POSX = WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH;
-const int UNDO_BUTTON_POSY = 500;
-
-const int REDO_BUTTON_POSX = WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH + BUTTON_WIDTH / 2 + 50;
-const int REDO_BUTTON_POSY = 500;
-
 const int NOTIFICATION_COORDX = NOTIFICATION_FRAME_COORDX + 20;
 const int NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 20;
 
 const int PSEUDOCODE_LINE_WIDTH = 700;
 const int PSEUDOCODE_LINE_HEIGHT = 50;
+
+const int PROGRESS_BAR_POSX = WORKING_FRAME_COORDX;
+const int PROGRESS_BAR_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT;
+const int PROGRESS_BAR_LENGTH = WORKING_FRAME_WIDTH;
+const int PROGRESS_BAR_HEIGHT = 20;
+
+const int PREV_STEP_BUTTON_POSX = WORKING_FRAME_COORDX;
+const int PREV_STEP_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10;
+
+const int CONTINUE_BUTTON_POSX = PREV_STEP_BUTTON_POSX + BUTTON_WIDTH + DISTANCE_BETWEEN_BUTTONS;
+const int CONTINUE_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10;
+
+const int NEXT_STEP_BUTTON_POSX = CONTINUE_BUTTON_POSX + BUTTON_WIDTH + DISTANCE_BETWEEN_BUTTONS;
+const int NEXT_STEP_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10;
 
 namespace ds_viz::pages 
 {
@@ -72,6 +103,8 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::DisplayFrame> workingFrame;
         // Notification frame
         std::unique_ptr<raywtk::DisplayFrame> notificationFrame;
+        // Init graph button
+        std::unique_ptr<raywtk::Button> initializeGraphButton;
         // Insert new node
         std::unique_ptr<raywtk::Button> insertNodeButton;
         // Insert new edge
@@ -86,10 +119,16 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> undoButton;
         // Redo button
         std::unique_ptr<raywtk::Button> redoButton;
-
+        // Clear graph button
+        std::unique_ptr<raywtk::Button> clearGraphButton;
+        // Toggle button
+        std::unique_ptr<raywtk::Button> toggleButton;
+        bool showOperatorButtons = true; // Initially, operator buttons are visible
         // Notification
         std::unique_ptr<raywtk::Notification> currentNotification;
-
+        // Input box for init graph
+        std::unique_ptr<raywtk::InputBox> inputBoxInitializeGraph;
+        bool inputInitializeGraphFlag;
         // Input box for insert new edge
         std::unique_ptr<raywtk::InputBox> inputBoxInsertEdge;
         bool inputInsertEdgeButtonFlag;
@@ -132,7 +171,7 @@ namespace ds_viz::pages
         };
         std::vector<AnimationStep> animationSteps;
         float animationTimer = 0.0f;
-        float animationStepDuration = 2.0f; // Duration of each step in seconds
+        float animationStepDuration = 1.0f; // Duration of each step in seconds
         size_t currentAnimationStep = 0;
 
         // Undo stack for storing the state of the graph
@@ -143,17 +182,29 @@ namespace ds_viz::pages
         // No processing operator flag
         bool freeFlag = true;
 
+        std::unique_ptr<raywtk::Button> prevStepButton;
+        std::unique_ptr<raywtk::Button> nextStepButton;
+        std::unique_ptr<raywtk::Button> continueButton;
+
+        float progressBarLength = 400.0f; // Fixed length of the progress bar
+        float progressBarHeight = 20.0f;  // Height of the progress bar
+        int totalSteps = 0;               // Total number of steps in the algorithm
+        bool animationRunning = false;    // Flag to control animation
+
         public:
             GraphVisualizer();
+            void InitializeGraph(int n); // initialize graph with n nodes
             void InsertNewNode(); // insert new node
             void InsertNewEdge(int u, int v, int c); // insert new edge
             void Kruskal();
             void RenderAnimationStep(const AnimationStep& step, const std::vector<std::pair<std::pair<int, int>, int>>& sortedEdges);
             void DeleteNode(int node); // delete node
             void DeleteEdge(int u, int v); // delete edge
+            void ClearGraph(); // clear graph
             void PushToUndoStack(); // push current state to undo stack
             void Undo();
             void Redo();
+            void RenderProgressBar(); // render progress bar
             void Update(float dt) override;
             void Render() override;
     };

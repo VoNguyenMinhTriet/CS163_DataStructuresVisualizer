@@ -24,6 +24,16 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     // notificationFrame initialize
     notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
+    // Initialize graph button and input box
+    initializeGraphButton = std::make_unique<raywtk::Button>();
+    initializeGraphButton->buttonText = "Initialize Graph";
+    initializeGraphButton->buttonRect = raylib::Rectangle(INIT_GRAPH_BUTTON_POSX, INIT_GRAPH_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
+    initializeGraphButton->Click.append([this]() { if (freeFlag) {
+                                                    inputInitializeGraphFlag = true; inputBoxInitializeGraph->processing = true; freeFlag = false;
+                                                    notification = std::make_unique<raywtk::Notification>("Enter the number of nodes to initialize the graph", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY ); }
+                                                });
+    initializeGraphButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
     // Insert new node button initialize
     insertNodeButton = std::make_unique<raywtk::Button>();
     insertNodeButton->buttonText = "Insert New Node";
@@ -46,8 +56,15 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     KruskalButton = std::make_unique<raywtk::Button>();
     KruskalButton->buttonText = "Kruskal";
     KruskalButton->buttonRect = raylib::Rectangle(KRUSKAL_BUTTON_POSX, KRUSKAL_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
-    KruskalButton->Click.append([this]() { if(freeFlag){ Kruskal(); freeFlag = false; } });
+    KruskalButton->Click.append([this]() { if(freeFlag){ freeFlag = false; Kruskal(); } });
     KruskalButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // Clear graph button initialize
+    clearGraphButton = std::make_unique<raywtk::Button>();
+    clearGraphButton->buttonText = "Clear Graph";
+    clearGraphButton->buttonRect = raylib::Rectangle(CLEAR_GRAPH_BUTTON_POSX, CLEAR_GRAPH_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
+    clearGraphButton->Click.append([this]() { if (freeFlag) { ClearGraph(); }});
+    clearGraphButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
     // Delete node button initialize
     inputDeleteNodeButtonFlag = false;
@@ -74,23 +91,52 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     // Undo button initialize
     undoButton = std::make_unique<raywtk::Button>();
     undoButton->buttonText = "Undo";
-    undoButton->buttonRect = raylib::Rectangle(UNDO_BUTTON_POSX, UNDO_BUTTON_POSY, BUTTON_WIDTH / 2, BUTTON_HEIGHT / 2);
+    undoButton->buttonRect = raylib::Rectangle(UNDO_BUTTON_POSX, UNDO_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     undoButton->Click.append([this]() { if(freeFlag) Undo(); });
     undoButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
     // Redo button initialize
     redoButton = std::make_unique<raywtk::Button>();
     redoButton->buttonText = "Redo";
-    redoButton->buttonRect = raylib::Rectangle(REDO_BUTTON_POSX, REDO_BUTTON_POSY, BUTTON_WIDTH / 2, BUTTON_HEIGHT / 2);
+    redoButton->buttonRect = raylib::Rectangle(REDO_BUTTON_POSX, REDO_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     redoButton->Click.append([this]() { if(freeFlag) Redo(); });
     redoButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
+    // Toggle button initialize
+    toggleButton = std::make_unique<raywtk::Button>();
+    toggleButton->buttonText = ">";
+    toggleButton->buttonRect = raylib::Rectangle(TOGGLE_BUTTON_POSX, TOGGLE_BUTTON_POSY, TOGGLE_BUTTON_WIDTH, TOGGLE_BUTTON_HEIGHT);
+    toggleButton->Click.append([this]() { showOperatorButtons = !showOperatorButtons; // Toggle visibility
+                                          toggleButton->buttonText = showOperatorButtons ? ">" : "<"; // Update button text
+                                        });
+    toggleButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // Previous Step Button
+    prevStepButton = std::make_unique<raywtk::Button>();
+    prevStepButton->buttonText = "Previous";
+    prevStepButton->buttonRect = raylib::Rectangle(PREV_STEP_BUTTON_POSX, PREV_STEP_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
+    prevStepButton->Click.append([this]() { if (currentAnimationStep > 0) { currentAnimationStep--; animationRunning = false; } });
+
+    // Next Step Button
+    nextStepButton = std::make_unique<raywtk::Button>();
+    nextStepButton->buttonText = "Next";
+    nextStepButton->buttonRect = raylib::Rectangle(NEXT_STEP_BUTTON_POSX, NEXT_STEP_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
+    nextStepButton->Click.append([this]() { if (currentAnimationStep < totalSteps - 1) { currentAnimationStep++; animationRunning = false; }});
+
+    // Continue Button
+    continueButton = std::make_unique<raywtk::Button>();
+    continueButton->buttonText = "Continue";
+    continueButton->buttonRect = raylib::Rectangle(CONTINUE_BUTTON_POSX, CONTINUE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
+    continueButton->Click.append([this]() { animationRunning = true; });
+
+    // Input box initialize graph
+    inputBoxInitializeGraph = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_INIT_GRAPH_POSX, INPUT_BOX_INIT_GRAPH_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 1, false );
     // Input box insert new edge initialize
-    inputBoxInsertEdge = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_INSERT_EDGE_POSX, INPUT_BOX_INSERT_EDGE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::Black(), raylib::Color::White(), raylib::Color::Gray(), 3, false);
+    inputBoxInsertEdge = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_INSERT_EDGE_POSX, INPUT_BOX_INSERT_EDGE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 3, false);
     // Input box delete node initialize
-    inputBoxDeleteNode = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_DELETE_NODE_POSX, INPUT_BOX_DELETE_NODE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::Black(), raylib::Color::White(), raylib::Color::Gray(), 1, false);
+    inputBoxDeleteNode = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_DELETE_NODE_POSX, INPUT_BOX_DELETE_NODE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 1, false);
     // Input box delete edge initialize
-    inputBoxDeleteEdge = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_DELETE_EDGE_POSX, INPUT_BOX_DELETE_EDGE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::Black(), raylib::Color::White(), raylib::Color::Gray(), 2, false);
+    inputBoxDeleteEdge = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_DELETE_EDGE_POSX, INPUT_BOX_DELETE_EDGE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 2, false);
 
     // Kruskal index processing
     indexProcessing = 0;
@@ -107,6 +153,51 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     pseudoCodeDisplay = std::make_unique<raywtk::PseudoCodeDisplay>(raylib::Vector2(WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH, WORKING_FRAME_COORDY), kruskalPseudoCode.size(), PSEUDOCODE_LINE_WIDTH, PSEUDOCODE_LINE_HEIGHT, raylib::Color::White(), raylib::Color::Yellow(), raylib::Color::Green());    
     pseudoCodeDisplay->SetPseudoCodeLines(kruskalPseudoCode);
 
+}
+
+void ds_viz::pages::GraphVisualizer::InitializeGraph(int n) {
+    PushToUndoStack(); // Save the current state before modifying
+
+    // Clear existing nodes and edges
+    nodes.clear();
+    edges.clear();
+
+    // Create `n` nodes with random positions
+    auto getRandomInt = [](int minValue, int maxValue) -> int {
+        std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
+        return rng() % (maxValue - minValue + 1) + minValue;
+    };
+
+    for (int i = 0; i < n; ++i) {
+        auto newNode = std::make_unique<raywtk::NodeWidget>(i);
+        raylib::Vector2 randomPosition = raylib::Vector2(
+            getRandomInt(WORKING_FRAME_COORDX, WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH),
+            getRandomInt(WORKING_FRAME_COORDY, WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT)
+        );
+        newNode->position = randomPosition;
+        nodes.push_back(std::move(newNode));
+    }
+
+    // Create random edges between nodes
+    int maxEdges = n * (n - 1) / 4; // Limit the number of edges to avoid clutter
+    for (int i = 0; i < maxEdges; ++i) {
+        int u = getRandomInt(0, n - 1);
+        int v = getRandomInt(0, n - 1);
+        if (u != v && std::none_of(edges.begin(), edges.end(), [u, v](const auto& edge) {
+                return edge.first == std::make_pair(u, v) || edge.first == std::make_pair(v, u);
+            })) {
+            int weight = getRandomInt(1, 100); // Random weight between 1 and 100
+            edges.push_back({{u, v}, weight});
+        }
+    }
+
+    // Notification for successful initialization
+    notification = std::make_unique<raywtk::Notification>(
+        "Graph initialized with " + std::to_string(n) + " nodes and " + std::to_string(edges.size()) + " edges",
+        raywtk::NotificationType::SUCCESS,
+        NOTIFICATION_COORDX,
+        NOTIFICATION_COORDY
+    );
 }
 
 void ds_viz::pages::GraphVisualizer::InsertNewNode() {
@@ -196,6 +287,9 @@ void ds_viz::pages::GraphVisualizer::Kruskal(){
     indexProcessing = 0;
     animationTimer = 0.0;
     currentAnimationStep = 0;
+    totalSteps = animationSteps.size();
+    animationRunning = true;
+
 
     // Union-Find logic
     std::function<int(int)> findPar = [&](int x) -> int {
@@ -223,6 +317,7 @@ void ds_viz::pages::GraphVisualizer::Kruskal(){
             NOTIFICATION_COORDX,
             NOTIFICATION_COORDY
         );
+        freeFlag = true;
     } else{
         animationSteps.clear();
         for(size_t i = 0; i < nodes.size(); i++) par[i] = i, sz[i] = 1;
@@ -254,6 +349,7 @@ void ds_viz::pages::GraphVisualizer::Kruskal(){
         }        
         animationSteps.push_back({-1, edges_in_mst, nodes_in_mst, 4}); // Highlight the line for stopping when MST is complete  
     }
+    totalSteps = animationSteps.size() - 1;
 }
 
 void ds_viz::pages::GraphVisualizer::RenderAnimationStep(const AnimationStep& step, const std::vector<std::pair<std::pair<int, int>, int>>& sortedEdges) {
@@ -383,6 +479,24 @@ void ds_viz::pages::GraphVisualizer::DeleteEdge(int u, int v) {
     freeFlag = true;
 }
 
+void ds_viz::pages::GraphVisualizer::ClearGraph() {
+    PushToUndoStack(); // Save the current state before modifying
+
+    // Clear all nodes and edges
+    nodes.clear();
+    edges.clear();
+
+    // Notification for successful clearing
+    notification = std::make_unique<raywtk::Notification>(
+        "Graph cleared successfully.",
+        raywtk::NotificationType::SUCCESS,
+        NOTIFICATION_COORDX,
+        NOTIFICATION_COORDY
+    );
+
+    freeFlag = true;
+}
+
 void ds_viz::pages::GraphVisualizer::PushToUndoStack() {
     // Create a snapshot of the current state
     std::vector<std::unique_ptr<raywtk::NodeWidget>> nodeSnapshot;
@@ -428,16 +542,62 @@ void ds_viz::pages::GraphVisualizer::Redo() {
     }
 }
 
+void ds_viz::pages::GraphVisualizer::RenderProgressBar() {
+    // Draw the progress bar background
+    raylib::Rectangle progressBarBackground = {PROGRESS_BAR_POSX, PROGRESS_BAR_POSY, PROGRESS_BAR_LENGTH, PROGRESS_BAR_HEIGHT};
+    DrawRectangleRec(progressBarBackground, raylib::Color::LightGray());
+
+    // Calculate the progress based on the current step
+    float progressWidth = (currentAnimationStep / (float)totalSteps) * PROGRESS_BAR_LENGTH;
+    raylib::Rectangle progressBar = {PROGRESS_BAR_POSX, PROGRESS_BAR_POSY, progressWidth, PROGRESS_BAR_HEIGHT};
+    DrawRectangleRec(progressBar, raylib::Color::Green());
+}
+
 void ds_viz::pages::GraphVisualizer::Update(float dt)
 {
     // Display Frame update
     workingFrame->Update(dt);
 
-    // Insert node button update
-    insertNodeButton->Update(dt);
+    // Update the toggle button
+    toggleButton->Update(dt);
 
-    // Insert edge button update
-    insertEdgeButton->Update(dt);
+    // Update operator buttons only if they are visible
+    if (showOperatorButtons) {
+        initializeGraphButton->Update(dt);
+        insertNodeButton->Update(dt);
+        insertEdgeButton->Update(dt);
+        deleteNodeButton->Update(dt);
+        deleteEdgeButton->Update(dt);
+        KruskalButton->Update(dt);
+        undoButton->Update(dt);
+        redoButton->Update(dt);
+        clearGraphButton->Update(dt);
+    }
+
+    prevStepButton->Update(dt);
+    nextStepButton->Update(dt);
+    continueButton->Update(dt);
+
+    // Input box initialize graph button update
+    if (inputInitializeGraphFlag) {
+        inputBoxInitializeGraph->Update(dt);
+        if (!inputBoxInitializeGraph->processing) {
+            int numNodes = inputBoxInitializeGraph->values[0];
+            if (numNodes > 0) {
+                InitializeGraph(numNodes);
+            } else {
+                notification = std::make_unique<raywtk::Notification>(
+                    "Invalid number of nodes. Please enter a positive integer.",
+                    raywtk::NotificationType::ERROR,
+                    NOTIFICATION_COORDX,
+                    NOTIFICATION_COORDY
+                );
+            }
+            inputInitializeGraphFlag = false;
+            inputBoxInitializeGraph->Reset();
+            freeFlag = true;
+        }
+    }
 
     // Input box insert edge button update
     if (inputInsertEdgeButtonFlag) {
@@ -451,12 +611,6 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
         }
     }
 
-    // Kruskal button update
-    KruskalButton->Update(dt);
-    
-    // Delete node button update
-    deleteNodeButton->Update(dt);
-
     // Input box delete node button update
     if (inputDeleteNodeButtonFlag) {
         inputBoxDeleteNode->Update(dt);
@@ -468,9 +622,6 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
             freeFlag = true;
         }
     }
-
-    // Delete edge button update
-    deleteEdgeButton->Update(dt);
 
     // Input box delete edge button update
     if (inputDeleteEdgeButtonFlag) {
@@ -484,18 +635,14 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
         }
     }
 
-    // Undo button update
-    undoButton->Update(dt);
-
-    // Redo button update
-    redoButton->Update(dt);
-
     // Animation step update
     if (kruskalFlag && currentAnimationStep < animationSteps.size() - 1) {
-        animationTimer += dt;
-        if (animationTimer >= animationStepDuration) {
-            animationTimer = 0.0f;
-            ++currentAnimationStep;
+        if(animationRunning){
+            animationTimer += dt;
+            if (animationTimer >= animationStepDuration) {
+                animationTimer = 0.0f;
+                ++currentAnimationStep;
+            }
         }
     } else{
         if(kruskalFlag){
@@ -533,16 +680,27 @@ void ds_viz::pages::GraphVisualizer::Render()
     // notification frame render
     notificationFrame->Render();
 
-    // Insert new node render
-    insertNodeButton->Render();
+    // toggle button render
+    toggleButton->Render();
 
-    // input box insert edge button render
-    if(inputInsertEdgeButtonFlag){
-        
+    if (showOperatorButtons) {
+        initializeGraphButton->Render();
+        insertNodeButton->Render();
+        insertEdgeButton->Render();
+        deleteNodeButton->Render();
+        deleteEdgeButton->Render();
+        KruskalButton->Render();
+        undoButton->Render();
+        redoButton->Render();
+        clearGraphButton->Render();
     }
 
-    // Insert new edge render
-    insertEdgeButton->Render();
+    if(kruskalFlag){
+        prevStepButton->Render();
+        nextStepButton->Render();
+        continueButton->Render();
+        RenderProgressBar();
+    }
     
     // vector edges render
     if(!kruskalFlag){
@@ -582,20 +740,8 @@ void ds_viz::pages::GraphVisualizer::Render()
         }
     }
 
-    // Kruskal render
-    KruskalButton->Render();
-
-    // Delete node render
-    deleteNodeButton->Render();
-
-    // Delete edge render
-    deleteEdgeButton->Render();
-
-    // Undo button render
-    undoButton->Render();
-
-    // redo button render
-    redoButton->Render();
+    // Input box initialize graph render
+    inputBoxInitializeGraph->Render();
 
     // Input box insert new edge render
     inputBoxInsertEdge->Render();

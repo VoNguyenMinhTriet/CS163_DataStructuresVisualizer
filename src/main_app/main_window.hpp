@@ -7,8 +7,8 @@
 #include "widget_toolkit/theme_manager.hpp"
 
 #define DEFAULT_FPS 60
-#define DEFAULT_WIN_WIDTH 2560
-#define DEFAULT_WIN_HEIGHT 1440
+#define DEFAULT_WIN_WIDTH 1280
+#define DEFAULT_WIN_HEIGHT 720
 
 namespace ds_viz
 {
