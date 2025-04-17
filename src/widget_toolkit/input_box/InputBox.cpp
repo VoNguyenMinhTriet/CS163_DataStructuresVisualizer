@@ -98,7 +98,7 @@ namespace raywtk {
         {
             DrawRectangleRec(rect, bgColor);
             DrawRectangleLinesEx(rect, 2, borderColor);
-            raylib::DrawText(text, (int)(rect.x + 10), (int)(rect.y + 10), 20, textColor);
+            raylib::DrawText(text, (int)(rect.x + 10), int(rect.y + (rect.height - 16) / 2.0), 16, textColor);
         }
     }
 

@@ -5,7 +5,7 @@
 #include "eventpp/callbacklist.h"
 #include "../interfaces.hpp"
 
-const float NODE_RADIUS = 25.0f;
+const float NODE_RADIUS = 20.0f;
 
 namespace raywtk 
 {

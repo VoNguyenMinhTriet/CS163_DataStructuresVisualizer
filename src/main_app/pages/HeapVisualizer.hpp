@@ -8,39 +8,40 @@
 #include "widget_toolkit/tree_widgets/node.hpp"
 #include "widget_toolkit/tree_widgets/edge.hpp"
 #include "widget_toolkit/input_box/InputBox.hpp"
+#include "widget_toolkit/animation/animation_step.hpp"
 #include "widget_toolkit/display_frame/display_frame.hpp"
 #include "main_app/themes/dark_simple/text_button.hpp"
 #include "./page.hpp"
 
-const int OPERATOR_BUTTON_WIDTH = 175;
-const int OPERATOR_BUTTON_HEIGHT = 36;
+const int OPERATOR_BUTTON_WIDTH = 150;
+const int OPERATOR_BUTTON_HEIGHT = 25;
 
-const int BUILD_HEAP_BUTTON_COORDX = 15;
-const int BUILD_HEAP_BUTTON_COORDY = 820;
+const int BUILD_HEAP_BUTTON_COORDX = 10;
+const int BUILD_HEAP_BUTTON_COORDY = 565;
 
-const int PUSH_VALUE_BUTTON_COORDX = 15;
-const int PUSH_VALUE_BUTTON_COORDY = 860;
+const int PUSH_VALUE_BUTTON_COORDX = 10;
+const int PUSH_VALUE_BUTTON_COORDY = 595;
 
-const int POP_VALUE_BUTTON_COORDX = 15;
-const int POP_VALUE_BUTTON_COORDY = 900;
+const int POP_VALUE_BUTTON_COORDX = 10;
+const int POP_VALUE_BUTTON_COORDY = 625;
 
-const int CLEAR_HEAP_BUTTON_COORDX = 15;
-const int CLEAR_HEAP_BUTTON_COORDY = 940;
+const int CLEAR_HEAP_BUTTON_COORDX = 10;
+const int CLEAR_HEAP_BUTTON_COORDY = 655;
 
-const int SHOW_OPERATOR_BUTTON_COORDX = -10;
-const int SHOW_OPERATOR_BUTTON_COORDY = 820;
-const int SHOW_OPERATOR_BUTTON_WIDTH = 20;
-const int SHOW_OPERATOR_BUTTON_HEIGHT = 40 * 3 + OPERATOR_BUTTON_HEIGHT;
+const int SHOW_OPERATOR_BUTTON_COORDX = -7;
+const int SHOW_OPERATOR_BUTTON_COORDY = BUILD_HEAP_BUTTON_COORDY;
+const int SHOW_OPERATOR_BUTTON_WIDTH = 14;
+const int SHOW_OPERATOR_BUTTON_HEIGHT = 30 * 3 + OPERATOR_BUTTON_HEIGHT;
 
 const int INPUT_BOX_BUILD_HEAP_COORDX = BUILD_HEAP_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
 const int INPUT_BOX_BUILD_HEAP_COORDY = BUILD_HEAP_BUTTON_COORDY;
-const int INPUT_BOX_BUILD_HEAP_WIDTH = 350;
-const int INPUT_BOX_BUILD_HEAP_HEIGHT = 36;
+const int INPUT_BOX_BUILD_HEAP_WIDTH = 250;
+const int INPUT_BOX_BUILD_HEAP_HEIGHT = OPERATOR_BUTTON_HEIGHT;
 
 const int INPUT_BOX_PUSH_VALUE_COORDX = PUSH_VALUE_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
 const int INPUT_BOX_PUSH_VALUE_COORDY = PUSH_VALUE_BUTTON_COORDY;
-const int INPUT_BOX_PUSH_VALUE_WIDTH = 150;
-const int INPUT_BOX_PUSH_VALUE_HEIGHT = 36;
+const int INPUT_BOX_PUSH_VALUE_WIDTH = 75;
+const int INPUT_BOX_PUSH_VALUE_HEIGHT = OPERATOR_BUTTON_HEIGHT;
 
 const int NOTIFICATION_COORDX = NOTIFICATION_FRAME_COORDX + 20;
 const int NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 80;
@@ -58,6 +59,7 @@ namespace ds_viz::pages
         // notification Title
         //raylib::Text notificationTitle;
 
+        // animation text
         raylib::Text animationText;
 
         // Working frame
@@ -117,6 +119,13 @@ namespace ds_viz::pages
         // vector store nodes
         std::vector<std::unique_ptr<raywtk::NodeWidget>> nodes;
 
+        // vector store animation steps
+        std::vector<raywtk::Step> animation_steps;
+
+        // variables to manage animation speed
+        int animationStep = 0;
+        float animationTimer = 0.0;
+
         public:
             HeapVisualizer();
             int parent(int i); // parent of node with index i on heap
@@ -130,6 +139,8 @@ namespace ds_viz::pages
             void PopMaxValue(); // pop the max value out of heap (root of heap)
             void ClearHeap(); // clear heap
             void ResetStatus(); // reset status before a heap operator
+            void doingStep(raywtk::Step step); // perform an animation step
+            void changeStateOperatorButton(bool state); // change all opreator buttons state to state (state = 0 -> turn off, state = 1 -> turn on)
             void Update(float dt) override;
             void Render() override;
     };

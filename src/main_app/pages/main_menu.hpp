@@ -22,7 +22,7 @@ namespace ds_viz::pages
         {
             font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
             title = raylib::Text("DATA LA VISTA", 128, raylib::Color::White(), *font, 0);
-            CreateButton("Heap Visualization", 300, 400, [this]() { OnLLButtonClick(); });
+            CreateButton("Heap Visualization", 200, 300, [this]() { OnLLButtonClick(); });
         }
 
         void CreateButton(const std::string& text, float x, float y, std::function<void()> callback)
