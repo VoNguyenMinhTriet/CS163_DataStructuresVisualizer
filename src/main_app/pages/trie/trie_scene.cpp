@@ -20,6 +20,8 @@ void ds_viz::pages::trie::TrieScene::Render()
 
 void ds_viz::pages::trie::TrieScene::BuildSearchTimeline(const std::string& key)
 {
+    if (animationTimeline)
+        animationTimeline->ApplyTimeline(*this);
     animationTimeline = std::make_unique<SearchTimeline>(*this, key);
 }
 
@@ -198,10 +200,14 @@ std::string ds_viz::pages::trie::TrieScene::GetStatusMessage() const
 }
 void ds_viz::pages::trie::TrieScene::BuildAddTimeline(const std::string& key)
 {
+    if (animationTimeline)
+        animationTimeline->ApplyTimeline(*this);
     animationTimeline = std::make_unique<AddTimeline>(*this, key);
 }
 void ds_viz::pages::trie::TrieScene::BuildRemoveTimeline(const std::string& key)
 {
+    if (animationTimeline)
+        animationTimeline->ApplyTimeline(*this);
     animationTimeline = std::make_unique<RemoveTimeline>(*this, key);
 }
 std::string ds_viz::pages::trie::TrieScene::GetCaption() const
@@ -215,4 +221,16 @@ std::pair<int, int> ds_viz::pages::trie::TrieScene::Progress() const
     if (animationTimeline)
         return animationTimeline->Progress();
     return {0, 0};
+}
+std::string ds_viz::pages::trie::TrieScene::GetCode() const
+{
+    if (!animationTimeline)
+        return "";
+    return animationTimeline->GetCode();
+}
+int ds_viz::pages::trie::TrieScene::GetCurrentLine()
+{
+    if (animationTimeline == nullptr)
+        return 0;
+    return animationTimeline->GetCurrentLine();
 }

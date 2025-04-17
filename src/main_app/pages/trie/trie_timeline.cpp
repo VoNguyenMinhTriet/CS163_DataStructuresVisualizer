@@ -18,7 +18,8 @@ ds_viz::pages::trie::SearchTimeline::SearchTimeline(TrieScene& scene,
         {
             stepTimeline.push_back(
                 std::make_unique<SetVariableStep<std::optional<bool>>>(
-                    returnValue, "<return value>", [] { return false; }));
+                    returnValue, "<return value>", [] { return false; }, 4
+                ));
 
             currentStep = stepTimeline.begin();
             return;
@@ -33,7 +34,8 @@ ds_viz::pages::trie::SearchTimeline::SearchTimeline(TrieScene& scene,
     stepTimeline.push_back(
         std::make_unique<SetVariableStep<std::optional<bool>>>(
             returnValue, "<return value>",
-            [this] { return var_curNode->isTerminal; }));
+            [this] { return var_curNode->isTerminal; },
+            curNode->isTerminal ? 7 : 8));
 
     currentStep = stepTimeline.begin();
 }
@@ -155,7 +157,7 @@ std::unique_ptr<ds_viz::pages::trie::SearchTimeline::MessageOnlyStep>
             msgSS << "a child at index '" << c << "'";
 
         return msgSS.str();
-    });
+    }, 3);
 }
 
 std::unique_ptr<ds_viz::pages::trie::SearchTimeline::MessageOnlyStep>
@@ -167,7 +169,7 @@ std::unique_ptr<ds_viz::pages::trie::SearchTimeline::MessageOnlyStep>
         if (var_curNode->isTerminal)
             return "curNode is marked terminal (at end of word)";
         return "curNode is not marked terminal (at end of word)";
-    });
+    }, 6);
 }
 
 std::string ds_viz::pages::trie::AddTimeline::AddChildStep::GetMessage() const
@@ -309,7 +311,7 @@ std::unique_ptr<ds_viz::pages::trie::AddTimeline::MessageOnlyStep>
             msgSS << "child at index '" << c << "'";
 
         return msgSS.str();
-    });
+    }, 3);
 }
 
 void ds_viz::pages::trie::AddTimeline::StepForward()
@@ -372,37 +374,6 @@ void ds_viz::pages::trie::AddTimeline::RenderUtil(TrieNode* node)
     else
         TrieScene::RenderNodeNormal(node, nodeCol);
 }
-
-std::string ds_viz::pages::trie::RemoveTimeline::AddChildStep::GetMessage()
-    const
-{
-    return "Adding child node at index '" + std::string(1, childChar) +
-           "' of " + varName;
-}
-
-void ds_viz::pages::trie::RemoveTimeline::AddChildStep::Do(
-    RemoveTimeline& timeline)
-{
-    _nodeVar->Add(childChar);
-    timeline.scene.root->RecomputePosition();
-}
-
-void ds_viz::pages::trie::RemoveTimeline::AddChildStep::Undo(
-    RemoveTimeline& timeline)
-{
-    auto discardedChildNodeOwner = std::move(
-        _nodeVar
-            ->children[childChar]); // Automatically deleted when out of scope
-    _nodeVar->children[childChar] = nullptr;
-
-    timeline.scene.root->RecomputePosition();
-}
-
-ds_viz::pages::trie::RemoveTimeline::AddChildStep::AddChildStep(
-    TrieNode*& nodeVar, std::string varName, char childChar) :
-    _nodeVar(nodeVar), childChar(childChar), _pPreviousNode(nodeVar),
-    varName(varName)
-{}
 
 void ds_viz::pages::trie::RemoveTimeline::GoToChildStep::Do(
     RemoveTimeline& timeline)
@@ -520,7 +491,7 @@ std::unique_ptr<ds_viz::pages::trie::RemoveTimeline::MessageOnlyStep>
             msgSS << "child at index '" << c << "'";
 
         return msgSS.str();
-    });
+    }, 3);
 }
 
 void ds_viz::pages::trie::RemoveTimeline::StepForward()
@@ -583,3 +554,13 @@ void ds_viz::pages::trie::RemoveTimeline::RenderUtil(TrieNode* node)
     else
         TrieScene::RenderNodeNormal(node, nodeCol);
 }
+void ds_viz::pages::trie::RemoveTimeline::ApplyTimeline(TrieScene& scene)
+{
+    while (currentStep != stepTimeline.end())
+        StepForward();
+};
+void ds_viz::pages::trie::AddTimeline::ApplyTimeline(TrieScene& scene)
+{
+    while (currentStep != stepTimeline.end())
+        StepForward();
+};

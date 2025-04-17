@@ -26,6 +26,8 @@ class ITimeline
     virtual std::pair<int, int> Progress() const = 0;
     virtual std::string GetCaption() const = 0;
     virtual std::string GetStatusMessage() const = 0;
+    virtual std::string GetCode() const = 0;
+    virtual int GetCurrentLine() const = 0;
     virtual void RenderCurrentState(TrieScene& scene) = 0;
     virtual void StepForward() = 0;
     virtual void StepBackward() = 0;
@@ -39,6 +41,7 @@ class SearchTimeline : public ITimeline
       public:
         virtual ~IAction() = default;
         virtual std::string GetMessage() const = 0;
+        virtual int GetHighlightedLine() const = 0;
         virtual void Do(SearchTimeline& timeline) = 0;
         virtual void Undo(SearchTimeline& timeline) = 0;
     };
@@ -83,13 +86,14 @@ class SearchTimeline : public ITimeline
         std::optional<bool> _previousValue;
         std::string _varName;
         std::function<std::optional<bool>()> _newValueExpression;
+        int _highlightedLine;
 
       public:
         SetVariableStep(
             std::optional<bool>& variable, std::string varName,
-            std::function<std::optional<bool>()> newValueExpression) :
+            std::function<std::optional<bool>()> newValueExpression, int line) :
             _variable(variable), _newValueExpression(newValueExpression),
-            _previousValue(variable), _varName(varName)
+            _previousValue(variable), _varName(varName), _highlightedLine(line)
         {}
 
         std::string GetMessage() const override
@@ -104,6 +108,11 @@ class SearchTimeline : public ITimeline
                 msgSS << std::boolalpha << result.value();
 
             return msgSS.str();
+        }
+
+        int GetHighlightedLine() const override
+        {
+            return _highlightedLine;
         }
 
         void Do(SearchTimeline& timeline) override
@@ -140,6 +149,11 @@ class SearchTimeline : public ITimeline
             return "Setting variable " + _varName + " to " + _expName;
         }
 
+        int GetHighlightedLine() const override
+        {
+            return 1;
+        }
+
         void Do(SearchTimeline& timeline) override
         {
             _previousValue = _variable;
@@ -167,6 +181,11 @@ class SearchTimeline : public ITimeline
 
         std::string GetMessage() const override;
 
+        int GetHighlightedLine() const override
+        {
+            return 5;
+        }
+
         void Do(SearchTimeline& timeline) override;
 
         void Undo(SearchTimeline& timeline) override;
@@ -175,15 +194,21 @@ class SearchTimeline : public ITimeline
     class MessageOnlyStep : public IAction
     {
         std::function<std::string()> messageFunc;
+        int highlightedLine;
 
       public:
-        MessageOnlyStep(std::function<std::string()> messageFunc) :
-            messageFunc(messageFunc)
+        MessageOnlyStep(std::function<std::string()> messageFunc, int highlightedLine) :
+            messageFunc(messageFunc), highlightedLine(highlightedLine)
         {}
 
         std::string GetMessage() const override
         {
             return messageFunc();
+        }
+
+        int GetHighlightedLine() const override
+        {
+            return highlightedLine;
         }
 
         void Do(SearchTimeline& timeline) override {}
@@ -224,6 +249,25 @@ class SearchTimeline : public ITimeline
         return "Searching for \"" + _key + "\" in the trie";
     }
 
+    std::string GetCode() const override
+    {
+        return "curNode <- root\n"
+               "for each char in key:\n"
+               "  if curNode has no child at char:\n"
+               "     return null\n"
+               "  move curNode to child at char\n"
+               "if curNode is terminal:\n"
+               "  return curNode\n"
+               "return null\n";
+    }
+
+    int GetCurrentLine() const override
+    {
+        if (currentStep == stepTimeline.end())
+            return 0;
+        return (*currentStep)->GetHighlightedLine();
+    }
+
     std::string GetStatusMessage() const override;
 
     void RenderCurrentState(TrieScene& scene) override;
@@ -244,6 +288,7 @@ class AddTimeline : public ITimeline
       public:
         virtual ~IAction() = default;
         virtual std::string GetMessage() const = 0;
+        virtual int GetHighlightedLine() const = 0;
         virtual void Do(AddTimeline& timeline) = 0;
         virtual void Undo(AddTimeline& timeline) = 0;
     };
@@ -259,6 +304,11 @@ class AddTimeline : public ITimeline
 
         std::string GetMessage() const override;
 
+        int GetHighlightedLine() const override
+        {
+            return 1;
+        }
+
         void Do(AddTimeline& timeline) override;
 
         void Undo(AddTimeline& timeline) override;
@@ -273,6 +323,11 @@ class AddTimeline : public ITimeline
 
       public:
         AddChildStep(TrieNode*& nodeVar, std::string varName, char childChar);
+
+        int GetHighlightedLine() const override
+        {
+            return 4;
+        }
 
         std::string GetMessage() const override;
 
@@ -296,6 +351,11 @@ class AddTimeline : public ITimeline
 
         std::string GetMessage() const override;
 
+        int GetHighlightedLine() const override
+        {
+            return 5;
+        }
+
         void Do(AddTimeline& timeline) override;
 
         void Undo(AddTimeline& timeline) override;
@@ -304,15 +364,21 @@ class AddTimeline : public ITimeline
     class MessageOnlyStep : public IAction
     {
         std::function<std::string()> messageFunc;
+        int highlightedLine;
 
       public:
-        MessageOnlyStep(std::function<std::string()> messageFunc) :
-            messageFunc(messageFunc)
+        MessageOnlyStep(std::function<std::string()> messageFunc, int highlightedLine) :
+            messageFunc(messageFunc), highlightedLine(highlightedLine)
         {}
 
         std::string GetMessage() const override
         {
             return messageFunc();
+        }
+
+        int GetHighlightedLine() const override
+        {
+            return highlightedLine;
         }
 
         void Do(AddTimeline& timeline) override {}
@@ -330,6 +396,11 @@ class AddTimeline : public ITimeline
         MarkTerminalStep(TrieNode*& nodeVar, std::string varName);
 
         std::string GetMessage() const override;
+
+        int GetHighlightedLine() const override
+        {
+            return 6;
+        }
 
         void Do(AddTimeline& timeline) override;
 
@@ -368,6 +439,23 @@ class AddTimeline : public ITimeline
         return "Adding \"" + _key + "\"";
     }
 
+    std::string GetCode() const override
+    {
+        return "curNode <- root\n"
+               "for each char in key:\n"
+               "  if curNode has no child at char:\n"
+               "    add child at char\n"
+               "  move curNode to child at char\n"
+               "mark curNode as terminal\n";
+    }
+
+    int GetCurrentLine() const override 
+    {
+        if (currentStep == stepTimeline.end())
+            return 0;
+        return (*currentStep)->GetHighlightedLine();
+    }
+
     std::string GetStatusMessage() const override;
 
     void RenderCurrentState(TrieScene& scene) override;
@@ -376,7 +464,7 @@ class AddTimeline : public ITimeline
 
     void StepBackward() override;
 
-    void ApplyTimeline(TrieScene& scene) override {};
+    void ApplyTimeline(TrieScene& scene) override;
 };
 
 class RemoveTimeline : public ITimeline
@@ -386,6 +474,7 @@ class RemoveTimeline : public ITimeline
       public:
         virtual ~IAction() = default;
         virtual std::string GetMessage() const = 0;
+        virtual int GetHighlightedLine() const = 0;
         virtual void Do(RemoveTimeline& timeline) = 0;
         virtual void Undo(RemoveTimeline& timeline) = 0;
     };
@@ -393,15 +482,21 @@ class RemoveTimeline : public ITimeline
     class MessageOnlyStep : public IAction
     {
         std::function<std::string()> messageFunc;
+        int highlightedLine;
 
       public:
-        MessageOnlyStep(std::function<std::string()> messageFunc) :
-            messageFunc(messageFunc)
+        MessageOnlyStep(std::function<std::string()> messageFunc, int highlightedLine) :
+            messageFunc(messageFunc), highlightedLine(highlightedLine)
         {}
 
         std::string GetMessage() const override
         {
             return messageFunc();
+        }
+
+        int GetHighlightedLine() const override
+        {
+            return highlightedLine;
         }
 
         void Do(RemoveTimeline& timeline) override {}
@@ -420,22 +515,10 @@ class RemoveTimeline : public ITimeline
 
         std::string GetMessage() const override;
 
-        void Do(RemoveTimeline& timeline) override;
-
-        void Undo(RemoveTimeline& timeline) override;
-    };
-
-    class AddChildStep : public IAction
-    {
-        TrieNode*& _nodeVar;
-        char childChar;
-        std::string varName;
-        TrieNode* _pPreviousNode;
-
-      public:
-        AddChildStep(TrieNode*& nodeVar, std::string varName, char childChar);
-
-        std::string GetMessage() const override;
+        int GetHighlightedLine() const override
+        {
+            return 1;
+        }
 
         void Do(RemoveTimeline& timeline) override;
 
@@ -457,6 +540,11 @@ class RemoveTimeline : public ITimeline
 
         std::string GetMessage() const override;
 
+        int GetHighlightedLine() const override
+        {
+            return 5;
+        }
+
         void Do(RemoveTimeline& timeline) override;
 
         void Undo(RemoveTimeline& timeline) override;
@@ -472,6 +560,11 @@ class RemoveTimeline : public ITimeline
         UnmarkTerminalStep(TrieNode*& nodeVar, std::string varName);
 
         std::string GetMessage() const override;
+
+        int GetHighlightedLine() const override
+        {
+            return 6;
+        }
 
         void Do(RemoveTimeline& timeline) override;
 
@@ -506,6 +599,23 @@ class RemoveTimeline : public ITimeline
         return "Removing \"" + _key + "\" from the trie";
     }
 
+    std::string GetCode() const override
+    {
+        return "curNode <- root\n"
+               "for each char in key:\n"
+               "  if curNode has no child at char:\n"
+               "     return\n"
+               "  move curNode to child at char\n"
+               "unmark curNode as terminal\n";
+    }
+
+    int GetCurrentLine() const override
+    {
+        if (currentStep == stepTimeline.end())
+            return 0;
+        return (*currentStep)->GetHighlightedLine();
+    }
+
     std::string GetStatusMessage() const override;
 
     void RenderCurrentState(TrieScene& scene) override;
@@ -514,7 +624,7 @@ class RemoveTimeline : public ITimeline
 
     void StepBackward() override;
 
-    void ApplyTimeline(TrieScene& scene) override {};
+    void ApplyTimeline(TrieScene& scene) override;
 };
 
 } // namespace ds_viz::pages::trie

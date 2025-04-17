@@ -86,9 +86,12 @@ namespace ds_viz::pages::trie
         void BuildSearchTimeline(const std::string &key);
         void BuildAddTimeline(const std::string& key);
         void BuildRemoveTimeline(const std::string& key);
+        void ClearTimeline() { animationTimeline = nullptr; }
         void StepForward();
         void StepBackward();
         std::string GetCaption() const;
         std::string GetStatusMessage() const;
+        std::string GetCode() const;
+        int GetCurrentLine();
     };
 }

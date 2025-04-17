@@ -1,11 +1,15 @@
 #include "../page.hpp"
 #include "main_app/pages/trie/trie_scene.hpp"
 #include "raylib-cpp/Font.hpp"
+#include "raylib-cpp/Functions.hpp"
 #include "raylib-cpp/Rectangle.hpp"
 #include "raylib-cpp/Vector2.hpp"
 #include "widget_toolkit/controls/button.hpp"
 #include "widget_toolkit/controls/text_box.hpp"
-
+#include "widget_toolkit/controls/code_box.hpp"
+#include <fstream>
+#include <future>
+#include <string>
 #include <vector>
 #include <algorithm>
 
@@ -222,7 +226,15 @@ class TriePage : public Page
         "yang",          "yellowstone", "yolanda",    "yosemite",
         "zap",           "zimmerman",   "zmodem",
     };
+
+    float stepsPerSecond = 4;
     bool actionsShown = false;
+
+    bool _loadingFile = false;
+    std::future<void> _loadTask;
+
+    bool _isPlaying = false;
+    float _currentTime = 0;
 
     // Controls
 
@@ -238,7 +250,9 @@ class TriePage : public Page
     raywtk::TextBox _removeTextBox; bool _removeBoxVisible = false;
     
     raywtk::Button _showCodeBoxButton;
-
+    raywtk::CodeBox _codeBox; bool _codeBoxVisible = false;
+    
+    raywtk::TextBox _stepsPerSecTextBox;
     raywtk::Button _prevStepButton;
     raywtk::Button _nextStepButton;
     raywtk::Button _playPauseButton;
@@ -279,6 +293,26 @@ class TriePage : public Page
             chosenWords.push_back(randomIndex);
             _scene.root->Add(wordList[randomIndex]);
         }
+    }
+
+    void LoadFileIfDropped()
+    {
+        auto dropped = raylib::LoadDroppedFiles();
+        if (dropped.size() != 1) return;
+        
+        _loadingFile = true;
+        _loadTask = std::async(std::launch::async, [this, dropped]() mutable {
+            std::ifstream file(dropped[0]);
+            if (!file.is_open()) return;
+
+            std::string line;
+            while (std::getline(file, line))
+            {
+                if (line.empty()) continue;
+                _scene.root->Add(line);
+            }
+            _loadingFile = false;
+        });
     }
 
   public:
