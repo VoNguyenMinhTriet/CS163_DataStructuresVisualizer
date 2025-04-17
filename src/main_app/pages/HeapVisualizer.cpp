@@ -19,10 +19,14 @@ HeapVisualizer::HeapVisualizer()
     // notification title
     //notificationTitle = raylib::Text("Notification: ", 40, raylib::Color::Yellow(), *font, 0);
 
-    // workingFrame initialize
+    // Working Frame initialize
     workingFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY, WORKING_FRAME_WIDTH, WORKING_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
-    // notificationFrame initialize
+    // Pseudo Code Frame initialize
+    pseudoCodeFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(PSEUDO_CODE_FRAME_COORDX, PSEUDO_CODE_FRAME_COORDY, PSEUDO_CODE_FRAME_WIDTH, PSEUDO_CODE_FRAME_HEIGHT), raylib::Color::Pink(), 2.0f);
+    pseudoCodeFrame->visible = false;
+
+    // Notification Frame initialize
     //notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
     // Build heap button initialize
@@ -96,6 +100,19 @@ HeapVisualizer::HeapVisualizer()
     animation_steps.clear();
     animationStep = 0, animationTimer = 1.0f;
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1));
+
+    // Pseudo code display initialize
+    pseudoCodeDisplay = std::make_unique<raywtk::PseudoCodeDisplay>(raylib::Vector2(PSEUDO_CODE_FRAME_COORDX + 5, PSEUDO_CODE_FRAME_COORDY), 8, PSEUDO_CODE_LINE_WIDTH, PSEUDO_CODE_LINE_HEIGHT, raylib::Color::White(), raylib::Color::Yellow(), raylib::Color::Green());
+
+    // Show pseudo code display button initialize
+    showPseudoCodeDisplayButton = std::make_unique<raywtk::Button>();
+    showPseudoCodeDisplayButton->buttonText = "";
+    showPseudoCodeDisplayButton->buttonRect = raylib::Rectangle(SHOW_PSEUDO_CODE_DISPLAY_BUTTON_COORDX, SHOW_PSEUDO_CODE_DISPLAY_BUTTON_COORDY, SHOW_PSEUDO_CODE_DISPLAY_BUTTON_WIDTH, SHOW_PSEUDO_CODE_DISPLAY_BUTTON_HEIGHT);
+    showPseudoCodeDisplayButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    showPseudoCodeDisplayButton->Click.append([this]()
+    {
+        pseudoCodeFrame->visible = pseudoCodeDisplay->visible = 1 - pseudoCodeFrame->visible;
+    });
 }
 
 inline int HeapVisualizer::parent(int i)
@@ -285,10 +302,13 @@ void HeapVisualizer::changeStateOperatorButton(bool state)
 
 void HeapVisualizer::Update(float dt) 
 {
-    // Working Frame render
+    // Working Frame update
     workingFrame->Update(dt);
-    
-    // Notification Frame render
+
+    // Pseudo Code Frame update
+    pseudoCodeFrame->Update(dt);
+
+    // Notification Frame update
     //notificationFrame->Update(dt);
 
     // Show operator button update
@@ -380,6 +400,9 @@ void HeapVisualizer::Update(float dt)
         }
     }
 
+    // Show pseudo code button update
+    showPseudoCodeDisplayButton->Update(dt);
+
     // vector nodes update
     for(auto &node : nodes)
     {
@@ -397,6 +420,9 @@ void HeapVisualizer::Render()
 
     // Working Frame render
     workingFrame->Render();
+
+    // Pseudo Code Frame render
+    pseudoCodeFrame->Render();
 
     // Notification Frame render
     //notificationFrame->Render();
@@ -439,6 +465,9 @@ void HeapVisualizer::Render()
 
     // Animation text render
     animationText.Draw(5, 690);
+
+    // Show pseudo code button render
+    showPseudoCodeDisplayButton->Render();
 
     // Vector nodes render
     for(auto &node : nodes)

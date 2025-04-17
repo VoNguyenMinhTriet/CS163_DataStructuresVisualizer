@@ -1,6 +1,7 @@
 #pragma once
  
 #include "raylib-cpp/raylib-cpp.hpp"
+#include "main_app/main_window.hpp"
 #include "../interfaces.hpp"
 
 static const int WORKING_FRAME_HEIGHT = 600;
@@ -12,6 +13,11 @@ static const int NOTIFICATION_FRAME_HEIGHT = 200;
 static const int NOTIFICATION_FRAME_WIDTH = 700;
 static const int NOTIFICATION_FRAME_COORDX = 1180;
 static const int NOTIFICATION_FRAME_COORDY = 0;
+
+static const int PSEUDO_CODE_FRAME_HEIGHT = 130;
+static const int PSEUDO_CODE_FRAME_WIDTH = 250;
+static const int PSEUDO_CODE_FRAME_COORDX = DEFAULT_WIN_WIDTH - PSEUDO_CODE_FRAME_WIDTH - 10;
+static const int PSEUDO_CODE_FRAME_COORDY = 680 - PSEUDO_CODE_FRAME_HEIGHT;
 
 namespace raywtk 
 {
