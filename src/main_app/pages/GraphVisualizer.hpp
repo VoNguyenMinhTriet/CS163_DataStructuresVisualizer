@@ -4,6 +4,9 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <stack>
+#include <chrono>
+#include <random>
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "widget_toolkit/controls/button.hpp"
 #include "widget_toolkit/graph_widgets/node.hpp"
@@ -45,6 +48,12 @@ const int INPUT_BOX_DELETE_NODE_POSY = DELETE_NODE_BUTTON_POSY;
 const int INPUT_BOX_DELETE_EDGE_POSX = DELETE_EDGE_BUTTON_POSX + BUTTON_WIDTH;
 const int INPUT_BOX_DELETE_EDGE_POSY = DELETE_EDGE_BUTTON_POSY;
 
+const int UNDO_BUTTON_POSX = WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH;
+const int UNDO_BUTTON_POSY = 500;
+
+const int REDO_BUTTON_POSX = WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH + BUTTON_WIDTH / 2 + 50;
+const int REDO_BUTTON_POSY = 500;
+
 const int NOTIFICATION_COORDX = NOTIFICATION_FRAME_COORDX + 20;
 const int NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 20;
 
@@ -73,6 +82,10 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> deleteNodeButton;
         // Delete edge button
         std::unique_ptr<raywtk::Button> deleteEdgeButton;
+        // Undo button
+        std::unique_ptr<raywtk::Button> undoButton;
+        // Redo button
+        std::unique_ptr<raywtk::Button> redoButton;
 
         // Notification
         std::unique_ptr<raywtk::Notification> currentNotification;
@@ -102,9 +115,6 @@ namespace ds_viz::pages
         // in-mst edges list
         std::set<int> inMstList;
 
-        // set store node value
-        std::set<int> setValue;
-
         // vector store nodes
         std::vector<std::unique_ptr<raywtk::NodeWidget>> nodes;
 
@@ -125,6 +135,13 @@ namespace ds_viz::pages
         float animationStepDuration = 2.0f; // Duration of each step in seconds
         size_t currentAnimationStep = 0;
 
+        // Undo stack for storing the state of the graph
+        std::stack<std::pair<std::vector<std::unique_ptr<raywtk::NodeWidget>>, std::vector<std::pair<std::pair<int, int>, int>>>> undoStack;
+        // Redo stack for storing the state of the graph
+        std::stack<std::pair<std::vector<std::unique_ptr<raywtk::NodeWidget>>, std::vector<std::pair<std::pair<int, int>, int>>>> redoStack;
+
+        // No processing operator flag
+        bool freeFlag = true;
 
         public:
             GraphVisualizer();
@@ -134,6 +151,9 @@ namespace ds_viz::pages
             void RenderAnimationStep(const AnimationStep& step, const std::vector<std::pair<std::pair<int, int>, int>>& sortedEdges);
             void DeleteNode(int node); // delete node
             void DeleteEdge(int u, int v); // delete edge
+            void PushToUndoStack(); // push current state to undo stack
+            void Undo();
+            void Redo();
             void Update(float dt) override;
             void Render() override;
     };
