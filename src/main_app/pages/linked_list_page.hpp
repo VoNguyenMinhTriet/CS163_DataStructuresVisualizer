@@ -19,8 +19,9 @@ namespace ds_viz::pages
         raylib::Text title;
         
         std::unique_ptr<raywtk::NodeWidget> head = nullptr; // Head node
-        std::shared_ptr<raylib::Font> sharedFont = std::make_shared<raylib::Font>(LoadFont("./ttf/InterDisplay-ExtraBold.ttf")); // Node font
+        std::shared_ptr<raylib::Font> nodeFont; // Node font
         std::shared_ptr<raylib::Font> textFont; // Text font
+
         float headX = 80; // Default X-coordinate of head
         float headY = 400; // Default Y-coordinate of head
         float spacing = 100; // Default spacing between nodes
@@ -136,7 +137,11 @@ namespace ds_viz::pages
         std::string FindMessage = "";
         float FindTimer = 0.0f;
 
-
+        std::vector<std::string> pseudoCodeSteps; // Steps for the current operation
+        int currentStep = -1;                    // Index of the currently highlighted step
+        bool showPseudoCode = false;             // Whether to show the pseudo-code block
+        
+                                    
     public:
 
     LinkedListPage(); 
@@ -168,6 +173,8 @@ namespace ds_viz::pages
     void DrawInputBox(int X, int Y, std::string &input);
     void DrawInputBox2(int X, int Y, std::string &input);
     void DrawSpeedBar();
+    void SetPseudoCodeSteps(const std::vector<std::string>& steps); 
+    void DrawPseudoCodeBlock();  
     void Update(float dt) override;
     void Render() override;
     };

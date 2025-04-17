@@ -15,7 +15,8 @@ namespace raywtk
         raylib::Vector2 position;
         raylib::Camera2D *camera;
         float radius = 30.0f;
-        raylib::Color color = raylib::Color::Blue();
+        raylib::Color color = raylib::Color::Black();
+        raylib::Color Ringcolor = raylib::Color::White();
         std::shared_ptr<raylib::Font> nodefont; 
         bool visible = true;
         std::function<void()> content; // Optional content function
@@ -71,6 +72,7 @@ namespace raywtk
         {
             if (visible)
             {
+                position.DrawCircle(radius + 5, Ringcolor);
                 position.DrawCircle(radius, color);
                 if (content) content();
             }

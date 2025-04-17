@@ -5,7 +5,7 @@
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "./page.hpp"
 #include "widget_toolkit/controls/button.hpp"
-#include "./LinkedList.hpp"
+#include "./linked_list_page.hpp"
 #include "main_app/themes/dark_simple/text_button.hpp"
 
 namespace ds_viz::pages
