@@ -41,6 +41,20 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         showRandomInput = false;
     });
 
+    // Add StepForward button
+    stepForwardButton = std::make_unique<raywtk::Button>();
+    stepForwardButton->buttonText = "Step Forward";
+    stepForwardButton->buttonRect = raylib::Rectangle(60, 880, 180, 50);
+    stepForwardButton->Click.append([this]() { OnStepForwardClick(); });
+    stepForwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
+
+    // Add StepBackward button
+    stepBackwardButton = std::make_unique<raywtk::Button>();
+    stepBackwardButton->buttonText = "Step Backward";
+    stepBackwardButton->buttonRect = raylib::Rectangle(260, 880, 180, 50);
+    stepBackwardButton->Click.append([this]() { OnStepBackwardClick(); });
+    stepBackwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
+
     // Insert buttons (Main button)
     insertButton = std::make_unique<raywtk::Button>();
     insertButton->buttonText = "Insert";
@@ -279,6 +293,8 @@ ds_viz::pages::LinkedListPage::~LinkedListPage()
 // Generate Random List
 void ds_viz::pages::LinkedListPage::OnRandomButtonClick(int numNodes)
 { 
+    animationStates.clear();
+    currentAnimationState = -1;
     head.reset();
     size = 0;
 
@@ -296,6 +312,8 @@ void ds_viz::pages::LinkedListPage::OnRandomButtonClick(int numNodes)
 // A.k.a insert at tail in 1 frame
 void ds_viz::pages::LinkedListPage::InsertRandom(int value)
 {
+    animationStates.clear();
+    currentAnimationState = -1;
     ResetColor();
 
     auto newNode = std::make_unique<raywtk::NodeWidget>(value, nodeFont);
@@ -331,6 +349,8 @@ void ds_viz::pages::LinkedListPage::InsertRandom(int value)
 // Load list from textfile, must save before uploading
 void ds_viz::pages::LinkedListPage::OnLoadFileButtonClick()
 {
+    animationStates.clear();
+    currentAnimationState = -1;
     DropMessage = "Drop file to load!";
     DropTimer = 2.0f;
 
@@ -376,6 +396,8 @@ void ds_viz::pages::LinkedListPage::OnLoadFileButtonClick()
 // Clear All List
 void ds_viz::pages::LinkedListPage::OnClearButtonClick()
 {
+    animationStates.clear();
+    currentAnimationState = -1;
     if (!head)
     {
         errorMessage = "List is empty!";
@@ -438,6 +460,8 @@ void ds_viz::pages::LinkedListPage::Append()
 // Undo
 void ds_viz::pages::LinkedListPage::OnUndoButtonClick()
 {
+    animationStates.clear();
+    currentAnimationState = -1;
     if (UndoStack.empty())
         return;
     
@@ -457,6 +481,8 @@ void ds_viz::pages::LinkedListPage::OnUndoButtonClick()
 // Redo
 void ds_viz::pages::LinkedListPage::OnRedoButtonClick()
 {
+    animationStates.clear();
+    currentAnimationState = -1;
     if (RedoStack.empty())
         return;
     
@@ -472,6 +498,8 @@ void ds_viz::pages::LinkedListPage::OnRedoButtonClick()
 // Handle return button click event
 void ds_viz::pages::LinkedListPage::OnReturnButtonClick()
 {
+    animationStates.clear();
+    currentAnimationState = -1;
     if (_context)
         _context->ChangePage(std::make_shared<ds_viz::pages::MainMenuPage>());
     else
@@ -481,12 +509,6 @@ void ds_viz::pages::LinkedListPage::OnReturnButtonClick()
 // Insert a new node at head
 void ds_viz::pages::LinkedListPage::InsertAtHead(int value)
 {
-    SetPseudoCodeSteps({
-        "Create a new node.",
-        "Set the new node's next to the current head.",
-        "Update the head to the new node."
-    });
-
     InsertAtIndex(value, 0);
 }
 
@@ -499,6 +521,8 @@ void ds_viz::pages::LinkedListPage::InsertAtTail(int value)
 // Insert a new node at an index
 void ds_viz::pages::LinkedListPage::InsertAtIndex(int value, int index)
 {
+    animationStates.clear();
+    currentAnimationState = -1;
     ResetColor();
     if (index == 0)
     {
@@ -549,6 +573,8 @@ void ds_viz::pages::LinkedListPage::DeleteAtTail()
 // Delete at an index
 void ds_viz::pages::LinkedListPage::DeleteAtIndex(int index)
 {
+    animationStates.clear();
+    currentAnimationState = -1;
     if (!head)
     {
         errorMessage = "List is empty!";
@@ -570,6 +596,8 @@ void ds_viz::pages::LinkedListPage::DeleteAtIndex(int index)
 // Search nodes by value
 void ds_viz::pages::LinkedListPage::SearchByValue(int val)
 {
+    animationStates.clear();
+    currentAnimationState = -1;
     SetPseudoCodeSteps({
         "If list is empty, return.",
         "while (temp->val != target)",
@@ -596,6 +624,8 @@ void ds_viz::pages::LinkedListPage::SearchByValue(int val)
 // Search nodes by Index
 void ds_viz::pages::LinkedListPage::SearchByIndex(int index)
 {   
+    animationStates.clear();
+    currentAnimationState = -1;
     SetPseudoCodeSteps({
         "If list is empty, return.",
         "while (index != targetindex && temp)",
@@ -755,6 +785,8 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
         animatingTimer -= dt * animationSpeed;
         if (animatingTimer <= 0)
         {
+            SaveListState();
+
             if (searchState == 0) 
             {
                 currentStep = 1; //Highlight the current node
@@ -770,7 +802,9 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
                     searchCurrent->color = raylib::Color::DarkGreen();
                     FindMessage = "Node found!";
                     FindTimer = 2.0f;
+                    SaveListState();
                     animatingSearch = false;
+                    currentAnimationState = static_cast<int>(animationStates.size()) - 1;
                     searchCurrent = nullptr;
                     return;
                 }
@@ -780,7 +814,9 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
                     searchCurrent->color = raylib::Color::DarkGreen();
                     FindMessage = "Node found!";
                     FindTimer = 2.0f;
+                    SaveListState();
                     animatingSearch = false;
+                    currentAnimationState = static_cast<int>(animationStates.size()) - 1;
                     searchCurrent = nullptr;
                     return;
                 }
@@ -796,14 +832,78 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
                     animatingSearch = false;
                     errorMessage = "Value not found";
                     errorTimer = 2.0f;
+                    SaveListState();
+                    currentAnimationState = static_cast<int>(animationStates.size()) - 1;
                     return;
                 }
 
                 searchState = 0;
                 animatingTimer = 0.3f / animationSpeed; // Delay between each node
             }
+
+            if (!animatingSearch)
+            {
+                currentAnimationState = -1;
+                animationStates.clear(); 
+            }
         }
     }
+}
+
+void ds_viz::pages::LinkedListPage::OnStepForwardClick()
+{
+    if (animatingSearch || currentAnimationState >= static_cast<int>(animationStates.size()) - 1)
+        return; 
+
+    currentAnimationState++;
+    LoadListState(animationStates[currentAnimationState]);
+}
+
+void ds_viz::pages::LinkedListPage::OnStepBackwardClick()
+{
+    if (animatingSearch || currentAnimationState <= 0)
+        return; 
+
+    currentAnimationState--;
+    LoadListState(animationStates[currentAnimationState]);
+}
+
+void ds_viz::pages::LinkedListPage::SaveListState()
+{
+    ListState state;
+    raywtk::NodeWidget* current = head.get();
+
+    while (current)
+    {
+        state.values.push_back(current->value);
+        state.colors.push_back(current->color);
+        current = current->next.get();
+    }
+
+    state.currentStep = currentStep;
+    animationStates.push_back(state);
+}
+
+void ds_viz::pages::LinkedListPage::LoadListState(const ListState& state)
+{
+    head.reset();
+    raywtk::NodeWidget* prev = nullptr;
+
+    for (size_t i = 0; i < state.values.size(); ++i)
+    {
+        auto newNode = std::make_unique<raywtk::NodeWidget>(state.values[i], nodeFont);
+        newNode->color = state.colors[i];
+        newNode->position = raylib::Vector2(headX + i * spacing, headY);
+
+        if (!head)
+            head = std::move(newNode);
+        else
+            prev->next = std::move(newNode);
+
+        prev = prev ? prev->next.get() : head.get();
+    }
+
+    currentStep = state.currentStep;
 }
 
 void ds_viz::pages::LinkedListPage::CreateNotification(std::string &Message)
@@ -863,8 +963,8 @@ void ds_viz::pages::LinkedListPage::DrawSpeedBar()
 void ds_viz::pages::LinkedListPage::SetPseudoCodeSteps(const std::vector<std::string>& steps)
 {
     pseudoCodeSteps = steps;
-    currentStep = -1; // Reset to no step highlighted
-    showPseudoCode = true; // Show the pseudo-code block
+    currentStep = -1; 
+    showPseudoCode = true; 
 }
 
 void ds_viz::pages::LinkedListPage::DrawPseudoCodeBlock()
@@ -877,15 +977,13 @@ void ds_viz::pages::LinkedListPage::DrawPseudoCodeBlock()
     int boxX = _context->ref_raylib_window->GetWidth() - boxWidth - 20;
     int boxY = _context->ref_raylib_window->GetHeight() - boxHeight - 20;
 
-    // Draw the pink ring (rounded rectangle outline)
-    float roundness = 0.2f; // Roundness of the corners
-    int segments = 8;       // Number of segments for rounded corners
+    
+    float roundness = 0.2f; 
+    int segments = 8;       
     DrawRectangleRoundedLines(raylib::Rectangle(boxX - 5, boxY - 5, boxWidth + 10, boxHeight + 10), roundness, segments, raylib::Color::Pink());
 
-    // Draw the background box
     DrawRectangle(boxX, boxY, boxWidth, boxHeight, raylib::Color::Black());
 
-    // Draw each step
     int fontSize = 24;
     int lineHeight = 35;
     for (size_t i = 0; i < pseudoCodeSteps.size(); ++i)
@@ -1295,6 +1393,9 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
             btn->Update(dt);
     }
 
+    stepForwardButton->Update(dt);
+    stepBackwardButton->Update(dt);
+
     undoButton->Update(dt);
     redoButton->Update(dt);
     returnButton->Update(dt);
@@ -1405,7 +1506,11 @@ void ds_viz::pages::LinkedListPage::Render()
             btn->Render();
     }
 
+
     DrawPseudoCodeBlock();
+
+    stepForwardButton->Render();
+    stepBackwardButton->Render();   
 
     undoButton->Render();
     redoButton->Render(); 

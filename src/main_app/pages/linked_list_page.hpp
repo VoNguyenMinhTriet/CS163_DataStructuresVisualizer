@@ -38,6 +38,19 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> returnButton;
         std::unique_ptr<raywtk::Button> actionBarButton;
 
+        // Step-by-step running buttons
+        std::unique_ptr<raywtk::Button> stepForwardButton;
+        std::unique_ptr<raywtk::Button> stepBackwardButton;
+        struct ListState {
+            std::vector<int> values; // Node values
+            std::vector<raylib::Color> colors; // Node colors
+            int currentStep; // Current step in the pseudo-code
+        };
+        
+        std::vector<ListState> animationStates; 
+        int currentAnimationState = -1; 
+
+
         bool actionBarVisible = false; 
         std::unique_ptr<raywtk::Button> insertButton;
         std::vector<std::unique_ptr<raywtk::Button>> insertDropdownButtons;
@@ -137,9 +150,10 @@ namespace ds_viz::pages
         std::string FindMessage = "";
         float FindTimer = 0.0f;
 
-        std::vector<std::string> pseudoCodeSteps; // Steps for the current operation
-        int currentStep = -1;                    // Index of the currently highlighted step
-        bool showPseudoCode = false;             // Whether to show the pseudo-code block
+        // pseudo-code box for each operation
+        std::vector<std::string> pseudoCodeSteps; 
+        int currentStep = -1;                    
+        bool showPseudoCode = false;             
         
                                     
     public:
@@ -175,6 +189,10 @@ namespace ds_viz::pages
     void DrawSpeedBar();
     void SetPseudoCodeSteps(const std::vector<std::string>& steps); 
     void DrawPseudoCodeBlock();  
+    void OnStepForwardClick();
+    void OnStepBackwardClick();
+    void SaveListState();
+    void LoadListState(const ListState& state);
     void Update(float dt) override;
     void Render() override;
     };
