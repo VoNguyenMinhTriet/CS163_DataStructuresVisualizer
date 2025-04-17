@@ -3,10 +3,10 @@
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "../interfaces.hpp"
 
-static const int WORKING_FRAME_HEIGHT = 800;
-static const int WORKING_FRAME_WIDTH = 1500;
-static const int WORKING_FRAME_COORDX = 400;
-static const int WORKING_FRAME_COORDY = 200;
+static const int WORKING_FRAME_HEIGHT = 900;
+static const int WORKING_FRAME_WIDTH = 1600;
+static const int WORKING_FRAME_COORDX = 300;
+static const int WORKING_FRAME_COORDY = 100;
 
 static const int NOTIFICATION_FRAME_HEIGHT = 200;
 static const int NOTIFICATION_FRAME_WIDTH = 700;

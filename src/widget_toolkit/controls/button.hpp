@@ -24,7 +24,8 @@ namespace raywtk
     {
     public:
         raylib::Rectangle buttonRect;
-        bool enabled = true;
+        bool enabled = true; // can be click or not
+        bool showing = true; // is showing in display or not (if not, it can't be click)
 
         // Text for button
         string buttonText = "Button";
@@ -43,7 +44,8 @@ namespace raywtk
 
         void HandleMouseInput ()
         {
-            if (!enabled) {
+            if (!enabled || !showing) 
+            {
                 state = ButtonClass::Inactive;
                 return;
             }
@@ -64,6 +66,11 @@ namespace raywtk
 
         void Render () override
         {
+            if(!showing)
+            {
+                return;
+            }
+
             if (style)
                 style->RenderWithStyle(this);
             else

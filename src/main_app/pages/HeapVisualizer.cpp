@@ -17,50 +17,69 @@ HeapVisualizer::HeapVisualizer()
     title = raylib::Text("Heap Visualizer", 64, raylib::Color::White(), *font, 0);
 
     // notification title
-    notificationTitle = raylib::Text("Notification: ", 40, raylib::Color::Yellow(), *font, 0);
+    //notificationTitle = raylib::Text("Notification: ", 40, raylib::Color::Yellow(), *font, 0);
 
     // workingFrame initialize
     workingFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY, WORKING_FRAME_WIDTH, WORKING_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
     // notificationFrame initialize
-    notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
+    //notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
     // Build heap button initialize
     buildHeapButton = std::make_unique<raywtk::Button>();
+    buildHeapButton->showing = false;
     buildHeapButton->buttonText = "Build Heap";
     buildHeapButton->buttonRect = raylib::Rectangle(BUILD_HEAP_BUTTON_COORDX, BUILD_HEAP_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
     buildHeapButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
     buildHeapButton->Click.append([this]() 
-    { 
+    {
         inputBuildHeapButtonFlag = true; inputBoxBuildHeap->processing = true; 
-        notification = std::make_unique<raywtk::Notification>("Insert numbers (<= 31 numbers) to build a new heap.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+        //notification = std::make_unique<raywtk::Notification>("Insert numbers (<= 31 numbers) to build a new heap.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
     });
 
     // Push new value button initialize
     pushValueButton = std::make_unique<raywtk::Button>();
+    pushValueButton->showing = false;
     pushValueButton->buttonText = "Push New Value";
     pushValueButton->buttonRect = raylib::Rectangle(PUSH_VALUE_BUTTON_COORDX, PUSH_VALUE_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
-    pushValueButton->Click.append([this]() 
-    { 
-        inputPushNewValueButtonFlag = true; inputBoxPushNewValue->processing = true; 
-        notification = std::make_unique<raywtk::Notification>("Insert a number to push to heap.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
-    });
-
     pushValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
- 
+    pushValueButton->Click.append([this]() 
+    {
+        inputPushNewValueButtonFlag = true; inputBoxPushNewValue->processing = true; 
+        //notification = std::make_unique<raywtk::Notification>("Insert a number to push to heap.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+    });
+    
     // Pop max value button initialize
     popMaxValueButton = std::make_unique<raywtk::Button>();
+    popMaxValueButton->showing = false;
     popMaxValueButton->buttonText = "Pop Max Value";
     popMaxValueButton->buttonRect = raylib::Rectangle(POP_VALUE_BUTTON_COORDX, POP_VALUE_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
-    popMaxValueButton->Click.append([this]() { PopMaxValue(); });
     popMaxValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    popMaxValueButton->Click.append([this]() 
+    {
+        PopMaxValue();
+    });
 
     // Clear heap button initialize
     clearHeapButton = std::make_unique<raywtk::Button>();
+    clearHeapButton->showing = false;
     clearHeapButton->buttonText = "Clear Heap";
     clearHeapButton->buttonRect = raylib::Rectangle(CLEAR_HEAP_BUTTON_COORDX, CLEAR_HEAP_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
-    clearHeapButton->Click.append([this]() { ClearHeap(); });
     clearHeapButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    clearHeapButton->Click.append([this]() 
+    {
+        ClearHeap();
+    });
+    
+    // Show operator button
+    showOperatorButton = std::make_unique<raywtk::Button>();
+    showOperatorButton->buttonText = "";
+    showOperatorButton->buttonRect = raylib::Rectangle(SHOW_OPERATOR_BUTTON_COORDX, SHOW_OPERATOR_BUTTON_COORDY, SHOW_OPERATOR_BUTTON_WIDTH, SHOW_OPERATOR_BUTTON_HEIGHT);
+    showOperatorButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    showOperatorButton->Click.append([this]()
+    {
+        buildHeapButton->showing = pushValueButton->showing = popMaxValueButton->showing = clearHeapButton->showing = 1 - clearHeapButton->showing;
+    });
 
     // Input box build heap initialize
     inputBuildHeapButtonFlag = false;
@@ -69,21 +88,33 @@ HeapVisualizer::HeapVisualizer()
     // Input box push new value initialize
     inputPushNewValueButtonFlag = false;
     inputBoxPushNewValue = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_PUSH_VALUE_COORDX, INPUT_BOX_PUSH_VALUE_COORDY, INPUT_BOX_PUSH_VALUE_WIDTH, INPUT_BOX_PUSH_VALUE_HEIGHT), raylib::Color::Black(), raylib::Color::White(), raylib::Color::Gray(), 1, false);
+
+    // Animation text initialize
+    animationText = raylib::Text("No animation is currently on display.", 18, raylib::Color::White(), *font, 0);
 }
 
-int HeapVisualizer::parent(int i)
+inline int HeapVisualizer::parent(int i)
 {
     return (i - 1) / 2;
 }
 
-int HeapVisualizer::left_child(int i) 
+inline int HeapVisualizer::left_child(int i) 
 {
     return i * 2 + 1;
 }
 
-int HeapVisualizer::right_child(int i)
+inline int HeapVisualizer::right_child(int i)
 {
     return i * 2 + 2;
+}
+
+void HeapVisualizer::ResetStatus()
+{
+    for (int i = 0; i < sz(nodes); ++i) 
+    {
+        if(nodes[i]->highlighted == true)
+            nodes[i]->highlighted = false;
+    }
 }
 
 void HeapVisualizer::swapNodes(int i, int j) 
@@ -141,14 +172,15 @@ void HeapVisualizer::BuildHeap(const vector<int> &val)
     for (int i = k; i >= 0; --i)
         maxHeapify(i);
 
-    notification = std::make_unique<raywtk::Notification>("Build a new heap with these numbers successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+    //notification = std::make_unique<raywtk::Notification>("Build a new heap with these numbers successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
 }
 
 void HeapVisualizer::PushNewValue(int value) 
 {
+    ResetStatus();
     if(sz(values) >= 31)
     {
-        notification = std::make_unique<raywtk::Notification>("Failed to push a value into heap since heap's size reached 31.", raywtk::NotificationType::ERROR, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+        //notification = std::make_unique<raywtk::Notification>("Failed to push a value into heap since heap's size reached 31.", raywtk::NotificationType::ERROR, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
         return;
     }
 
@@ -156,34 +188,31 @@ void HeapVisualizer::PushNewValue(int value)
     newNode->position = GetPositionInDisplay(sz(values), 0);
     nodes.push_back(std::move(newNode));
     values.push_back(value);
-    
+
     int i = sz(values) - 1;
-    while(i > 0) 
+    while(i > 0 && values[i] > values[parent(i)]) 
     {
-        int par_i = parent(i);
-        if(values[i] > values[par_i]) {
-            swapNodes(i, par_i);
-            i = par_i;
-        } else {
-            break;
-        }
+        swapNodes(i, parent(i));
+        i = parent(i);
     }
 
-    notification = std::make_unique<raywtk::Notification>("Push a number with value " + std::to_string(value) + " into heap successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+    nodes[i]->highlighted = true;
+    //notification = std::make_unique<raywtk::Notification>("Push a number with value " + std::to_string(value) + " into heap successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
 }
 
 void HeapVisualizer::PopMaxValue()
 {
+    ResetStatus();
     if(sz(values) == 0) 
     {
-        notification = std::make_unique<raywtk::Notification>("Failed to pop max value out of an empty heap.", raywtk::NotificationType::ERROR, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+        //notification = std::make_unique<raywtk::Notification>("Failed to pop max value out of an empty heap.", raywtk::NotificationType::ERROR, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
         return;
     }
 
     int i = sz(values) - 1;
     swapNodes(i, 0);
     
-    notification = std::make_unique<raywtk::Notification>("Pop max value (value = " + std::to_string(values[i]) + ") out of heap successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+    //notification = std::make_unique<raywtk::Notification>("Pop max value (value = " + std::to_string(values[i]) + ") out of heap successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
     values.pop_back();
     nodes.pop_back();
     
@@ -192,9 +221,10 @@ void HeapVisualizer::PopMaxValue()
 
 void HeapVisualizer::ClearHeap()
 {
+    ResetStatus();
     values.clear();
     nodes.clear();
-    notification = std::make_unique<raywtk::Notification>("Clear the heap successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+    //notification = std::make_unique<raywtk::Notification>("Clear the heap successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
 }
 
 void HeapVisualizer::Update(float dt) 
@@ -203,7 +233,10 @@ void HeapVisualizer::Update(float dt)
     workingFrame->Update(dt);
     
     // Notification Frame render
-    notificationFrame->Update(dt);
+    //notificationFrame->Update(dt);
+
+    // Show operator button update
+    showOperatorButton->Update(dt);
 
     // Build heap button update
     buildHeapButton->Update(dt);
@@ -267,16 +300,19 @@ void HeapVisualizer::Update(float dt)
 void HeapVisualizer::Render() 
 {
     // title draw
-    title.Draw(200, 100);
+    title.Draw(100, 25);
     
     // notification title draw
-    notificationTitle.Draw(NOTIFICATION_FRAME_COORDX + 10, NOTIFICATION_FRAME_COORDY + 10);
+    //notificationTitle.Draw(NOTIFICATION_FRAME_COORDX + 10, NOTIFICATION_FRAME_COORDY + 10);
 
     // Working Frame render
     workingFrame->Render();
 
     // Notification Frame render
-    notificationFrame->Render();
+    //notificationFrame->Render();
+
+    // Show operator button render
+    showOperatorButton->Render();
 
     // Build heap button render
     buildHeapButton->Render();
@@ -306,10 +342,13 @@ void HeapVisualizer::Render()
     }
 
     // Notification render
-    if(notification != nullptr)
+    /*if(notification != nullptr)
     {
         notification->Render();
-    }
+    }*/
+
+    // Animation text render
+    animationText.Draw(5, 985);
 
     // Vector nodes render
     for(auto &node : nodes)

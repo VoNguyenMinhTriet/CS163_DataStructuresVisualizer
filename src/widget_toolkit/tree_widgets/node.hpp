@@ -18,12 +18,13 @@ namespace raywtk
         raylib::Camera2D *camera;
         float radius = NODE_RADIUS;
         raylib::Color color = raylib::Color::Blue();
+        raylib::Color highlighedColor = raylib::Color::Red();
         bool visible = true;
         std::function<void()> content; // Optional content function
         eventpp::CallbackList<void()> Click; // Optional click handler
         int value; // Store node's value
         std::unique_ptr<NodeWidget> next = nullptr; // Pointer to next node
-        bool highlighted;
+        bool highlighted = false;
 
         NodeWidget(int val): value(val), content([this]() 
         {
@@ -52,10 +53,10 @@ namespace raywtk
 
                 if (held)                
                     position += raylib::Mouse::GetDelta();
-            }*/
+            }
 
             if (raylib::Mouse::IsButtonReleased(MOUSE_LEFT_BUTTON))
-                held = false;
+                held = false;*/
 
             if (next)
                 next->Update(deltaTime); // Recursively update the next node
@@ -65,7 +66,7 @@ namespace raywtk
         {
             if (visible)
             {
-                position.DrawCircle(radius, color);
+                position.DrawCircle(radius, (highlighted) ? highlighedColor : color);
                 if (content) content();
             }
 

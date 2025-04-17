@@ -17,11 +17,11 @@ namespace ds_viz::themes::dark_simple
             else
                 buttonSelf->buttonRect.DrawRounded(0.5, 8, raylib::Color::Pink());
 
-            int fontSize = 20;
+            int fontSize = 18;
             raylib::Vector2 textSize = raylib::MeasureText(buttonSelf->buttonText.c_str(), fontSize);
-            float textX = buttonSelf->buttonRect.x + (buttonSelf->buttonRect.width - textSize.x) / 2;
-            float textY = buttonSelf->buttonRect.y + (buttonSelf->buttonRect.height - textSize.y) / 2;
-            DrawText(buttonSelf->buttonText.c_str(), (int)textX, (int)textY, fontSize, RAYWHITE);
+            float textX = buttonSelf->buttonRect.x + (buttonSelf->buttonRect.width - textSize.x) / 2.0;
+            float textY = buttonSelf->buttonRect.y + (buttonSelf->buttonRect.height - fontSize) / 2.0;
+            DrawText(buttonSelf->buttonText.c_str(), textX, textY, fontSize, BLACK);
         }
     };
 }
