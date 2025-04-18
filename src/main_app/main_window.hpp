@@ -12,6 +12,8 @@
 
 namespace ds_viz
 {
+    class Page;
+    
     // This class also serves as the app's lifetime.
     class MainWindow : public raywtk::IRenderable
     {

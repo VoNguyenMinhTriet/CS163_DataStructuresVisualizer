@@ -2,12 +2,13 @@
 
 #include <memory>
 #include <vector>
+#include "raylib-cpp/Rectangle.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "./page.hpp"
+#include "./trie/trie_page.hpp"
 #include "widget_toolkit/controls/button.hpp"
 #include "./linked_list_page.hpp"
 #include "main_app/themes/dark_simple/text_button.hpp"
-
 
 namespace ds_viz::pages
 {
@@ -17,6 +18,17 @@ namespace ds_viz::pages
         raylib::Text title;
         std::vector<std::unique_ptr<raywtk::Button>> buttons;
 
+//<<<<<<< feature-trie-page
+        // Controls
+        raywtk::Button _trieButton;
+
+      public:
+        MainMenuPage(MainWindow &context);
+
+        void Update(float dt) override;
+
+        void Render() override;
+//=======
     public:
         
     MainMenuPage () {
@@ -51,5 +63,6 @@ namespace ds_viz::pages
 
     void Render() override;
         
+//>>>>>>> development
     };
 }

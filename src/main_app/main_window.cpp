@@ -25,13 +25,12 @@ void ds_viz::MainWindow::ChangePage (std::shared_ptr<Page> to)
 
 int ds_viz::MainWindow::Run ()
 {
-    raywtk::ThemeManager::currentTheme = std::unique_ptr<raywtk::Theme>(ds_viz::themes::dark_simple::DarkSimpleTheme());
     ref_raylib_window = std::make_unique<raylib::Window>(initScreenWidth, initScreenHeight, title, raylibFlags);
     ref_raylib_window->SetTargetFPS(fixedFPS);
     ref_raylib_window->SetMinSize(1280, 720);
     
     raywtk::ThemeManager::currentTheme = std::unique_ptr<raywtk::Theme>(ds_viz::themes::dark_simple::DarkSimpleTheme());
-    
+
     ChangePage(std::make_shared<pages::MainMenuPage>(*this));
 
     while (!ref_raylib_window->ShouldClose()) // Detect window close button or ESC key
