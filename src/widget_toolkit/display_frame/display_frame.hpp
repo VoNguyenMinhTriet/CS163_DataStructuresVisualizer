@@ -9,7 +9,7 @@ static const int WORKING_FRAME_COORDX = 500;
 static const int WORKING_FRAME_COORDY = 200;
 
 static const int NOTIFICATION_FRAME_HEIGHT = 200;
-static const int NOTIFICATION_FRAME_WIDTH = 700;
+static const int NOTIFICATION_FRAME_WIDTH = 900;
 static const int NOTIFICATION_FRAME_COORDX = 500;
 static const int NOTIFICATION_FRAME_COORDY = 1000;
 

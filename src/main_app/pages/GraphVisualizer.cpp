@@ -24,6 +24,17 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     // notificationFrame initialize
     notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
+    // Load file button initialize
+    loadFileButton = std::make_unique<raywtk::Button>();
+    loadFileButton->buttonText = "Load File";
+    loadFileButton->buttonRect = raylib::Rectangle(LOAD_FILE_BUTTON_POSX, LOAD_FILE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
+    loadFileButton->Click.append([this]() { if (freeFlag) {  notification = std::make_unique<raywtk::Notification>(
+                "Please drag and drop the file here. The file format should be:\n"
+                "1. First two lines: two numbers n and m (number of vertices and edges).\n"
+                "2. Next m lines: (u, v, w) representing edges with weights.",
+                raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY ); waitingForFile = true; }});
+    loadFileButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
     // Initialize graph button and input box
     initializeGraphButton = std::make_unique<raywtk::Button>();
     initializeGraphButton->buttonText = "Initialize Graph";
@@ -83,7 +94,7 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     deleteEdgeButton->buttonText = "Delete Edge";
     deleteEdgeButton->buttonRect = raylib::Rectangle(DELETE_EDGE_BUTTON_POSX, DELETE_EDGE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     deleteEdgeButton->Click.append([this]() { if(freeFlag){
-                                                inputDeleteEdgeButtonFlag = true; inputBoxDeleteEdge->processing = true; 
+                                                inputDeleteEdgeButtonFlag = true; inputBoxDeleteEdge->processing = true; freeFlag = false;
                                                 notification = std::make_unique<raywtk::Notification>("Delete edge", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
                                             } });
     deleteEdgeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
@@ -101,6 +112,16 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     redoButton->buttonRect = raylib::Rectangle(REDO_BUTTON_POSX, REDO_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     redoButton->Click.append([this]() { if(freeFlag) Redo(); });
     redoButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
+    // Adjust speed button initialize
+    adjustSpeedButton = std::make_unique<raywtk::Button>();
+    adjustSpeedButton->buttonText = "Adjust Speed";
+    adjustSpeedButton->buttonRect = raylib::Rectangle(ADJUST_SPEED_BUTTON_POSX, ADJUST_SPEED_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
+    adjustSpeedButton->Click.append([this]() { if (freeFlag || kruskalFlag) { 
+                                                    inputAdjustSpeedFlag = true; inputBoxAdjustSpeed->processing = true; freeFlag = false; 
+                                                    notification = std::make_unique<raywtk::Notification>( "Enter the number of steps per second for the Kruskal animation.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY );
+                                                }});
+    adjustSpeedButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
     // Toggle button initialize
     toggleButton = std::make_unique<raywtk::Button>();
@@ -130,13 +151,15 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     continueButton->Click.append([this]() { animationRunning = true; });
 
     // Input box initialize graph
-    inputBoxInitializeGraph = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_INIT_GRAPH_POSX, INPUT_BOX_INIT_GRAPH_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 1, false );
+    inputBoxInitializeGraph = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_INIT_GRAPH_POSX, INPUT_BOX_INIT_GRAPH_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 1, false, false);
     // Input box insert new edge initialize
-    inputBoxInsertEdge = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_INSERT_EDGE_POSX, INPUT_BOX_INSERT_EDGE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 3, false);
+    inputBoxInsertEdge = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_INSERT_EDGE_POSX, INPUT_BOX_INSERT_EDGE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 3, false, false);
     // Input box delete node initialize
-    inputBoxDeleteNode = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_DELETE_NODE_POSX, INPUT_BOX_DELETE_NODE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 1, false);
+    inputBoxDeleteNode = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_DELETE_NODE_POSX, INPUT_BOX_DELETE_NODE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 1, false, false);
     // Input box delete edge initialize
-    inputBoxDeleteEdge = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_DELETE_EDGE_POSX, INPUT_BOX_DELETE_EDGE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 2, false);
+    inputBoxDeleteEdge = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_DELETE_EDGE_POSX, INPUT_BOX_DELETE_EDGE_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 2, false, false);
+    // Input box for adjusting speed
+    inputBoxAdjustSpeed = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_ADJUST_SPEED_POSX, INPUT_BOX_ADJUST_SPEED_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 1, false, true);
 
     // Kruskal index processing
     indexProcessing = 0;
@@ -153,6 +176,69 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
     pseudoCodeDisplay = std::make_unique<raywtk::PseudoCodeDisplay>(raylib::Vector2(WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH, WORKING_FRAME_COORDY), kruskalPseudoCode.size(), PSEUDOCODE_LINE_WIDTH, PSEUDOCODE_LINE_HEIGHT, raylib::Color::White(), raylib::Color::Yellow(), raylib::Color::Green());    
     pseudoCodeDisplay->SetPseudoCodeLines(kruskalPseudoCode);
 
+}
+
+void ds_viz::pages::GraphVisualizer::LoadGraphFromFile(const std::string& filePath) {
+    std::ifstream file(filePath);
+    if (!file.is_open()) {
+        notification = std::make_unique<raywtk::Notification>(
+            "Failed to open the file.",
+            raywtk::NotificationType::ERROR,
+            NOTIFICATION_COORDX,
+            NOTIFICATION_COORDY
+        );
+        return;
+    }
+
+    int n, m;
+    file >> n >> m;
+
+    if (n <= 0 || m < 0) {
+        notification = std::make_unique<raywtk::Notification>(
+            "Invalid file format: n and m must be positive integers.",
+            raywtk::NotificationType::ERROR,
+            NOTIFICATION_COORDX,
+            NOTIFICATION_COORDY
+        );
+        return;
+    }
+
+    // Clear the existing graph
+    ClearGraph();
+
+    // Create nodes
+    for (int i = 0; i < n; ++i) {
+        auto newNode = std::make_unique<raywtk::NodeWidget>(i);
+        newNode->position = raylib::Vector2(
+            WORKING_FRAME_COORDX + rand() % WORKING_FRAME_WIDTH,
+            WORKING_FRAME_COORDY + rand() % WORKING_FRAME_HEIGHT
+        );
+        nodes.push_back(std::move(newNode));
+    }
+
+    // Create edges
+    for (int i = 0; i < m; ++i) {
+        int u, v, w;
+        file >> u >> v >> w;
+        if (u < 0 || u >= n || v < 0 || v >= n) {
+            notification = std::make_unique<raywtk::Notification>(
+                "Invalid edge in file: vertex indices out of range.",
+                raywtk::NotificationType::ERROR,
+                NOTIFICATION_COORDX,
+                NOTIFICATION_COORDY
+            );
+            return;
+        }
+        edges.push_back({{u, v}, w});
+    }
+
+    notification = std::make_unique<raywtk::Notification>(
+        "Graph loaded successfully from file.",
+        raywtk::NotificationType::SUCCESS,
+        NOTIFICATION_COORDX,
+        NOTIFICATION_COORDY
+    );
+    waitingForFile = false; // Reset the flag
 }
 
 void ds_viz::pages::GraphVisualizer::InitializeGraph(int n) {
@@ -561,8 +647,15 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
     // Update the toggle button
     toggleButton->Update(dt);
 
+    if (waitingForFile && IsFileDropped()) {
+        std::vector<std::string> droppedFiles = raylib::LoadDroppedFiles();
+        std::string filePath = droppedFiles[0];
+        LoadGraphFromFile(filePath);
+    }
+
     // Update operator buttons only if they are visible
     if (showOperatorButtons) {
+        loadFileButton->Update(dt);
         initializeGraphButton->Update(dt);
         insertNodeButton->Update(dt);
         insertEdgeButton->Update(dt);
@@ -572,6 +665,7 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
         undoButton->Update(dt);
         redoButton->Update(dt);
         clearGraphButton->Update(dt);
+        adjustSpeedButton->Update(dt);
     }
 
     prevStepButton->Update(dt);
@@ -635,6 +729,33 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
         }
     }
 
+    // Input box adjust speed button update
+    if (inputAdjustSpeedFlag) {
+        inputBoxAdjustSpeed->Update(dt);
+        if (!inputBoxAdjustSpeed->processing) {
+            float stepsPerSecond = inputBoxAdjustSpeed->values[0];
+            if (stepsPerSecond > 0) {
+                animationStepDuration = 1.0f / stepsPerSecond; // Update animation step duration
+                notification = std::make_unique<raywtk::Notification>(
+                    "Animation speed updated to " + std::to_string(stepsPerSecond) + " steps per second.",
+                    raywtk::NotificationType::SUCCESS,
+                    NOTIFICATION_COORDX,
+                    NOTIFICATION_COORDY
+                );
+            } else {
+                notification = std::make_unique<raywtk::Notification>(
+                    "Invalid speed. Please enter a positive number.",
+                    raywtk::NotificationType::ERROR,
+                    NOTIFICATION_COORDX,
+                    NOTIFICATION_COORDY
+                );
+            }
+            inputAdjustSpeedFlag = false;
+            inputBoxAdjustSpeed->Reset();
+            freeFlag = true;
+        }
+    }
+
     // Animation step update
     if (kruskalFlag && currentAnimationStep < animationSteps.size() - 1) {
         if(animationRunning){
@@ -684,6 +805,7 @@ void ds_viz::pages::GraphVisualizer::Render()
     toggleButton->Render();
 
     if (showOperatorButtons) {
+        loadFileButton->Render();
         initializeGraphButton->Render();
         insertNodeButton->Render();
         insertEdgeButton->Render();
@@ -693,6 +815,7 @@ void ds_viz::pages::GraphVisualizer::Render()
         undoButton->Render();
         redoButton->Render();
         clearGraphButton->Render();
+        adjustSpeedButton->Render();
     }
 
     if(kruskalFlag){
@@ -751,6 +874,9 @@ void ds_viz::pages::GraphVisualizer::Render()
 
     // Input box delete edge render
     inputBoxDeleteEdge->Render();
+
+    // Input box adjust speed render
+    inputBoxAdjustSpeed->Render();
 
     // Notification render
     if(notification != nullptr){

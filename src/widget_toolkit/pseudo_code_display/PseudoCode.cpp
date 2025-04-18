@@ -25,11 +25,11 @@ namespace raywtk
 
     // Render the pseudo-code window
     void PseudoCodeDisplay::Render() {
+        raylib::Rectangle lineRect(position.x, position.y, lineWidth, lineHeight * numLines);
+        lineRect.DrawRoundedLines(0.1f, 13, PINK);
         for (int i = 0; i < numLines; ++i) {
             raylib::Color lineColor = GetColorForState(lineStates[i]);
-            raylib::Rectangle lineRect(position.x, position.y + i * lineHeight, lineWidth, lineHeight);
-            DrawRectangleRec(lineRect, lineColor);
-            raylib::DrawText(pseudoCodeLines[i].c_str(), position.x + 10, position.y + i * lineHeight + 10, 20, raylib::Color::Black());
+            raylib::DrawText(pseudoCodeLines[i].c_str(), position.x + 10, position.y + i * lineHeight + 10, 20, GetColorForState(lineStates[i]));
         }
     }    
 
