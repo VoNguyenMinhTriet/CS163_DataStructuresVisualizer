@@ -2,8 +2,6 @@
 
 #include <memory>
 #include "eventpp/callbacklist.h"
-#include "raylib-cpp/raylib-cpp.hpp"
-
 #include "../interfaces.hpp"
 #include "../theme_manager.hpp"
 
@@ -23,12 +21,15 @@ namespace raywtk
         raylib::Rectangle buttonRect;
         bool enabled = true;
 
+        // Text for button
+        std::string buttonText = "Button";
         // Events
         eventpp::CallbackList<void()> Click;
 
         // Styling
         ButtonClass state = ButtonClass::Normal;
         std::unique_ptr<IStyle> style;
+
 
         void Update (float deltaTime) override
         {

@@ -1,5 +1,4 @@
 #pragma once
-
 #include "main_app/main_window.hpp"
 #include "widget_toolkit/interfaces.hpp"
 
