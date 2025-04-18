@@ -132,6 +132,15 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
                                         });
     toggleButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
 
+    // Toggle button for pseudo-code box
+    pseudoCodeToggleButton = std::make_unique<raywtk::Button>();
+    pseudoCodeToggleButton->buttonText = "<";
+    pseudoCodeToggleButton->buttonRect = raylib::Rectangle(PSEUDO_CODE_TOGGLE_BUTTON_POSX, PSEUDO_CODE_TOGGLE_BUTTON_POSY, PSEUDO_CODE_TOGGLE_BUTTON_WIDTH, PSEUDO_CODE_TOGGLE_BUTTON_HEIGHT);
+    pseudoCodeToggleButton->Click.append([this]() { showPseudoCodeBox = !showPseudoCodeBox; // Toggle visibility
+                                                    pseudoCodeToggleButton->buttonText = showPseudoCodeBox ? "<" : ">"; // Update button text
+                                                    }); 
+    pseudoCodeToggleButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+
     // Previous Step Button
     prevStepButton = std::make_unique<raywtk::Button>();
     prevStepButton->buttonText = "Previous";
@@ -173,7 +182,7 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer()
         "   Stop when MST contains (N-1) edges."
     };
 
-    pseudoCodeDisplay = std::make_unique<raywtk::PseudoCodeDisplay>(raylib::Vector2(WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH, WORKING_FRAME_COORDY), kruskalPseudoCode.size(), PSEUDOCODE_LINE_WIDTH, PSEUDOCODE_LINE_HEIGHT, raylib::Color::White(), raylib::Color::Yellow(), raylib::Color::Green());    
+    pseudoCodeDisplay = std::make_unique<raywtk::PseudoCodeDisplay>(raylib::Vector2(PSEUDO_CODE_POS_X, PSEUDO_CODE_POS_Y), kruskalPseudoCode.size(), PSEUDOCODE_LINE_WIDTH, PSEUDOCODE_LINE_HEIGHT, raylib::Color::White(), raylib::Color::Yellow(), raylib::Color::Green());    
     pseudoCodeDisplay->SetPseudoCodeLines(kruskalPseudoCode);
 
 }
@@ -756,6 +765,14 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
         }
     }
 
+    // Update the toggle button
+    pseudoCodeToggleButton->Update(dt);
+
+    // Update the pseudo-code box only if it is visible
+    if (showPseudoCodeBox) {
+        pseudoCodeDisplay->Update(dt);
+    }
+
     // Animation step update
     if (kruskalFlag && currentAnimationStep < animationSteps.size() - 1) {
         if(animationRunning){
@@ -824,6 +841,14 @@ void ds_viz::pages::GraphVisualizer::Render()
         continueButton->Render();
         RenderProgressBar();
     }
+
+    // Render the toggle button
+    pseudoCodeToggleButton->Render();
+
+    // Render the pseudo-code box only if it is visible
+    if (showPseudoCodeBox) {
+        pseudoCodeDisplay->Render();
+    }
     
     // vector edges render
     if(!kruskalFlag){
@@ -883,13 +908,32 @@ void ds_viz::pages::GraphVisualizer::Render()
         notification->Render();
     }
 
-    // Psuedo code display render
-    pseudoCodeDisplay->Render();
-
     // Animation step render
     if (currentAnimationStep < animationSteps.size()) {
         RenderAnimationStep(animationSteps[currentAnimationStep], edges);
     }
+
+    // Render the speed display
+    float speed = 1.0f / animationStepDuration; // Calculate the speed in steps per second
+    std::string speedText = std::to_string(speed) + " steps per sec";
+
+    // Define the rectangle for the speed display
+    float rectWidth = 300.0f;
+    float rectHeight = 50.0f;
+    float rectX = WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH - rectWidth - 10; // Align to the right of the working frame
+    float rectY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10; // Below the progress bar
+
+    // Draw the rectangle border
+    raylib::Rectangle speedRect(rectX, rectY, rectWidth, rectHeight);
+    speedRect.DrawLines(raylib::Color::White());
+
+    // Draw the speed text inside the rectangle
+    int fontSize = 20;
+    int textWidth = MeasureText(speedText.c_str(), fontSize);
+    int textHeight = fontSize;
+    float textX = rectX + (rectWidth - textWidth) / 2; // Center the text horizontally
+    float textY = rectY + (rectHeight - textHeight) / 2; // Center the text vertically
+    raylib::DrawText(speedText.c_str(), textX, textY, fontSize, raylib::Color::White());
 
     // vector nodes render
     for(auto &node : nodes){

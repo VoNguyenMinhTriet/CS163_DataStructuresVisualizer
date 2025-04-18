@@ -34,8 +34,11 @@ const int PSEUDOCODE_LINE_HEIGHT = 50;
 const int TOGGLE_BUTTON_WIDTH = 10;
 const int TOGGLE_BUTTON_HEIGHT = BUTTON_HEIGHT * 11 + DISTANCE_BETWEEN_BUTTONS * 10;
 
-const int PSEUDO_CODE_TOGGLE_BUTTON_POSX = 1000;
+const int PSEUDO_CODE_TOGGLE_BUTTON_POSX = 2500;
 const int PSEUDO_CODE_TOGGLE_BUTTON_POSY = 200;
+
+const int PSEUDO_CODE_TOGGLE_BUTTON_WIDTH = 10;
+const int PSEUDO_CODE_TOGGLE_BUTTON_HEIGHT = 5 * PSEUDOCODE_LINE_HEIGHT;
 
 const int TOGGLE_BUTTON_POSX = 100;
 const int TOGGLE_BUTTON_POSY = 200;
@@ -145,6 +148,8 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> toggleButton;
         // Adjust speed button
         std::unique_ptr<raywtk::Button> adjustSpeedButton;
+        // Toggle button for pseudo code 
+        std::unique_ptr<raywtk::Button> pseudoCodeToggleButton;
         bool showOperatorButtons = true; // Initially, operator buttons are visible
         // Notification
         std::unique_ptr<raywtk::Notification> currentNotification;
@@ -204,7 +209,7 @@ namespace ds_viz::pages
         // Redo stack for storing the state of the graph
         std::stack<std::pair<std::vector<std::unique_ptr<raywtk::NodeWidget>>, std::vector<std::pair<std::pair<int, int>, int>>>> redoStack;
 
-
+        bool showPseudoCodeBox = true; 
         bool waitingForFile = false;
 
         // No processing operator flag
