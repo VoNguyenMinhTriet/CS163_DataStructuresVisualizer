@@ -1,6 +1,0 @@
-{
-    "C_Cpp.default.includePath": [
-        "${workspacedir}/src/"
-    ],
-    "cmake.sourceDirectory": "C:/Users/ASUS/CS163_DataStructuresVisualizer/extern/include/raylib-cpp"
-}

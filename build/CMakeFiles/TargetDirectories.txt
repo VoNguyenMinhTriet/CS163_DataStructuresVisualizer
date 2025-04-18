@@ -1,6 +1,0 @@
-C:/Users/ASUS/CS163_DataStructuresVisualizer/build/CMakeFiles/edit_cache.dir
-C:/Users/ASUS/CS163_DataStructuresVisualizer/build/CMakeFiles/rebuild_cache.dir
-C:/Users/ASUS/CS163_DataStructuresVisualizer/build/CMakeFiles/list_install_components.dir
-C:/Users/ASUS/CS163_DataStructuresVisualizer/build/CMakeFiles/install.dir
-C:/Users/ASUS/CS163_DataStructuresVisualizer/build/CMakeFiles/install/local.dir
-C:/Users/ASUS/CS163_DataStructuresVisualizer/build/CMakeFiles/install/strip.dir
