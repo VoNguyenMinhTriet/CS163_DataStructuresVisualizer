@@ -1,9 +1,14 @@
 #pragma once
 
-#include <memory>
 #include "eventpp/callbacklist.h"
+#include "raylib-cpp/raylib-cpp.hpp"
+
 #include "../interfaces.hpp"
 #include "../theme_manager.hpp"
+#include <memory>
+#include <raylib.h>
+
+using namespace std;
 
 namespace raywtk
 {
@@ -12,24 +17,26 @@ namespace raywtk
         Inactive = 0,
         Normal = 1,
         Hover = 2,
-        Pressed = 3
+        Pressed = 3,
+        Unenabled = 4
     };
 
     class Button : public IScreenElement
     {
     public:
         raylib::Rectangle buttonRect;
-        bool enabled = true;
+        bool enabled = true; // can be click or not
+        bool showing = true; // is showing in display or not (if not, it can't be click)
 
         // Text for button
-        std::string buttonText = "Button";
+        string buttonText = "Button";
+
         // Events
         eventpp::CallbackList<void()> Click;
 
         // Styling
         ButtonClass state = ButtonClass::Normal;
         std::unique_ptr<IStyle> style;
-
 
         void Update (float deltaTime) override
         {
@@ -38,8 +45,15 @@ namespace raywtk
 
         void HandleMouseInput ()
         {
-            if (!enabled) {
+            if (!showing) 
+            {
                 state = ButtonClass::Inactive;
+                return;
+            }
+
+            if(!enabled)
+            {
+                state = ButtonClass::Unenabled;
                 return;
             }
 
@@ -49,16 +63,21 @@ namespace raywtk
             {
                 state = ButtonClass::Hover;
 
-                if (raylib::Mouse::IsButtonDown(MouseButton::MOUSE_BUTTON_LEFT))
-                    state = ButtonClass::Pressed;
-
                 if (raylib::Mouse::IsButtonPressed(MouseButton::MOUSE_BUTTON_LEFT))
                     Click();
+
+                if (raylib::Mouse::IsButtonDown(MouseButton::MOUSE_BUTTON_LEFT))
+                    state = ButtonClass::Pressed;
             }
         }
 
         void Render () override
         {
+            if(!showing)
+            {
+                return;
+            }
+
             if (style)
                 style->RenderWithStyle(this);
             else

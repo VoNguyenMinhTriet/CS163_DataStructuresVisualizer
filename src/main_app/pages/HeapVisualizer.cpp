@@ -1,7 +1,6 @@
 #include "./HeapVisualizer.hpp"
 #include "main_app/main_window.hpp"
 #include "./main_menu.hpp"
-#include "../themes/dark_simple/back_button.hpp"
 #include <iostream>
 #include <cstdlib> // For rand()
 #include <ctime>
@@ -20,11 +19,11 @@ HeapVisualizer::HeapVisualizer()
     //notificationTitle = raylib::Text("Notification: ", 40, raylib::Color::Yellow(), *font, 0);
 
     // Working Frame initialize
-    workingFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY, WORKING_FRAME_WIDTH, WORKING_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
+    workingFrame = raylib::Rectangle(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY, WORKING_FRAME_WIDTH, WORKING_FRAME_HEIGHT);
 
     // Pseudo Code Frame initialize
-    pseudoCodeFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(PSEUDO_CODE_FRAME_COORDX, PSEUDO_CODE_FRAME_COORDY, PSEUDO_CODE_FRAME_WIDTH, PSEUDO_CODE_FRAME_HEIGHT), raylib::Color::Pink(), 2.0f);
-    pseudoCodeFrame->visible = false;
+    pseudoCodeFrame = raylib::Rectangle(PSEUDO_CODE_FRAME_COORDX, PSEUDO_CODE_FRAME_COORDY, PSEUDO_CODE_FRAME_WIDTH, PSEUDO_CODE_FRAME_HEIGHT);
+    pseudoCodeFrameVisible = false;
 
     // Notification Frame initialize
     //notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
@@ -98,7 +97,7 @@ HeapVisualizer::HeapVisualizer()
 
     // Animation initialize
     animation_steps.clear();
-    animationStep = 0, animationTimer = 1.0f;
+    animationStep = 0, animationTimer = 1.0f, animationSpeed = 1.0f;
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, -1, ""));
 
     // Pseudo code display initialize
@@ -116,7 +115,42 @@ HeapVisualizer::HeapVisualizer()
     showPseudoCodeDisplayButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
     showPseudoCodeDisplayButton->Click.append([this]()
     {
-        pseudoCodeFrame->visible = pseudoCodeDisplay->visible = 1 - pseudoCodeFrame->visible;
+        pseudoCodeFrameVisible = pseudoCodeDisplay->visible = 1 - pseudoCodeFrameVisible;
+    });
+    
+    // Step forward button initialize
+    stepForwardButton = std::make_unique<raywtk::Button>();
+    stepForwardButton->enabled = false;
+    stepForwardButton->buttonText = "Step forward";
+    stepForwardButton->buttonRect = raylib::Rectangle(STEP_FORWARD_BUTTON_COORDX, STEP_FORWARD_BUTTON_COORDY, STEP_FORWARD_BUTTON_WIDTH, STEP_FORWARD_BUTTON_HEIGHT);
+    stepForwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    stepForwardButton->Click.append([this]()
+    {
+        animationTimer = 1.0f;
+    });
+
+    // Step back button initialize
+    stepBackButton = std::make_unique<raywtk::Button>();
+    stepBackButton->enabled = false;
+    stepBackButton->buttonText = "Step back";
+    stepBackButton->buttonRect = raylib::Rectangle(STEP_BACK_BUTTON_COORDX, STEP_BACK_BUTTON_COORDY, STEP_BACK_BUTTON_WIDTH, STEP_BACK_BUTTON_HEIGHT);
+    stepBackButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    stepBackButton->Click.append([this]()
+    {
+        animationTimer = -1.0f;
+    });
+
+    // Pause/resume button initialize
+    pauseResumeButton = std::make_unique<raywtk::Button>();
+    pauseResumeButton->buttonText = "Pause";
+    pauseResumeButton->buttonRect = raylib::Rectangle(PAUSE_RESUME_BUTTON_COORDX, PAUSE_RESUME_BUTTON_COORDY, PAUSE_RESUME_BUTTON_WIDTH, PAUSE_RESUME_BUTTON_HEIGHT);
+    pauseResumeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    pauseResumeButton->Click.append([this]()
+    {
+        animationTimer = 0.0f;
+        animationPaused = 1 - animationPaused;
+        pauseResumeButton->buttonText = (animationPaused) ? "Play" : "Pause";
+        stepBackButton->enabled = stepForwardButton->enabled = 1 - stepBackButton->enabled;
     });
 }
 
@@ -142,8 +176,17 @@ void HeapVisualizer::ResetStatus()
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, -1, ""));
 }
 
-void HeapVisualizer::doingStep(raywtk::Step step, bool callAgain) 
+void HeapVisualizer::doingStep(int idStep, bool callAgain) 
 {
+    raywtk::Step step;
+    step.type = animation_steps[idStep].type;
+    step.u = animation_steps[idStep].u;
+    step.v = animation_steps[idStep].v;
+    step.node = std::move(animation_steps[idStep].node);
+    step.idPseudoCodeLine = animation_steps[idStep].idPseudoCodeLine;
+    step.pseudoCodeProcessText = animation_steps[idStep].pseudoCodeProcessText;
+    step.pseudoCodeLines = animation_steps[idStep].pseudoCodeLines;
+           
     pseudoCodeDisplay->SwapLineState(step.idPseudoCodeLine);
     pseudoCodeProcessText.SetText(step.pseudoCodeProcessText);
     if(step.type == raywtk::StepType::InsertNode) 
@@ -164,6 +207,7 @@ void HeapVisualizer::doingStep(raywtk::Step step, bool callAgain)
     
     if(step.type == raywtk::StepType::DeleteNode && !callAgain)
     {
+        animation_steps[idStep].node = std::move(nodes.back());
         nodes.pop_back();
     }
     
@@ -181,7 +225,59 @@ void HeapVisualizer::doingStep(raywtk::Step step, bool callAgain)
 
     if(step.type == raywtk::StepType::SetNewPseudoCodeLines && !callAgain) 
     {
-        assert(step.pseudoCodeLines.size() > 0);
+        pseudoCodeDisplay->SetPseudoCodeLines(step.pseudoCodeLines);
+    }
+}
+
+void HeapVisualizer::undoingStep(int idStep, bool callAgain) 
+{
+    raywtk::Step step;
+    step.type = animation_steps[idStep].type;
+    step.u = animation_steps[idStep].u;
+    step.v = animation_steps[idStep].v;
+    step.node = std::move(animation_steps[idStep].node);
+    step.idPseudoCodeLine = animation_steps[idStep].idPseudoCodeLine;
+    step.pseudoCodeProcessText = animation_steps[idStep].pseudoCodeProcessText;
+    step.pseudoCodeLines = animation_steps[idStep].pseudoCodeLines;
+
+    pseudoCodeDisplay->SwapLineState(step.idPseudoCodeLine);
+    pseudoCodeProcessText.SetText(step.pseudoCodeProcessText);
+    if(step.type == raywtk::StepType::InsertNode) 
+    {
+        if(!callAgain) 
+        {
+            animation_steps[idStep].node = std::move(nodes.back());
+            nodes.pop_back();
+        }
+        
+        nodes.back()->highlighted ^= 1;
+    }
+
+    if(step.type == raywtk::StepType::Highlight1Node) 
+    {
+
+        nodes[step.u]->highlighted ^= 1;
+    }
+    
+    if(step.type == raywtk::StepType::DeleteNode && !callAgain)
+    {
+        nodes.push_back(std::move(step.node));
+    }
+    
+    if(step.type == raywtk::StepType::Swap2Nodes && !callAgain) 
+    {
+        swap(nodes[step.u]->position, nodes[step.v]->position);
+        swap(nodes[step.u], nodes[step.v]);
+    }
+
+    if(step.type == raywtk::StepType::Highlight2Nodes)
+    {
+        nodes[step.u]->highlighted ^= 1;
+        nodes[step.v]->highlighted ^= 1;
+    }
+
+    if(step.type == raywtk::StepType::SetNewPseudoCodeLines && !callAgain) 
+    {
         pseudoCodeDisplay->SetPseudoCodeLines(step.pseudoCodeLines);
     }
 }
@@ -340,7 +436,6 @@ void HeapVisualizer::PopMaxValue()
         return;
     }
     
-
     changeStateOperatorButton(false);
     animationText.SetText("Popping the element with maximum value (value = " + to_string(values[0]) + ") out of heap.");
     animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function PopMaxValue().", POP_MAX_VALUE_PSEUDO_CODE, nullptr));
@@ -352,7 +447,7 @@ void HeapVisualizer::PopMaxValue()
     //notification = std::make_unique<raywtk::Notification>("Pop max value (value = " + std::to_string(values[i]) + ") out of heap successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
     values.pop_back();
     animation_steps.push_back(raywtk::Step(raywtk::StepType::Highlight1Node, i, -1, 1, "Remove last element from heap."));
-    animation_steps.push_back(raywtk::Step(raywtk::StepType::DeleteNode, -1, -1, 1, "Remove last element from heap.")); 
+    animation_steps.push_back(raywtk::Step(raywtk::StepType::DeleteNode, i, -1, 1, "Remove last element from heap."));
     //nodes.pop_back();
     
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, 2, "Call to function MaxHeapify(0).")); 
@@ -378,12 +473,6 @@ void HeapVisualizer::changeStateOperatorButton(bool state)
 
 void HeapVisualizer::Update(float dt) 
 {
-    // Working Frame update
-    workingFrame->Update(dt);
-
-    // Pseudo Code Frame update
-    pseudoCodeFrame->Update(dt);
-
     // Notification Frame update
     //notificationFrame->Update(dt);
 
@@ -443,48 +532,55 @@ void HeapVisualizer::Update(float dt)
     clearHeapButton->Update(dt);
 
     // Animation update
-    animationTimer += dt;
-    if(animationStep >= sz(animation_steps)) {
-        animationTimer = 1.0f;
-    } else {
-        if(animationTimer >= 1.0f) {
-            animationTimer -= 1.0f;
+    animationTimer += (!animationPaused) * animationSpeed * dt;
+    /*if(animationTimer <= -1.0f && animationStep >= 0)
+    {
+        --animationStep;
+        animationTimer = 0.0f;
+        changeStateOperatorButton(false);
+        if(animationStep + 1 < sz(animation_steps))
+        {
+            undoingStep(animationStep + 1, true);
+        }
+
+        if(animationStep >= 0) 
+        {
+            undoingStep(animationStep, false);
+        }
+    }
+    else*/
+        if(animationTimer >= 1.0f && animationStep < sz(animation_steps)) 
+        {
             ++animationStep;
+            animationTimer = 0.0f;
 
-            raywtk::Step tmp;
-            tmp.type = animation_steps[animationStep - 1].type;
-            tmp.u = animation_steps[animationStep - 1].u;
-            tmp.v = animation_steps[animationStep - 1].v;
-            tmp.node = std::move(animation_steps[animationStep - 1].node);
-            tmp.idPseudoCodeLine = animation_steps[animationStep - 1].idPseudoCodeLine;
-            tmp.pseudoCodeProcessText = animation_steps[animationStep - 1].pseudoCodeProcessText;
-            tmp.pseudoCodeLines = animation_steps[animationStep - 1].pseudoCodeLines;
-            doingStep(raywtk::Step(tmp.type, tmp.u, tmp.v, tmp.idPseudoCodeLine, tmp.pseudoCodeProcessText, tmp.pseudoCodeLines, std::move(tmp.node)), true);
-
+            doingStep(animationStep - 1, true);
             if(animationStep < sz(animation_steps)) 
             {
-                tmp.type = animation_steps[animationStep].type;
-                tmp.u = animation_steps[animationStep].u;
-                tmp.v = animation_steps[animationStep].v;
-                tmp.node = std::move(animation_steps[animationStep].node);
-                tmp.idPseudoCodeLine = animation_steps[animationStep].idPseudoCodeLine;
-                tmp.pseudoCodeProcessText = animation_steps[animationStep].pseudoCodeProcessText;
-                tmp.pseudoCodeLines = animation_steps[animationStep].pseudoCodeLines;
-                doingStep(raywtk::Step(tmp.type, tmp.u, tmp.v, tmp.idPseudoCodeLine, tmp.pseudoCodeProcessText, tmp.pseudoCodeLines, std::move(tmp.node)), false);
-            } else {
-                animationTimer = 1.0f;
+                doingStep(animationStep, false);
+            } 
+            else 
+            {
                 changeStateOperatorButton(true);
                 animationText.SetText("No animation is currently on display.");
                 pseudoCodeProcessText.SetText("End of timeline.");
             }
         }
-    }
 
     // Show pseudo code button update
     showPseudoCodeDisplayButton->Update(dt);
 
     // Pseudo code display update
     pseudoCodeDisplay->Update(dt);
+
+    // Pause/resume button update
+    pauseResumeButton->Update(dt);
+
+    // Step forward button update
+    stepForwardButton->Update(dt);
+
+    // Step back button update
+    stepBackButton->Update(dt);
 
     // vector nodes update
     for(auto &node : nodes)
@@ -495,18 +591,21 @@ void HeapVisualizer::Update(float dt)
 
 void HeapVisualizer::Render() 
 {
+    // notification title draw
+    //notificationTitle.Draw(NOTIFICATION_FRAME_COORDX + 10, NOTIFICATION_FRAME_COORDY + 10);
+    
+    // Working Frame render
+    workingFrame.DrawRoundedLines(0.0f, 10, raylib::Color::Gray());
+    
+    // Pseudo Code Frame render
+    if(pseudoCodeFrameVisible)
+    {
+        pseudoCodeFrame.DrawRoundedLines(0.1f, 10, raylib::Color::Pink());
+    }
+    
     // title draw
     title.Draw(100, 25);
     
-    // notification title draw
-    //notificationTitle.Draw(NOTIFICATION_FRAME_COORDX + 10, NOTIFICATION_FRAME_COORDY + 10);
-
-    // Working Frame render
-    workingFrame->Render();
-
-    // Pseudo Code Frame render
-    pseudoCodeFrame->Render();
-
     // Notification Frame render
     //notificationFrame->Render();
 
@@ -531,15 +630,6 @@ void HeapVisualizer::Render()
     // Clear heap button render
     clearHeapButton->Render();
 
-    // Edges render
-    for (int i = 1; i < sz(nodes); ++i) 
-    {
-        int par_i = parent(i);
-        raylib::Vector2 startPos = nodes[par_i]->position;
-        raylib::Vector2 endPos = nodes[i]->position;
-        startPos.DrawLine(endPos, 2.5f, WHITE);
-    }
-
     // Notification render
     /*if(notification != nullptr)
     {
@@ -556,8 +646,26 @@ void HeapVisualizer::Render()
     pseudoCodeDisplay->Render();
 
     // Pseudo code process text render
-    int pseudoCodeProcessTextLen =  MeasureTextEx(pseudoCodeProcessText.GetFont(), pseudoCodeProcessText.GetText().c_str(), pseudoCodeProcessText.GetFontSize(), 0).x;
+    int pseudoCodeProcessTextLen = MeasureTextEx(pseudoCodeProcessText.GetFont(), pseudoCodeProcessText.GetText().c_str(), pseudoCodeProcessText.GetFontSize(), 0).x;
     pseudoCodeProcessText.Draw(DEFAULT_WIN_WIDTH - pseudoCodeProcessTextLen - 5, 690);
+
+    // Pause/resume button render
+    pauseResumeButton->Render();
+
+    // Step forward button render
+    stepForwardButton->Render();
+
+    // Step back button render
+    stepBackButton->Render();
+
+    // Edges render
+    for (int i = 1; i < sz(nodes); ++i) 
+    {
+        int par_i = parent(i);
+        raylib::Vector2 startPos = nodes[par_i]->position;
+        raylib::Vector2 endPos = nodes[i]->position;
+        startPos.DrawLine(endPos, 2.5f, WHITE);
+    }
 
     // Vector nodes render
     for(auto &node : nodes)

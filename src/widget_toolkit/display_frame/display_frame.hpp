@@ -28,7 +28,6 @@ namespace raywtk
         raylib::Vector2 pos;
         raylib::Color color = raylib::Color::Gray();
         float thickness = 2.0f;
-        bool visible = true;
 
         DisplayFrame(raylib::Rectangle frame, raylib::Color color, float thickness) : frame(frame), color(color), thickness(thickness) {}
 
@@ -38,10 +37,7 @@ namespace raywtk
 
         void Render() override
         {
-            if (visible)
-            {
-                DrawRectangleLinesEx(frame, thickness, color);
-            }
+            DrawRectangleLinesEx(frame, thickness, color);
         }
 
         

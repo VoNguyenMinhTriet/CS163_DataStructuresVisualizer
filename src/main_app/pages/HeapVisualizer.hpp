@@ -3,15 +3,14 @@
 #include <memory>
 #include <vector>
 #include "raylib-cpp/raylib-cpp.hpp"
-#include "widget_toolkit/controls/button.hpp"
+#include "widget_toolkit/controls/button2.hpp"
 #include "widget_toolkit/notification/Notification.hpp"
 #include "widget_toolkit/tree_widgets/node.hpp"
-#include "widget_toolkit/tree_widgets/edge.hpp"
 #include "widget_toolkit/input_box/InputBox.hpp"
+#include "widget_toolkit/controls/text_button.hpp"
 #include "widget_toolkit/animation/animation_step.hpp"
 #include "widget_toolkit/display_frame/display_frame.hpp"
 #include "widget_toolkit/pseudo_code/pseudo_code_display.hpp"
-#include "main_app/themes/dark_simple/text_button.hpp"
 #include "./page.hpp"
 
 const int OPERATOR_BUTTON_WIDTH = 150;
@@ -55,6 +54,21 @@ const int NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 80;
 const int PSEUDO_CODE_LINE_WIDTH = 240;
 const int PSEUDO_CODE_LINE_HEIGHT = 16;
 
+const int PAUSE_RESUME_BUTTON_COORDX = (1280 - 120) / 2;
+const int PAUSE_RESUME_BUTTON_COORDY = 660;
+const int PAUSE_RESUME_BUTTON_WIDTH = 120;
+const int PAUSE_RESUME_BUTTON_HEIGHT = 25;
+
+const int STEP_BACK_BUTTON_COORDX = PAUSE_RESUME_BUTTON_COORDX - PAUSE_RESUME_BUTTON_WIDTH - 5;
+const int STEP_BACK_BUTTON_COORDY = PAUSE_RESUME_BUTTON_COORDY;
+const int STEP_BACK_BUTTON_WIDTH = PAUSE_RESUME_BUTTON_WIDTH;
+const int STEP_BACK_BUTTON_HEIGHT = PAUSE_RESUME_BUTTON_HEIGHT;
+
+const int STEP_FORWARD_BUTTON_COORDX = PAUSE_RESUME_BUTTON_COORDX + PAUSE_RESUME_BUTTON_WIDTH + 5;
+const int STEP_FORWARD_BUTTON_COORDY = PAUSE_RESUME_BUTTON_COORDY;
+const int STEP_FORWARD_BUTTON_WIDTH = PAUSE_RESUME_BUTTON_WIDTH;
+const int STEP_FORWARD_BUTTON_HEIGHT = PAUSE_RESUME_BUTTON_HEIGHT;
+
 #define sz(x) int((x).size())
 
 namespace ds_viz::pages
@@ -75,10 +89,11 @@ namespace ds_viz::pages
         raylib::Text pseudoCodeProcessText;
 
         // Working frame
-        std::unique_ptr<raywtk::DisplayFrame> workingFrame;
+        raylib::Rectangle workingFrame;
 
         // Pseudo code frame
-        std::unique_ptr<raywtk::DisplayFrame> pseudoCodeFrame;
+        raylib::Rectangle pseudoCodeFrame;
+        bool pseudoCodeFrameVisible = false;
 
         // Notification frame
         //std::unique_ptr<raywtk::DisplayFrame> notificationFrame;
@@ -142,6 +157,8 @@ namespace ds_viz::pages
         // variables to manage animation speed
         int animationStep = 0;
         float animationTimer = 0.0;
+        float animationSpeed = 1.0f;
+        bool animationPaused = false;
 
         public:
             HeapVisualizer();
@@ -156,7 +173,8 @@ namespace ds_viz::pages
             void PopMaxValue(); // pop the max value out of heap (root of heap)
             void ClearHeap(); // clear heap
             void ResetStatus(); // reset status before a heap operator
-            void doingStep(raywtk::Step step, bool callAgain); // perform an animation step
+            void doingStep(int idStep, bool callAgain); // perform an animation step
+            void undoingStep(int idStep, bool callAgain); // undo an animation step
             void changeStateOperatorButton(bool state); // change all opreator buttons state to state (state = 0 -> turn off, state = 1 -> turn on)
             void Update(float dt) override;
             void Render() override;

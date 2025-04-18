@@ -1,9 +1,9 @@
 #pragma once
 
 #include "raylib-cpp/Color.hpp"
-#include "widget_toolkit/controls/button.hpp"
+#include "widget_toolkit/controls/button2.hpp"
 #include "widget_toolkit/interfaces.hpp"
-
+#include "raylib-cpp/raylib-cpp.hpp"
 
 namespace ds_viz::themes::dark_simple
 {
@@ -26,18 +26,20 @@ namespace ds_viz::themes::dark_simple
         void RenderWithStyle (raywtk::IRenderable *self) override 
         {
             raywtk::Button *buttonSelf = dynamic_cast<raywtk::Button *>(self);
+            raylib::Color color = raylib::Color::Gray();
+
+            if (buttonSelf->state != raywtk::ButtonClass::Unenabled)
+                color = (buttonSelf->state == raywtk::ButtonClass::Hover) ? raylib::Color::Yellow() : raylib::Color::Pink();
             
-            if (buttonSelf->state == raywtk::ButtonClass::Hover)
-                buttonSelf->buttonRect.DrawRounded(0.5, 8, raylib::Color::Yellow());
-            else
-                buttonSelf->buttonRect.DrawRounded(0.5, 8, raylib::Color::Pink());
+            buttonSelf->buttonRect.DrawRounded(0.5, 8, color);
             
             int fontSize = 18;
-            raylib::Vector2 textSize = raylib::MeasureText(buttonSelf->buttonText.c_str(), fontSize);
-            float textX = buttonSelf->buttonRect.x + (buttonSelf->buttonRect.width - textSize.x) / 2.0;
+            raylib::Text text = raylib::Text(buttonSelf->buttonText.c_str(), fontSize, raylib::Color::Black(), font, 0);
+            
+            int textSizeX = MeasureTextEx(text.GetFont(), buttonSelf->buttonText.c_str(), fontSize, 0).x;
+            float textX = buttonSelf->buttonRect.x + (buttonSelf->buttonRect.width - textSizeX) / 2.0;
             float textY = buttonSelf->buttonRect.y + (buttonSelf->buttonRect.height - fontSize) / 2.0;
 
-            raylib::Text text = raylib::Text(buttonSelf->buttonText.c_str(), fontSize, raylib::Color::Black(), font, 1);
             text.Draw(textX, textY);
         }
     };

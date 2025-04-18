@@ -4,8 +4,8 @@
 #include "./page.hpp"
 #include <memory>
 #include <raylib.h>
-#include "widget_toolkit/controls/button.hpp"
-#include "main_app/themes/dark_simple/text_button.hpp"
+#include "widget_toolkit/controls/button2.hpp"
+#include "widget_toolkit/controls/text_button.hpp"
 #include "./HeapVisualizer.hpp"
 
 namespace ds_viz::pages

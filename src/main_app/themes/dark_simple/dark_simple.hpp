@@ -2,10 +2,10 @@
 
 #include "main_app/main_window.hpp"
 #include "main_app/themes/dark_simple/main_window.hpp"
-#include "widget_toolkit/controls/button.hpp"
+#include "widget_toolkit/controls/button2.hpp"
+#include "widget_toolkit/controls/text_button.hpp"
 #include "widget_toolkit/interfaces.hpp"
 #include "widget_toolkit/theme_manager.hpp"
-#include "./text_button.hpp"
 #include <memory>
 
 namespace ds_viz::themes::dark_simple
