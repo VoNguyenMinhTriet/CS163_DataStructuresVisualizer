@@ -5,9 +5,9 @@
 #include "../interfaces.hpp"
 
 static const int WORKING_FRAME_HEIGHT = 600;
-static const int WORKING_FRAME_WIDTH = 1050;
-static const int WORKING_FRAME_COORDX = 200;
-static const int WORKING_FRAME_COORDY = 100;
+static const int WORKING_FRAME_WIDTH = 1180;
+static const int WORKING_FRAME_COORDX = 50;
+static const int WORKING_FRAME_COORDY = 0;
 
 static const int NOTIFICATION_FRAME_HEIGHT = 200;
 static const int NOTIFICATION_FRAME_WIDTH = 700;
@@ -15,7 +15,7 @@ static const int NOTIFICATION_FRAME_COORDX = 1180;
 static const int NOTIFICATION_FRAME_COORDY = 0;
 
 static const int PSEUDO_CODE_FRAME_HEIGHT = 130;
-static const int PSEUDO_CODE_FRAME_WIDTH = 250;
+static const int PSEUDO_CODE_FRAME_WIDTH = 300;
 static const int PSEUDO_CODE_FRAME_COORDX = DEFAULT_WIN_WIDTH - PSEUDO_CODE_FRAME_WIDTH - 10;
 static const int PSEUDO_CODE_FRAME_COORDY = 680 - PSEUDO_CODE_FRAME_HEIGHT;
 

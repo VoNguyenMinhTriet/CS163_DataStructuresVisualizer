@@ -7,9 +7,22 @@
 
 namespace ds_viz::themes::dark_simple
 {
-    const std::unique_ptr<raylib::Font> font = std::make_unique<raylib::Font>("./ttf/InterDisplay-Black.ttf", 128, nullptr, 250);
     class ButtonStyle : public raywtk::IStyle
     {
+    public:
+        raylib::Font font;
+
+        // Constructor
+        ButtonStyle() : font("./ttf/Inter-Bold.ttf", 128, nullptr, 250) // Load font during initialization
+            {
+            }
+
+            // Destructor
+            ~ButtonStyle()
+            {
+                font.Unload(); // Unload font to free resources
+            }    
+
         void RenderWithStyle (raywtk::IRenderable *self) override 
         {
             raywtk::Button *buttonSelf = dynamic_cast<raywtk::Button *>(self);
@@ -24,7 +37,7 @@ namespace ds_viz::themes::dark_simple
             float textX = buttonSelf->buttonRect.x + (buttonSelf->buttonRect.width - textSize.x) / 2.0;
             float textY = buttonSelf->buttonRect.y + (buttonSelf->buttonRect.height - fontSize) / 2.0;
 
-            raylib::Text text = raylib::Text(buttonSelf->buttonText.c_str(), fontSize, raylib::Color::Black(), *font, 1);
+            raylib::Text text = raylib::Text(buttonSelf->buttonText.c_str(), fontSize, raylib::Color::Black(), font, 1);
             text.Draw(textX, textY);
         }
     };

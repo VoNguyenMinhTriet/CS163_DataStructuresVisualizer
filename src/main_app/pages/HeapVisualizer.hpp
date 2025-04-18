@@ -52,8 +52,8 @@ const int INPUT_BOX_PUSH_VALUE_HEIGHT = OPERATOR_BUTTON_HEIGHT;
 const int NOTIFICATION_COORDX = NOTIFICATION_FRAME_COORDX + 20;
 const int NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 80;
 
-const int PSEUDO_CODE_LINE_WIDTH = 700;
-const int PSEUDO_CODE_LINE_HEIGHT = 50;
+const int PSEUDO_CODE_LINE_WIDTH = 240;
+const int PSEUDO_CODE_LINE_HEIGHT = 16;
 
 #define sz(x) int((x).size())
 
@@ -70,6 +70,9 @@ namespace ds_viz::pages
 
         // animation text
         raylib::Text animationText;
+
+        // pseudo code process text
+        raylib::Text pseudoCodeProcessText;
 
         // Working frame
         std::unique_ptr<raywtk::DisplayFrame> workingFrame;
@@ -145,7 +148,7 @@ namespace ds_viz::pages
             int parent(int i); // parent of node with index i on heap
             int left_child(int i); // left child of node with index i on heap
             int right_child(int i); // right child of node with index i on heap
-            void swapNodes(int i, int j); // swap two nodes i and j on heap
+            void swapNodes(int i, int j, int idPseudoCode, string pseudoCodeProcessText); // swap two nodes i and j on heap
             void maxHeapify(int i); // max heapify for subtree of node with index i
             raylib::Vector2 GetPositionInDisplay(int index, int depth); // get position for node with index 'index' on working frame
             void BuildHeap(const vector<int> &val); // build new heap
@@ -153,7 +156,7 @@ namespace ds_viz::pages
             void PopMaxValue(); // pop the max value out of heap (root of heap)
             void ClearHeap(); // clear heap
             void ResetStatus(); // reset status before a heap operator
-            void doingStep(raywtk::Step step); // perform an animation step
+            void doingStep(raywtk::Step step, bool callAgain); // perform an animation step
             void changeStateOperatorButton(bool state); // change all opreator buttons state to state (state = 0 -> turn off, state = 1 -> turn on)
             void Update(float dt) override;
             void Render() override;

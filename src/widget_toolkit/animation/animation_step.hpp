@@ -9,18 +9,23 @@ namespace raywtk
     {
         Swap2Nodes = 0,
         Highlight2Nodes = 1,
-        InsertNode = 2,
-        DeleteNode = 3,
-        None = 4
+        Highlight1Node = 2,
+        InsertNode = 3,
+        DeleteNode = 4,
+        SetNewPseudoCodeLines = 5,
+        None = 6
     };
 
     struct Step {
         StepType type;
-        int u, v;
+        int u, v, idPseudoCodeLine;
+        string pseudoCodeProcessText;
         std::unique_ptr<raywtk::NodeWidget> node;
+        std::vector<std::string> pseudoCodeLines;
 
-        Step() : type(StepType::None), u(-1), v(-1), node(nullptr) {};
-        Step(StepType type, int u, int v) : type(type), u(u), v(v), node(nullptr) {};
-        Step(StepType type, int u, int v, std::unique_ptr<raywtk::NodeWidget> node) : type(type), u(u), v(v), node(std::move(node)) {};
+        Step() : type(StepType::None), u(-1), v(-1), idPseudoCodeLine(-1), pseudoCodeProcessText(""), pseudoCodeLines(vector<string>()), node(nullptr) {};
+        Step(StepType type, int u, int v, int idPseudoCodeLine, string pseudoCodeProcessText) : type(type), u(u), v(v), idPseudoCodeLine(idPseudoCodeLine), pseudoCodeProcessText(pseudoCodeProcessText), pseudoCodeLines(vector<string>()), node(nullptr) {};
+        Step(StepType type, int u, int v, int idPseudoCodeLine, string pseudoCodeProcessText, std::unique_ptr<raywtk::NodeWidget> node) : type(type), u(u), v(v), idPseudoCodeLine(idPseudoCodeLine), pseudoCodeProcessText(pseudoCodeProcessText), pseudoCodeLines(vector<string>()), node(std::move(node)) {};
+        Step(StepType type, int u, int v, int idPseudoCodeLine, string pseudoCodeProcessText, std::vector<std::string> pseudoCodeLines, std::unique_ptr<raywtk::NodeWidget> node) : type(type), u(u), v(v), idPseudoCodeLine(idPseudoCodeLine), pseudoCodeProcessText(pseudoCodeProcessText), pseudoCodeLines(pseudoCodeLines), node(std::move(node)) {};
     };
 }

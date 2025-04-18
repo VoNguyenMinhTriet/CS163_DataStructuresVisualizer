@@ -18,7 +18,7 @@ namespace raywtk
         raylib::Camera2D *camera;
         float radius = NODE_RADIUS;
         raylib::Color color = raylib::Color::Blue();
-        raylib::Color highlighedColor = raylib::Color::Red();
+        raylib::Color highlighedColor = raylib::Color::Yellow();
         bool visible = true;
         std::function<void()> content; // Optional content function
         eventpp::CallbackList<void()> Click; // Optional click handler
@@ -34,7 +34,7 @@ namespace raywtk
             int textHeight = fontSize;
             float centeredX = position.x - (textWidth / 2);
             float centeredY = position.y - (textHeight / 2);
-            DrawText(text.c_str(), centeredX, centeredY, fontSize, RAYWHITE);
+            DrawText(text.c_str(), centeredX, centeredY, fontSize, BLACK);
         }) {}
 
         void Update (float deltaTime) override
