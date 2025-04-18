@@ -509,13 +509,62 @@ void ds_viz::pages::LinkedListPage::OnReturnButtonClick()
 // Insert a new node at head
 void ds_viz::pages::LinkedListPage::InsertAtHead(int value)
 {
-    InsertAtIndex(value, 0);
+    animationStates.clear();
+    currentAnimationState = -1;
+
+    ResetColor();
+    
+    SetPseudoCodeSteps({
+        "Node insert = new Node(value)",
+        "insert->next = head, head = insert"
+    });
+    
+    animatingInsert = true;
+    insertCurrent = head.get();
+    insertValue = value;
+    insertIndex = 0;
+    currentInsertIndex = 0;
+    animatingTimer = 0.3f;
+    insertState = 0;
+    IAH = true;
+    IAT = false;
+    IAI = false;
+    
+    RepositionNodes();
 }
 
 // Insert a new node at tail
 void ds_viz::pages::LinkedListPage::InsertAtTail(int value)
 {
-    InsertAtIndex(value, size);
+    animationStates.clear();
+    currentAnimationState = -1;
+
+    ResetColor();
+    
+    SetPseudoCodeSteps({
+        "If list is empty",
+        "   Node insert = new Node(value)",
+        "   head = insert, return",
+        "Node temp = head",
+        "while (temp->next)",
+        "   temp = temp->next",
+        "Node insert = new Node(value)",
+        "temp->next = insert"
+    });
+    
+    animatingInsert = true;
+    insertCurrent = head.get();
+    insertValue = value;
+    insertIndex = size;
+    currentInsertIndex = 0;
+    animatingTimer = 0.3f;
+    insertState = 0;
+    currentStep = 0;
+    IAH = false;
+    IAT = true;
+    IAI = false;
+    
+    RepositionNodes();
 }
 
 // Insert a new node at an index
@@ -523,30 +572,28 @@ void ds_viz::pages::LinkedListPage::InsertAtIndex(int value, int index)
 {
     animationStates.clear();
     currentAnimationState = -1;
+
     ResetColor();
+    
     if (index == 0)
     {
-        auto newNode = std::make_unique<raywtk::NodeWidget>(value, nodeFont);
-        newNode->position = raylib::Vector2(headX, headY);
-        newNode->next = std::move(head);
-        head = std::move(newNode);
-
-        auto shift = head->next.get();
-        float newposX = headX + spacing;
-        while (shift)
-        {
-            shift->position = raylib::Vector2(newposX, headY);
-            newposX += spacing;
-            shift = shift->next.get();
-        }
-
-        size++;
-        head->color = raylib::Color::Maroon();
-        RepositionNodes();
-        Append();
-        return;
+        SetPseudoCodeSteps({
+            "Node insert = new Node(value)",
+            "insert->next = head, head = insert"
+        });
     }
-    
+
+    else
+    {
+        SetPseudoCodeSteps({
+            "Node temp = head",
+            "for (k = 0; k < index - 1; k++)",
+            "   temp = temp->next",
+            "Node insert = new Node(value)", 
+            "insert->next = temp->next, temp->next = insert"
+        });
+    }
+
     animatingInsert = true;
     insertCurrent = head.get();
     insertValue = value;
@@ -554,7 +601,11 @@ void ds_viz::pages::LinkedListPage::InsertAtIndex(int value, int index)
     currentInsertIndex = 0;
     animatingTimer = 0.3f;
     insertState = 0;
-    
+    currentStep = 0;
+    IAH = false;
+    IAT = false;
+    IAI = true;
+
     RepositionNodes();
 }
 
@@ -600,8 +651,9 @@ void ds_viz::pages::LinkedListPage::SearchByValue(int val)
     currentAnimationState = -1;
     SetPseudoCodeSteps({
         "If list is empty, return.",
+        "Node temp = head",
         "while (temp->val != target)",
-        "temp = temp->next",
+        "   temp = temp->next",
         "if found, highlight the node",
         "if (temp==NULL), cout<<Node not found"
     });
@@ -628,8 +680,9 @@ void ds_viz::pages::LinkedListPage::SearchByIndex(int index)
     currentAnimationState = -1;
     SetPseudoCodeSteps({
         "If list is empty, return.",
+        "Node temp = head",
         "while (index != targetindex && temp)",
-        "temp = temp->next, index++",
+        "   temp = temp->next, index++",
         "if found, highlight the node",
     });
     
@@ -658,53 +711,116 @@ void ds_viz::pages::LinkedListPage::SearchByIndex(int index)
 
 void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
 {
-    if (animatingInsert && insertCurrent)
+    if (animatingInsert)
     {
         animatingTimer -= dt * animationSpeed;
         if (animatingTimer <= 0)
         {
+            SaveListState();
+
             if (insertState == 0) 
             {
-                currentStep = 0;
-                insertCurrent->color = raylib::Color::Orange();
-                insertState = 1;
-                animatingTimer = 0.3f / animationSpeed; // Delay between each node
+                if (insertIndex == 0)
+                {
+                    if (IAT)
+                        currentStep = 1;
+                    else
+                        currentStep = 0;
+
+                    newNode = std::make_unique<raywtk::NodeWidget>(insertValue, nodeFont);
+                    float posX = headX;
+                    float posY = headY - 100; 
+                    newNode->position = raylib::Vector2(posX, posY);
+                    newNode->color = raylib::Color::Maroon(); 
+
+                    insertState = 2; // Move to the next state
+                    animatingTimer = 0.3f / animationSpeed; 
+                }
+                
+                else
+                {
+                    if (IAT)
+                        currentStep  = 5;
+                    else
+                        currentStep = 2;
+                    insertCurrent->color = raylib::Color::Orange();
+                    insertState = 1;
+                    animatingTimer = 0.3f / animationSpeed; 
+                }
             } 
             else if (insertState == 1) 
             {
-                if (currentInsertIndex == insertIndex - 1)
+                if (currentInsertIndex == insertIndex - 1 || insertIndex == 0)
                 {
-                    currentStep = 1;
-                    auto newNode = std::make_unique<raywtk::NodeWidget>(insertValue, nodeFont);
+                    if (IAT)
+                        currentStep = 6;
+                    else
+                        currentStep = 3;
+                    newNode = std::make_unique<raywtk::NodeWidget>(insertValue, nodeFont);
                     float posX = headX + (insertIndex) * spacing;
-                    newNode->position = raylib::Vector2(posX, headY);
+                    float posY = headY - 100;
+                    newNode->position = raylib::Vector2(posX, posY);
                     insertCurrent->color = raylib::Color::Black();
                     newNode->color = raylib::Color::Maroon();
+                    
+
+                    insertState = 2;
+                    animatingTimer = 0.3f / animationSpeed; 
+                }
+                
+                else
+                {
+                    if (IAT)
+                        currentStep = 4;
+                    else
+                        currentStep = 1;
+                    insertCurrent->color = raylib::Color::Black();
+                    insertCurrent = insertCurrent->next.get();
+                    currentInsertIndex++;
+                    insertState = 0;
+                    animatingTimer = 0.3f / animationSpeed; 
+                }
+            }
+
+            else if (insertState == 2)
+            {
+                if (IAT && insertIndex == 0)
+                    currentStep = 2;
+                else if (IAT && insertIndex != 0)
+                    currentStep = 7;
+                else if (IAH)
+                    currentStep = 1;
+                else
+                {
+                    if (IAI && insertIndex == 0)
+                        currentStep = 1;
+                    else
+                        currentStep = 4;
+                }
+
+                if (insertIndex == 0 && head)
+                {
+                    newNode->next = std::move(head);
+                    head = std::move(newNode);
+                }
+
+                else if (insertIndex == 0 && !head)
+                    head = std::move(newNode);
+                
+                else
+                {
                     newNode->next = std::move(insertCurrent->next);
                     insertCurrent->next = std::move(newNode);
-
-                    auto shift = insertCurrent->next.get()->next.get();
-                    float newposX = posX + spacing;
-                    while (shift)
-                    {
-                        shift->position = raylib::Vector2(newposX, headY);
-                        newposX += spacing;
-                        shift = shift->next.get();
-                    }
-        
-                    animatingInsert = false;
-                    size++;
-                    Append();
-                    currentStep = -1;
-                    return;
                 }
-    
-                insertCurrent->color = raylib::Color::Black();
-                insertCurrent = insertCurrent->next.get();
-                currentInsertIndex++;
-
-                insertState = 0;
-                animatingTimer = 0.3f / animationSpeed; // Delay between each node
+               
+                newNode = nullptr;
+                RepositionNodes();
+                animatingInsert = false; 
+                size++;
+                Append();
+                SaveListState();
+                currentAnimationState = static_cast<int>(animationStates.size()) - 1;
+                return;
             }
         }
     }
@@ -789,7 +905,7 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
 
             if (searchState == 0) 
             {
-                currentStep = 1; //Highlight the current node
+                currentStep = 2; //Highlight the current node
                 searchCurrent->color = raylib::Color::Orange();
                 searchState = 1;
                 animatingTimer = 0.3f / animationSpeed; // Delay between each node
@@ -798,7 +914,7 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
             {
                 if (searchByValue && searchCurrent->value == searchTarget)
                 {
-                    currentStep = 3; // Highlight if found
+                    currentStep = 4; // Highlight if found
                     searchCurrent->color = raylib::Color::DarkGreen();
                     FindMessage = "Node found!";
                     FindTimer = 2.0f;
@@ -810,7 +926,7 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
                 }
                 else if (!searchByValue && currentSearchIndex == searchIndex)
                 {
-                    currentStep = 3; // Highlight if found
+                    currentStep = 4; // Highlight if found
                     searchCurrent->color = raylib::Color::DarkGreen();
                     FindMessage = "Node found!";
                     FindTimer = 2.0f;
@@ -821,14 +937,14 @@ void ds_viz::pages::LinkedListPage::AnimateSearch(float dt)
                     return;
                 }
 
-                currentStep = 2;
+                currentStep = 3;
                 searchCurrent->color = raylib::Color::Black();
                 searchCurrent = searchCurrent->next.get();
                 currentSearchIndex++;
 
                 if (!searchCurrent)
                 {
-                    currentStep = 4; // If null, not found
+                    currentStep = 5; // If null, not found
                     animatingSearch = false;
                     errorMessage = "Value not found";
                     errorTimer = 2.0f;
@@ -880,6 +996,19 @@ void ds_viz::pages::LinkedListPage::SaveListState()
         current = current->next.get();
     }
 
+    // Save the newNode if it exists
+    if (newNode)
+    {
+        state.newNodeValue = newNode->value;
+        state.newNodeColor = newNode->color;
+        state.newNodePosition = newNode->position;
+        state.hasNewNode = true;
+    }
+    else
+    {
+        state.hasNewNode = false;
+    }
+
     state.currentStep = currentStep;
     animationStates.push_back(state);
 }
@@ -903,6 +1032,16 @@ void ds_viz::pages::LinkedListPage::LoadListState(const ListState& state)
         prev = prev ? prev->next.get() : head.get();
     }
 
+    if (state.hasNewNode)
+    {
+        newNode = std::make_unique<raywtk::NodeWidget>(state.newNodeValue, nodeFont);
+        newNode->color = state.newNodeColor;
+        newNode->position = state.newNodePosition;
+    }
+
+    else
+        newNode = nullptr;
+    
     currentStep = state.currentStep;
 }
 
@@ -989,7 +1128,7 @@ void ds_viz::pages::LinkedListPage::DrawPseudoCodeBlock()
     for (size_t i = 0; i < pseudoCodeSteps.size(); ++i)
     {
         raylib::Color textColor = (i == currentStep) ? raylib::Color::Yellow() : raylib::Color::White();
-        raylib::DrawText(pseudoCodeSteps[i].c_str(), boxX + 10, boxY + 40 + i * lineHeight, fontSize, textColor);
+        raylib::DrawText(pseudoCodeSteps[i].c_str(), boxX + 10, boxY + 20 + i * lineHeight, fontSize, textColor);
     }
 }
 
@@ -1412,6 +1551,9 @@ void ds_viz::pages::LinkedListPage::Render()
     raywtk::NodeWidget* current = head.get();
     if (current)
         current->Render();
+
+    if (newNode)
+        newNode->Render();
 
     // Draw Head and Tail labels
     if (head)

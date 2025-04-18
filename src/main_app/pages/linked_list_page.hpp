@@ -38,19 +38,6 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> returnButton;
         std::unique_ptr<raywtk::Button> actionBarButton;
 
-        // Step-by-step running buttons
-        std::unique_ptr<raywtk::Button> stepForwardButton;
-        std::unique_ptr<raywtk::Button> stepBackwardButton;
-        struct ListState {
-            std::vector<int> values; // Node values
-            std::vector<raylib::Color> colors; // Node colors
-            int currentStep; // Current step in the pseudo-code
-        };
-        
-        std::vector<ListState> animationStates; 
-        int currentAnimationState = -1; 
-
-
         bool actionBarVisible = false; 
         std::unique_ptr<raywtk::Button> insertButton;
         std::vector<std::unique_ptr<raywtk::Button>> insertDropdownButtons;
@@ -71,6 +58,29 @@ namespace ds_viz::pages
         std::vector<std::unique_ptr<raywtk::Button>> createDropdownButtons;
         std::vector<std::string> createOptions = { "Random", "Clear", "Load file" };
         bool createDropdownOpen = false;
+        
+        
+        // Step-by-step running buttons
+        std::unique_ptr<raywtk::Button> stepForwardButton;
+        std::unique_ptr<raywtk::Button> stepBackwardButton;
+        struct ListState {
+            std::vector<int> values; // Node values
+            std::vector<raylib::Color> colors; // Node colors
+            int currentStep; // Current step in the pseudo-code
+
+            bool hasNewNode = false; // Check if a new node exists in the state       
+            int newNodeValue = 0;              
+            raylib::Color newNodeColor;        
+            raylib::Vector2 newNodePosition;  
+        };
+        
+        std::vector<ListState> animationStates; 
+        int currentAnimationState = -1; 
+        
+        // pseudo-code box for each operation
+        std::vector<std::string> pseudoCodeSteps; 
+        int currentStep = -1;                    
+        bool showPseudoCode = false;    
         
         // For image buttons texture
         raylib::Texture undoButtonTex;
@@ -109,6 +119,10 @@ namespace ds_viz::pages
         int insertValue = -1000;
         int currentInsertIndex = 0;
         int insertState = 0;
+        std::unique_ptr<raywtk::NodeWidget> newNode = nullptr; //node for insertion animation
+        bool IAH = false;
+        bool IAT = false;
+        bool IAI = false;
 
         // Delete Animation
         bool animatingDelete = false;
@@ -150,10 +164,7 @@ namespace ds_viz::pages
         std::string FindMessage = "";
         float FindTimer = 0.0f;
 
-        // pseudo-code box for each operation
-        std::vector<std::string> pseudoCodeSteps; 
-        int currentStep = -1;                    
-        bool showPseudoCode = false;             
+                 
         
                                     
     public:
