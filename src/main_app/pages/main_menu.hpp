@@ -1,9 +1,8 @@
 #pragma once
 
+#include <memory>
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "./page.hpp"
-#include <memory>
-#include <raylib.h>
 
 namespace ds_viz::pages
 {
