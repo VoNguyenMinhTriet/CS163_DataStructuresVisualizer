@@ -612,13 +612,74 @@ void ds_viz::pages::LinkedListPage::InsertAtIndex(int value, int index)
 // Delete at head
 void ds_viz::pages::LinkedListPage::DeleteAtHead()
 {
-    DeleteAtIndex(0);   
+    animationStates.clear();
+    currentAnimationState = -1;
+    if (!head)
+    {
+        errorMessage = "List is empty!";
+        errorTimer = 2.0f;
+        return;
+    }
+
+    SetPseudoCodeSteps({
+        "If list is empty, return.",
+        "Node ToDel = head",
+        "head = head->next, delete ToDel"
+    });
+
+    ResetColor();
+    animatingDelete = true;
+    deleteCurrent = head.get();
+    deleteIndex = 0;
+    currentdeleteIndex = 0;
+    animatingTimer = 0.3f;
+    deleteState = 0;
+    DAH = true;
+    DAT = false;
+    DAI = false;
+    currentStep = 1;
+    
+    RepositionNodes();
 }
 
 // Delete at tail
 void ds_viz::pages::LinkedListPage::DeleteAtTail()
 {
-    DeleteAtIndex(size - 1);
+    animationStates.clear();
+    currentAnimationState = -1;
+    if (!head)
+    {
+        errorMessage = "List is empty!";
+        errorTimer = 2.0f;
+        return;
+    }
+
+    SetPseudoCodeSteps({
+        "If list is empty, return.",
+        "Node temp = head",
+        "If head->next = NULL",
+        "   Node ToDel = head",
+        "   head = NULL, delete ToDel",
+        "else",
+        "   while (temp->next->next)",
+        "       temp = temp->next",
+        "   Node ToDel = temp->next",
+        "   temp->next = ToDel->next, delete ToDel"
+    });
+
+    ResetColor();
+    animatingDelete = true;
+    deleteCurrent = head.get();
+    deleteIndex = size - 1;
+    currentdeleteIndex = 0;
+    animatingTimer = 0.3f;
+    deleteState = 0;
+    DAH = false;
+    DAT = true;
+    DAI = false;
+    currentStep = 1;
+    
+    RepositionNodes();
 }
 
 // Delete at an index
@@ -633,6 +694,19 @@ void ds_viz::pages::LinkedListPage::DeleteAtIndex(int index)
         return;
     }
 
+    SetPseudoCodeSteps({
+        "If list is empty, return.",
+        "Node temp = head",
+        "if index == 0",
+        "   ToDel = head",
+        "   head = head->next, delete ToDel",
+        "else",
+        "   for (k = 0; k < index - 1; k++)",
+        "       temp = temp->next",
+        "   Node ToDel = temp->next",
+        "   temp->next = ToDel->next, delete ToDel"
+    });
+
     ResetColor();
     animatingDelete = true;
     deleteCurrent = head.get();
@@ -640,6 +714,10 @@ void ds_viz::pages::LinkedListPage::DeleteAtIndex(int index)
     currentdeleteIndex = 0;
     animatingTimer = 0.3f;
     deleteState = 0;
+    DAH = false;
+    DAT = false;
+    DAI = true;
+    currentStep = 1;
     
     RepositionNodes();
 }
@@ -833,15 +911,31 @@ void ds_viz::pages::LinkedListPage::AnimateDelete(float dt)
         animatingTimer -= dt * animationSpeed;
         if (animatingTimer <= 0)
         {
+            SaveListState();
             if (deleteState == 0)
             {
                 if (deleteCurrent)
                 {
                     if (currentdeleteIndex == deleteIndex)
-                        deleteCurrent->color = raylib::Color::Maroon();                
+                    {
+                        deleteCurrent->color = raylib::Color::Maroon();   
+                        if (deleteIndex == 0)
+                        {
+                            if (DAI || DAT)
+                                currentStep = 3;
+                            else if (DAH)
+                                currentStep = 1;
+                        }
+                        else
+                            currentStep = 8;
+                    }   
+
                     else
+                    {
                         deleteCurrent->color = raylib::Color::Orange();
-                }
+                        currentStep = 7;
+                    }
+                }   
                 
                 if (currentdeleteIndex == deleteIndex - 1)
                     ToDelPrev = deleteCurrent;
@@ -860,30 +954,32 @@ void ds_viz::pages::LinkedListPage::AnimateDelete(float dt)
                             ToDelPrev->next = std::move(deleteCurrent->next);
                         else
                             ToDelPrev->next = nullptr;
+                        currentStep = 9;
                     }
 
                     else
                     {
                         if (deleteCurrent)
                             head = std::move(deleteCurrent->next);
+
+                        if (DAI || DAT)
+                            currentStep = 4;
+                        else if (DAH)
+                            currentStep = 2;
                     }
 
 
-                    float newposX = headX;
-                    raywtk::NodeWidget* temp = head.get();
-                    while (temp)
-                    {
-                        temp->position = raylib::Vector2(newposX, headY);
-                        newposX += spacing;
-                        temp = temp->next.get();
-                    }
+                    RepositionNodes();
 
                     animatingDelete = false;
                     size--;
                     Append();
+                    SaveListState();
+                    currentAnimationState = static_cast<int>(animationStates.size()) - 1;
                     return; 
                 }
                 
+                currentStep = 6;
                 deleteCurrent->color = raylib::Color::Black();
                 deleteCurrent = deleteCurrent->next.get();
                 currentdeleteIndex++;
@@ -1112,7 +1208,7 @@ void ds_viz::pages::LinkedListPage::DrawPseudoCodeBlock()
         return;
 
     int boxWidth = 600;
-    int boxHeight = 300;
+    int boxHeight = 400;
     int boxX = _context->ref_raylib_window->GetWidth() - boxWidth - 20;
     int boxY = _context->ref_raylib_window->GetHeight() - boxHeight - 20;
 

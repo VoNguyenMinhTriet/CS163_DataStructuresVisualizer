@@ -132,6 +132,9 @@ namespace ds_viz::pages
         int deleteIndex = -1;
         int currentdeleteIndex = 0;
         int deleteState = 0;
+        bool DAH = false;
+        bool DAT = false;
+        bool DAI = false;
 
         // Search Animation
         bool animatingSearch = false;
