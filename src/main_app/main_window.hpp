@@ -3,8 +3,8 @@
 #include <memory>
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "pages/page.hpp"
-#include "widget_toolkit/interfaces.hpp"
-#include "widget_toolkit/theme_manager.hpp"
+#include "../widget_toolkit/interfaces.hpp"
+#include "../widget_toolkit/theme_manager.hpp"
 
 #define DEFAULT_FPS 60
 #define DEFAULT_WIN_WIDTH 1280
