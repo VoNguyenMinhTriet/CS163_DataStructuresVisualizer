@@ -8,6 +8,7 @@
 #include "./linked_list_page.hpp"
 #include "main_app/themes/dark_simple/text_button.hpp"
 
+
 namespace ds_viz::pages
 {
     class MainMenuPage : public Page

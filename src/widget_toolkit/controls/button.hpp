@@ -1,10 +1,9 @@
 #pragma once
 
+#include <memory>
 #include "eventpp/callbacklist.h"
 #include "../interfaces.hpp"
 #include "../theme_manager.hpp"
-#include <memory>
-#include <raylib.h>
 
 namespace raywtk
 {
@@ -50,11 +49,11 @@ namespace raywtk
             {
                 state = ButtonClass::Hover;
 
-                if (raylib::Mouse::IsButtonPressed(MouseButton::MOUSE_BUTTON_LEFT))
-                    Click();
-
                 if (raylib::Mouse::IsButtonDown(MouseButton::MOUSE_BUTTON_LEFT))
                     state = ButtonClass::Pressed;
+
+                if (raylib::Mouse::IsButtonPressed(MouseButton::MOUSE_BUTTON_LEFT))
+                    Click();
             }
         }
 
