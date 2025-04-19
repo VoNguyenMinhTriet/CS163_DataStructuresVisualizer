@@ -3,14 +3,9 @@
 #include "main_app/main_window.hpp"
 #include "main_app/themes/dark_simple/main_window.hpp"
 #include "widget_toolkit/controls/button.hpp"
-#include "widget_toolkit/controls/code_box.hpp"
 #include "widget_toolkit/interfaces.hpp"
 #include "widget_toolkit/theme_manager.hpp"
 #include "./text_button.hpp"
-#include "./button.hpp"
-#include "./text_box.hpp"
-#include "./code_box.hpp"
-
 #include <memory>
 
 namespace ds_viz::themes::dark_simple
@@ -31,17 +26,6 @@ namespace ds_viz::themes::dark_simple
                 .insert({
                     typeid(raywtk::Button).name(),
                     std::shared_ptr<raywtk::IStyle>(new ButtonStyle())
-                });
-          
-            _darkSimpleTheme.styles
-                .insert({
-                    typeid(raywtk::TextBox).name(),
-                    std::shared_ptr<raywtk::IStyle>(new TextBoxStyle())
-                });
-            _darkSimpleTheme.styles
-                .insert({
-                    typeid(raywtk::CodeBox).name(),
-                    std::shared_ptr<raywtk::IStyle>(new CodeBoxStyle())
                 });
         }
 

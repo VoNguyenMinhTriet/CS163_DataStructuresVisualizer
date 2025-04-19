@@ -5,6 +5,7 @@
 #include "raylib-cpp/Rectangle.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "./page.hpp"
+#include "./GraphVisualizer.hpp"
 #include "./trie/trie_page.hpp"
 #include "widget_toolkit/controls/button.hpp"
 #include "./linked_list_page.hpp"

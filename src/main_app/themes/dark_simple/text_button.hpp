@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raylib-cpp/Color.hpp"
+#include "raylib-cpp/Color.hpp
 #include "raylib-cpp/Font.hpp"
 #include "widget_toolkit/controls/button.hpp"
 #include "widget_toolkit/interfaces.hpp"
