@@ -1,12 +1,17 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+#include "raylib-cpp/Rectangle.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "./page.hpp"
-#include <memory>
-#include <raylib.h>
-#include "widget_toolkit/controls/button.hpp"
 #include "./heap/HeapVisualizer.hpp"
 #include "main_app/themes/dark_simple/dark_simple.hpp"
+#include "./GraphVisualizer.hpp"
+#include "./trie/trie_page.hpp"
+#include "widget_toolkit/controls/button.hpp"
+#include "./linked_list_page.hpp"
+#include "main_app/themes/dark_simple/text_button.hpp"
 
 namespace ds_viz::pages
 {
@@ -16,12 +21,22 @@ namespace ds_viz::pages
         raylib::Text title;
         std::vector<std::unique_ptr<raywtk::Button>> buttons;
 
-        public:
+        // Controls
+        raywtk::Button _trieButton;
 
-        MainMenuPage () 
-        {
+    public:
+        MainMenuPage(MainWindow &context);
+
+        void Update(float dt) override;
+
+        void Render() override;
+
+    public:
+        MainMenuPage () {
             font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
             title = raylib::Text("DATA LA VISTA", 128, raylib::Color::White(), *font, 0);
+            
+            CreateButton("Singly-Linked List", 300, 400, [this]() { OnLLButtonClick(); });
             CreateButton("Heap Visualization", 800, 400, [this]() 
             { 
                 _context->ChangePage(std::make_shared<ds_viz::pages::HeapVisualizer>());
@@ -38,14 +53,17 @@ namespace ds_viz::pages
             buttons.push_back(std::move(button));
         }
 
-        void Update (float dt) override 
+        void OnLLButtonClick()
         {
-            for (auto& button: buttons) 
+            _context->ChangePage(std::make_shared<ds_viz::pages::LinkedListPage>());
+        }
+
+        void Update(float dt) override
+        {
+            for (auto& button: buttons)
             {
                 button->Update(dt);
             }
         }
-
-        void Render () override;
     };
 }

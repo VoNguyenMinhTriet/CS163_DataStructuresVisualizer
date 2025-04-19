@@ -23,6 +23,7 @@ namespace raywtk
 
         // Text for button
         std::string buttonText = "Button";
+        
         // Events
         eventpp::CallbackList<void()> Click;
 
