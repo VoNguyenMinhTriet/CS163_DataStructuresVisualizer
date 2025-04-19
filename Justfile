@@ -11,7 +11,8 @@ include-dirs := "extern/include src"
 src-files := "main_app/main.cpp main_app/main_window.cpp main_app/pages/main_menu.cpp \
 main_app/pages/trie/trie_page.cpp main_app/pages/trie/trie_scene.cpp main_app/pages/trie/trie_timeline.cpp \
 main_app/pages/linked_list_page.cpp \
-main_app/pages/GraphVisualizer.cpp widget_toolkit/input_box/InputBox.cpp widget_toolkit/notification/Notification.cpp widget_toolkit/pseudo_code_display/PseudoCode.cpp"
+main_app/pages/GraphVisualizer.cpp widget_toolkit/input_box/InputBox.cpp widget_toolkit/notification/Notification.cpp widget_toolkit/pseudo_code_display/PseudoCode.cpp \
+main_app/pages/heap/HeapVisualizer.cpp"
 
 linux-dbg_build:
     mkdir -p {{bin-linux-dir}}

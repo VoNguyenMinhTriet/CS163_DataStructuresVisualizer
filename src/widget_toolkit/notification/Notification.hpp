@@ -1,11 +1,11 @@
 #pragma once
-
+ 
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "widget_toolkit/interfaces.hpp"
 #include <string>
 #include <vector>
 #include <chrono>
-
+ 
 namespace raywtk
 {
     enum class NotificationType
@@ -35,4 +35,3 @@ namespace raywtk
         Color GetColor(NotificationType type);
     };
 }
-
