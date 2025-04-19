@@ -5,7 +5,7 @@
 #include <stack>
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "widget_toolkit/controls/button.hpp"
-#include "widget_toolkit/graph_widget/node.hpp"
+#include "widget_toolkit/graph_widget/ListNode.hpp"
 #include "main_app/themes/dark_simple/text_button.hpp"
 #include "./page.hpp"
 
@@ -18,9 +18,16 @@ namespace ds_viz::pages
         std::unique_ptr<raylib::Font> font;
         raylib::Text title;
         
-        std::unique_ptr<raywtk::NodeWidget> head = nullptr; // Head node
+        // For scaling
+        const int baseWidth = 1280;  
+        const int baseHeight = 720;
+        float scaleX; 
+        float scaleY;     
+
+        std::unique_ptr<raywtk::ListNodeWidget> head = nullptr; // Head node
         std::shared_ptr<raylib::Font> nodeFont; // Node font
         std::shared_ptr<raylib::Font> textFont; // Text font
+        std::shared_ptr<raylib::Font> codeFont;
 
         float headX = 80; // Default X-coordinate of head
         float headY = 400; // Default Y-coordinate of head
@@ -63,7 +70,9 @@ namespace ds_viz::pages
         // Step-by-step running buttons
         std::unique_ptr<raywtk::Button> stepForwardButton;
         std::unique_ptr<raywtk::Button> stepBackwardButton;
-        struct ListState {
+        
+        struct ListState 
+        {
             std::vector<int> values; // Node values
             std::vector<raylib::Color> colors; // Node colors
             int currentStep; // Current step in the pseudo-code
@@ -71,13 +80,14 @@ namespace ds_viz::pages
             bool hasNewNode = false; // Check if a new node exists in the state       
             int newNodeValue = 0;              
             raylib::Color newNodeColor;        
-            raylib::Vector2 newNodePosition;  
+            raylib::Vector2 newNodePos;  
         };
         
         std::vector<ListState> animationStates; 
         int currentAnimationState = -1; 
         
         // pseudo-code box for each operation
+        std::unique_ptr<raywtk::Button> pseudoToggleButton;
         std::vector<std::string> pseudoCodeSteps; 
         int currentStep = -1;                    
         bool showPseudoCode = false;    
@@ -86,6 +96,8 @@ namespace ds_viz::pages
         raylib::Texture undoButtonTex;
         raylib::Texture redoButtonTex;
         raylib::Texture returnButtonTex;
+        raylib::Texture stepforwardTex;
+        raylib::Texture stepbackTex;
         
         // flags to show input bars
         bool showInsertAtHead = false;
@@ -114,21 +126,21 @@ namespace ds_viz::pages
 
         // Insert Animation
         bool animatingInsert = false;
-        raywtk::NodeWidget* insertCurrent = nullptr;
+        raywtk::ListNodeWidget* insertCurrent = nullptr;
         int insertIndex = -1;
         int insertValue = -1000;
         int currentInsertIndex = 0;
         int insertState = 0;
-        std::unique_ptr<raywtk::NodeWidget> newNode = nullptr; //node for insertion animation
+        std::unique_ptr<raywtk::ListNodeWidget> newNode = nullptr; //node for insertion animation
         bool IAH = false;
         bool IAT = false;
         bool IAI = false;
 
         // Delete Animation
         bool animatingDelete = false;
-        raywtk::NodeWidget* deleteCurrent = nullptr;
-        raywtk::NodeWidget* ToDelPrev = nullptr;
-        raywtk::NodeWidget* deleteShift = nullptr;
+        raywtk::ListNodeWidget* deleteCurrent = nullptr;
+        raywtk::ListNodeWidget* ToDelPrev = nullptr;
+        raywtk::ListNodeWidget* deleteShift = nullptr;
         int deleteIndex = -1;
         int currentdeleteIndex = 0;
         int deleteState = 0;
@@ -138,7 +150,7 @@ namespace ds_viz::pages
 
         // Search Animation
         bool animatingSearch = false;
-        raywtk::NodeWidget* searchCurrent = nullptr;
+        raywtk::ListNodeWidget* searchCurrent = nullptr;
         int searchTarget = -1000;
         int searchIndex = -1;
         int currentSearchIndex = 0;
@@ -197,16 +209,15 @@ namespace ds_viz::pages
     void AnimateInsert(float dt);
     void AnimateDelete(float dt);
     void AnimateSearch(float dt);
-    void CreateNotification(std::string &Message);
-    void DrawInputBox(int X, int Y, std::string &input);
-    void DrawInputBox2(int X, int Y, std::string &input);
-    void DrawSpeedBar();
-    void SetPseudoCodeSteps(const std::vector<std::string>& steps); 
-    void DrawPseudoCodeBlock();  
     void OnStepForwardClick();
     void OnStepBackwardClick();
     void SaveListState();
     void LoadListState(const ListState& state);
+    void CreateNotification(std::string &Message);
+    void DrawInputBox(int X, int Y, int width, int height, std::string &input);
+    void DrawSpeedBar();
+    void SetPseudoCodeSteps(const std::vector<std::string>& steps); 
+    void DrawPseudoCodeBlock();  
     void Update(float dt) override;
     void Render() override;
     };
