@@ -13,22 +13,27 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     title = raylib::Text("Singly-Linked List", 128, raylib::Color::White(), *font, 0);
     
     nodeFont = std::make_shared<raylib::Font>("./ttf/InterDisplay-ExtraBold.ttf", 128);
-    textFont = std::make_shared<raylib::Font>("./ttf/Inter-Medium.ttf", 128);
+    textFont = std::make_shared<raylib::Font>("./ttf/Inter-Regular.ttf", 128);
+    codeFont = std::make_shared<raylib::Font>("./ttf/Cascadia.ttf", 128);
     
+    scaleX = static_cast<float>(GetScreenWidth()) / baseWidth;
+    scaleY = static_cast<float>(GetScreenHeight()) / baseHeight;    
+
     // repositioning nodes button
     repositionButton = std::make_unique<raywtk::Button>();
     repositionButton->buttonText = "Reposition";
-    repositionButton->buttonRect = raylib::Rectangle(60, 820, 180, 50);
+    repositionButton->buttonRect = raylib::Rectangle(12 * scaleX, 660 * scaleY, 128 * scaleX, 24 * scaleY);
     repositionButton->Click.append([this]() { RepositionNodes(); });
     repositionButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
     // action bar toggle
     actionBarButton = std::make_unique<raywtk::Button>();
-    actionBarButton->buttonText = " ";
-    actionBarButton->buttonRect = raylib::Rectangle(20, 600, 30, 270); 
+    actionBarButton->buttonText = ">";
+    actionBarButton->buttonRect = raylib::Rectangle(0 * scaleX, 548 * scaleY, 8 * scaleX, 136 * scaleY); 
     actionBarButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
     actionBarButton->Click.append([this]() { 
         actionBarVisible = !actionBarVisible; // Toggle visibility
+        actionBarButton->buttonText = actionBarVisible ? "<" : ">";
         insertDropdownOpen = false;
         deleteDropdownOpen = false; 
         searchDropdownOpen = false;
@@ -41,24 +46,20 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         showRandomInput = false;
     });
 
-    // Add StepForward button
-    stepForwardButton = std::make_unique<raywtk::Button>();
-    stepForwardButton->buttonText = "Step Forward";
-    stepForwardButton->buttonRect = raylib::Rectangle(60, 880, 180, 50);
-    stepForwardButton->Click.append([this]() { OnStepForwardClick(); });
-    stepForwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
-
-    // Add StepBackward button
-    stepBackwardButton = std::make_unique<raywtk::Button>();
-    stepBackwardButton->buttonText = "Step Backward";
-    stepBackwardButton->buttonRect = raylib::Rectangle(260, 880, 180, 50);
-    stepBackwardButton->Click.append([this]() { OnStepBackwardClick(); });
-    stepBackwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
+    // Pseudo-code toggle button
+    pseudoToggleButton = std::make_unique<raywtk::Button>();
+    pseudoToggleButton->buttonText = "<";
+    pseudoToggleButton->buttonRect = raylib::Rectangle(1265 * scaleX, 393 * scaleY, 8 * scaleX, 280 * scaleY);
+    pseudoToggleButton->Click.append([this]() {
+        showPseudoCode = !showPseudoCode; // Toggle pseudo-code visibility
+        pseudoToggleButton->buttonText = showPseudoCode ? "<" : ">";
+    });
+    pseudoToggleButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
     // Insert buttons (Main button)
     insertButton = std::make_unique<raywtk::Button>();
     insertButton->buttonText = "Insert";
-    insertButton->buttonRect = raylib::Rectangle(60, 600, 180, 50);
+    insertButton->buttonRect = raylib::Rectangle(12 * scaleX, 548 * scaleY, 128 * scaleX, 24 * scaleY);
     insertButton->Click.append([this]() { 
         insertDropdownOpen = !insertDropdownOpen;
         deleteDropdownOpen = false; 
@@ -78,7 +79,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     {
         auto btn = std::make_unique<raywtk::Button>();
         btn->buttonText = insertOptions[i];
-        btn->buttonRect = raylib::Rectangle(60 + (i + 1) * 180, 600, 180, 50);
+        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128) * scaleX, 548 * scaleY, 128 * scaleX, 24 * scaleY);
         btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
         if (insertOptions[i] == "At Head")
@@ -114,7 +115,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     // delete buttons (Main button)
     deleteButton = std::make_unique<raywtk::Button>();
     deleteButton->buttonText = "Delete";
-    deleteButton->buttonRect = raylib::Rectangle(60, 655, 180, 50);
+    deleteButton->buttonRect = raylib::Rectangle(12 * scaleX, 576 * scaleY, 128 * scaleX, 24 * scaleY);
     deleteButton->Click.append([this]() { 
         insertDropdownOpen = false;
         deleteDropdownOpen = !deleteDropdownOpen; 
@@ -134,7 +135,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     {
         auto btn = std::make_unique<raywtk::Button>();
         btn->buttonText = deleteOptions[i];
-        btn->buttonRect = raylib::Rectangle(60 + (i + 1) * 180, 655, 180, 50);
+        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128) * scaleX, 576 * scaleY , 128 * scaleX, 24 * scaleY);
         btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
         if (deleteOptions[i] == "At Head")
@@ -166,7 +167,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     // search buttons (Main button)
     searchButton = std::make_unique<raywtk::Button>();
     searchButton->buttonText = "Search";
-    searchButton->buttonRect = raylib::Rectangle(60, 710, 180, 50);
+    searchButton->buttonRect = raylib::Rectangle(12 * scaleX, 604 * scaleY , 128 * scaleX, 24 * scaleY);
     searchButton->Click.append([this]() { 
         insertDropdownOpen = false;
         deleteDropdownOpen = false; 
@@ -186,7 +187,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     {
         auto btn = std::make_unique<raywtk::Button>();
         btn->buttonText = searchOptions[i];
-        btn->buttonRect = raylib::Rectangle(60 + (i + 1) * 180, 710, 180, 50);
+        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128) * scaleX, 604 * scaleY, 128 * scaleX, 24 * scaleY);
         btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
         if (searchOptions[i] == "By Value")
@@ -211,7 +212,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     // Create buttons (Main button)
     createButton = std::make_unique<raywtk::Button>();
     createButton->buttonText = "Create";
-    createButton->buttonRect = raylib::Rectangle(60, 765, 180, 50);
+    createButton->buttonRect = raylib::Rectangle(12 * scaleX, 632 * scaleY, 128 * scaleX, 24 * scaleY);
     createButton->Click.append([this]() { 
         insertDropdownOpen = false;
         deleteDropdownOpen = false; 
@@ -231,7 +232,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
     {
         auto btn = std::make_unique<raywtk::Button>();
         btn->buttonText = createOptions[i];
-        btn->buttonRect = raylib::Rectangle(60 + (i + 1) * 180, 765, 180, 50);
+        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128) * scaleX, 632 * scaleY, 128 * scaleX, 24 * scaleY);
         btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
         if (createOptions[i] == "Random")
@@ -260,24 +261,38 @@ ds_viz::pages::LinkedListPage::LinkedListPage()
         createDropdownButtons.push_back(std::move(btn));
     }
 
+    // Step-forward button
+    stepforwardTex = raylib::Texture(raylib::Image("./images/step-forward.png"));
+    stepForwardButton = std::make_unique<raywtk::Button>();
+    stepForwardButton->buttonRect = raylib::Rectangle(630 * scaleX, 670 * scaleY, 40 * scaleX, 40 * scaleY);
+    stepForwardButton->Click.append([this]() { OnStepForwardClick(); });
+    stepForwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&stepforwardTex);
+ 
+    // Step-back button
+    stepbackTex = raylib::Texture(raylib::Image("./images/step-backward.png"));
+    stepBackwardButton = std::make_unique<raywtk::Button>();
+    stepBackwardButton->buttonRect = raylib::Rectangle(568 * scaleX, 670 * scaleY, 40 * scaleX, 40 * scaleY);
+    stepBackwardButton->Click.append([this]() { OnStepBackwardClick(); });
+    stepBackwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&stepbackTex);
+
     // undo button
     undoButtonTex = raylib::Texture(raylib::Image("./images/undo_button.png"));
     undoButton = std::make_unique<raywtk::Button>();
-    undoButton->buttonRect = raylib::Rectangle(1600, 30, 80, 80);
+    undoButton->buttonRect = raylib::Rectangle(1060 * scaleX, 10 * scaleY, 50 * scaleX, 50 * scaleY);
     undoButton->Click.append([this]() { OnUndoButtonClick(); });
     undoButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&undoButtonTex);
 
     // redo button
     redoButtonTex = raylib::Texture(raylib::Image("./images/redo_button.png"));
     redoButton = std::make_unique<raywtk::Button>();
-    redoButton->buttonRect = raylib::Rectangle(1700, 30, 80, 80);
+    redoButton->buttonRect = raylib::Rectangle(1135 * scaleX, 10 * scaleY, 50 * scaleX, 50 * scaleY);
     redoButton->Click.append([this]() { OnRedoButtonClick(); });
     redoButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&redoButtonTex);
 
     // return button
     returnButtonTex = raylib::Texture(raylib::Image("./images/return_button.png"));
     returnButton = std::make_unique<raywtk::Button>();
-    returnButton->buttonRect = raylib::Rectangle(1800, 30, 80, 80);
+    returnButton->buttonRect = raylib::Rectangle(1210 * scaleX, 10 * scaleY, 50 * scaleX, 50 * scaleY);
     returnButton->Click.append([this]() { OnReturnButtonClick(); });
     returnButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&returnButtonTex);
 }
@@ -316,7 +331,7 @@ void ds_viz::pages::LinkedListPage::InsertRandom(int value)
     currentAnimationState = -1;
     ResetColor();
 
-    auto newNode = std::make_unique<raywtk::NodeWidget>(value, nodeFont);
+    auto newNode = std::make_unique<raywtk::ListNodeWidget>(value, nodeFont);
     
     // Compute position
     if (!head) 
@@ -327,7 +342,7 @@ void ds_viz::pages::LinkedListPage::InsertRandom(int value)
     
     else 
     {
-        raywtk::NodeWidget* current = head.get();
+        raywtk::ListNodeWidget* current = head.get();
         int index = 0;
         while (current->next) 
         {
@@ -412,7 +427,7 @@ void ds_viz::pages::LinkedListPage::OnClearButtonClick()
 
 void ds_viz::pages::LinkedListPage::ResetColor()
 {
-    raywtk::NodeWidget* current = head.get();
+    raywtk::ListNodeWidget* current = head.get();
     while (current)
     {
         current->color = raylib::Color::Black(); // Reset to default
@@ -423,7 +438,7 @@ void ds_viz::pages::LinkedListPage::ResetColor()
 // Repositioning the nodes if dragged
 void ds_viz::pages::LinkedListPage::RepositionNodes()
 {
-    raywtk::NodeWidget* current = head.get();
+    raywtk::ListNodeWidget* current = head.get();
     int index = 0;
 
     while (current)
@@ -437,7 +452,7 @@ void ds_viz::pages::LinkedListPage::RepositionNodes()
 // Function to get the current state of linked list
 void ds_viz::pages::LinkedListPage::GetListState(std::vector<int> &ListState)
 {   
-    raywtk::NodeWidget* temp = head.get();
+    raywtk::ListNodeWidget* temp = head.get();
 
     while (temp)
     {
@@ -701,7 +716,7 @@ void ds_viz::pages::LinkedListPage::DeleteAtIndex(int index)
         "   ToDel = head",
         "   head = head->next, delete ToDel",
         "else",
-        "   for (k = 0; k < index - 1; k++)",
+        "   for (k = 0; k < index; k++)",
         "       temp = temp->next",
         "   Node ToDel = temp->next",
         "   temp->next = ToDel->next, delete ToDel"
@@ -758,7 +773,7 @@ void ds_viz::pages::LinkedListPage::SearchByIndex(int index)
     currentAnimationState = -1;
     SetPseudoCodeSteps({
         "If list is empty, return.",
-        "Node temp = head",
+        "Node temp = head, index = 0",
         "while (index != targetindex && temp)",
         "   temp = temp->next, index++",
         "if found, highlight the node",
@@ -805,7 +820,7 @@ void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
                     else
                         currentStep = 0;
 
-                    newNode = std::make_unique<raywtk::NodeWidget>(insertValue, nodeFont);
+                    newNode = std::make_unique<raywtk::ListNodeWidget>(insertValue, nodeFont);
                     float posX = headX;
                     float posY = headY - 100; 
                     newNode->position = raylib::Vector2(posX, posY);
@@ -818,9 +833,9 @@ void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
                 else
                 {
                     if (IAT)
-                        currentStep  = 5;
+                        currentStep  = 4;
                     else
-                        currentStep = 2;
+                        currentStep = 1;
                     insertCurrent->color = raylib::Color::Orange();
                     insertState = 1;
                     animatingTimer = 0.3f / animationSpeed; 
@@ -834,7 +849,7 @@ void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
                         currentStep = 6;
                     else
                         currentStep = 3;
-                    newNode = std::make_unique<raywtk::NodeWidget>(insertValue, nodeFont);
+                    newNode = std::make_unique<raywtk::ListNodeWidget>(insertValue, nodeFont);
                     float posX = headX + (insertIndex) * spacing;
                     float posY = headY - 100;
                     newNode->position = raylib::Vector2(posX, posY);
@@ -849,9 +864,9 @@ void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
                 else
                 {
                     if (IAT)
-                        currentStep = 4;
+                        currentStep = 5;
                     else
-                        currentStep = 1;
+                        currentStep = 2;
                     insertCurrent->color = raylib::Color::Black();
                     insertCurrent = insertCurrent->next.get();
                     currentInsertIndex++;
@@ -873,7 +888,7 @@ void ds_viz::pages::LinkedListPage::AnimateInsert(float dt)
                     if (IAI && insertIndex == 0)
                         currentStep = 1;
                     else
-                        currentStep = 4;
+                        currentStep = 5;
                 }
 
                 if (insertIndex == 0 && head)
@@ -933,7 +948,7 @@ void ds_viz::pages::LinkedListPage::AnimateDelete(float dt)
                     else
                     {
                         deleteCurrent->color = raylib::Color::Orange();
-                        currentStep = 7;
+                        currentStep = 6;
                     }
                 }   
                 
@@ -979,7 +994,7 @@ void ds_viz::pages::LinkedListPage::AnimateDelete(float dt)
                     return; 
                 }
                 
-                currentStep = 6;
+                currentStep = 7;
                 deleteCurrent->color = raylib::Color::Black();
                 deleteCurrent = deleteCurrent->next.get();
                 currentdeleteIndex++;
@@ -1083,7 +1098,7 @@ void ds_viz::pages::LinkedListPage::OnStepBackwardClick()
 void ds_viz::pages::LinkedListPage::SaveListState()
 {
     ListState state;
-    raywtk::NodeWidget* current = head.get();
+    raywtk::ListNodeWidget* current = head.get();
 
     while (current)
     {
@@ -1097,7 +1112,7 @@ void ds_viz::pages::LinkedListPage::SaveListState()
     {
         state.newNodeValue = newNode->value;
         state.newNodeColor = newNode->color;
-        state.newNodePosition = newNode->position;
+        state.newNodePos = newNode->position;
         state.hasNewNode = true;
     }
     else
@@ -1112,11 +1127,11 @@ void ds_viz::pages::LinkedListPage::SaveListState()
 void ds_viz::pages::LinkedListPage::LoadListState(const ListState& state)
 {
     head.reset();
-    raywtk::NodeWidget* prev = nullptr;
+    raywtk::ListNodeWidget* prev = nullptr;
 
     for (size_t i = 0; i < state.values.size(); ++i)
     {
-        auto newNode = std::make_unique<raywtk::NodeWidget>(state.values[i], nodeFont);
+        auto newNode = std::make_unique<raywtk::ListNodeWidget>(state.values[i], nodeFont);
         newNode->color = state.colors[i];
         newNode->position = raylib::Vector2(headX + i * spacing, headY);
 
@@ -1125,14 +1140,17 @@ void ds_viz::pages::LinkedListPage::LoadListState(const ListState& state)
         else
             prev->next = std::move(newNode);
 
-        prev = prev ? prev->next.get() : head.get();
+        if (prev)
+            prev = prev->next.get();
+        else
+            prev = head.get();
     }
 
     if (state.hasNewNode)
     {
-        newNode = std::make_unique<raywtk::NodeWidget>(state.newNodeValue, nodeFont);
+        newNode = std::make_unique<raywtk::ListNodeWidget>(state.newNodeValue, nodeFont);
         newNode->color = state.newNodeColor;
-        newNode->position = state.newNodePosition;
+        newNode->position = state.newNodePos;
     }
 
     else
@@ -1154,45 +1172,33 @@ void ds_viz::pages::LinkedListPage::CreateNotification(std::string &Message)
     int fontSize = 20;
     int textWidth = MeasureText(Message.c_str(), fontSize);
     
-    // Draw background box
     DrawRectangle(boxX, boxY, boxWidth, boxHeight, RED);
 
-    // Adjust text position to center inside the box
     int textX = boxX + (boxWidth - textWidth) / 2;
     int textY = boxY + (boxHeight - fontSize) / 2;
 
     DrawText(Message.c_str(), textX, textY, fontSize, RAYWHITE);
 }
 
-void ds_viz::pages::LinkedListPage::DrawInputBox(int X, int Y, std::string &input)
+void ds_viz::pages::LinkedListPage::DrawInputBox(int X, int Y, int width, int height, std::string &input)
 {
     float roundness = 0.2f; 
     int segments = 8;       
 
-    DrawRectangleRounded(raylib::Rectangle(X, Y, 85, 50), roundness, segments, raylib::Color::Black());
-    DrawText(input.c_str(), X + 10, Y + 15, 20, RAYWHITE);
-    DrawRectangleRoundedLines(raylib::Rectangle(X, Y, 85, 50), roundness, segments, raylib::Color::Pink());
-}
-
-void ds_viz::pages::LinkedListPage::DrawInputBox2(int X, int Y, std::string &input)
-{
-    float roundness = 0.2f; 
-    int segments = 8;       
-
-    DrawRectangleRounded(raylib::Rectangle(X, Y, 180, 50), roundness, segments, raylib::Color::Black());
-    DrawText(input.c_str(), X + 10, Y + 15, 20, RAYWHITE);
-    DrawRectangleRoundedLines(raylib::Rectangle(X, Y, 180, 50), roundness, segments, raylib::Color::Pink());
+    DrawRectangleRounded(raylib::Rectangle(X, Y, width, height), roundness, segments, raylib::Color::Black());
+    DrawText(input.c_str(), X + 7 * scaleX, Y + 7 * scaleY, 20, RAYWHITE);
+    DrawRectangleRoundedLines(raylib::Rectangle(X, Y, width, height), roundness, segments, raylib::Color::Pink());
 }
 
 void ds_viz::pages::LinkedListPage::DrawSpeedBar()
 {
     DrawRectangle(speedBarX, speedBarY, speedBarWidth, speedBarHeight, RAYWHITE);
-    DrawCircle(speedKnobX, speedBarY + speedBarHeight / 2, speedKnobRadius, RED);
-    DrawText("Speed:", speedBarX - 80, speedBarY - 5, 20, WHITE);
+    DrawCircle(speedKnobX, (speedBarY + speedBarHeight / 2), speedKnobRadius, RED);
+    DrawText("Speed:", (speedBarX - 80), (speedBarY - 5), 20, WHITE);
     
     char speedText[10];
     sprintf(speedText, "%.2fx", animationSpeed);
-    DrawText(speedText, speedBarX + speedBarWidth + 10, speedBarY - 5, 20, YELLOW);
+    DrawText(speedText, (speedBarX + speedBarWidth + 10), (speedBarY - 5), 20, YELLOW);
 }
 
 void ds_viz::pages::LinkedListPage::SetPseudoCodeSteps(const std::vector<std::string>& steps)
@@ -1207,30 +1213,32 @@ void ds_viz::pages::LinkedListPage::DrawPseudoCodeBlock()
     if (!showPseudoCode || pseudoCodeSteps.empty())
         return;
 
-    int boxWidth = 600;
-    int boxHeight = 400;
-    int boxX = _context->ref_raylib_window->GetWidth() - boxWidth - 20;
-    int boxY = _context->ref_raylib_window->GetHeight() - boxHeight - 20;
-
+    int boxX = 867 * scaleX;
+    int boxY = 400 * scaleY;
+    int boxWidth = 400 * scaleX;
+    int boxHeight = 267 * scaleY;
     
-    float roundness = 0.2f; 
-    int segments = 8;       
-    DrawRectangleRoundedLines(raylib::Rectangle(boxX - 5, boxY - 5, boxWidth + 10, boxHeight + 10), roundness, segments, raylib::Color::Pink());
+    float roundness = 0.1f; 
+    int segments = 50;       
+    DrawRectangleRoundedLines(raylib::Rectangle(boxX - 5 * scaleX, boxY - 5 * scaleY, boxWidth + 10 * scaleX, boxHeight + 10 * scaleY), roundness, segments, raylib::Color::Pink());
 
     DrawRectangle(boxX, boxY, boxWidth, boxHeight, raylib::Color::Black());
 
-    int fontSize = 24;
-    int lineHeight = 35;
+    int fontSize = 16 * scaleY;
+    int lineHeight = 23 * scaleY;
     for (size_t i = 0; i < pseudoCodeSteps.size(); ++i)
     {
-        raylib::Color textColor = (i == currentStep) ? raylib::Color::Yellow() : raylib::Color::White();
-        raylib::DrawText(pseudoCodeSteps[i].c_str(), boxX + 10, boxY + 20 + i * lineHeight, fontSize, textColor);
+        raylib::Font &font = *codeFont;
+        if (i == currentStep)
+            raylib::DrawTextEx(font, pseudoCodeSteps[i].c_str(), raylib::Vector2(boxX + 10 * scaleX, boxY + 20 * scaleY + i * lineHeight), fontSize, 1, raylib::Color::Yellow());
+        else
+            raylib::DrawTextEx(font, pseudoCodeSteps[i].c_str(), raylib::Vector2(boxX + 10 * scaleX, boxY + 20 * scaleY + i * lineHeight), fontSize, 1, raylib::Color::White());
     }
 }
 
 void ds_viz::pages::LinkedListPage::Update(float dt)
 {
-    raywtk::NodeWidget* current = head.get();
+    raywtk::ListNodeWidget* current = head.get();
     if (current)
         current->Update(dt);
 
@@ -1628,6 +1636,7 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
             btn->Update(dt);
     }
 
+    pseudoToggleButton->Update(dt);
     stepForwardButton->Update(dt);
     stepBackwardButton->Update(dt);
 
@@ -1644,7 +1653,7 @@ void ds_viz::pages::LinkedListPage::Render()
         0));
 
     // Render the linked list
-    raywtk::NodeWidget* current = head.get();
+    raywtk::ListNodeWidget* current = head.get();
     if (current)
         current->Render();
 
@@ -1659,7 +1668,7 @@ void ds_viz::pages::LinkedListPage::Render()
             DrawText("tail", head->position.x - 20, head->position.y + 40, 30, GREEN);
         else
         {
-            raywtk::NodeWidget* tail = head.get();
+            raywtk::ListNodeWidget* tail = head.get();
             while (tail->next)
                 tail = tail->next.get();
             DrawText("tail", tail->position.x - 20, tail->position.y + 40, 30, GREEN);
@@ -1671,31 +1680,31 @@ void ds_viz::pages::LinkedListPage::Render()
 
     // Draw input bars only if active
     if (showInsertAtHead && insertDropdownOpen)
-        DrawInputBox2(240, 655, inputInsertAtHead);
+        DrawInputBox(140 * scaleX, 576 * scaleY, 128 * scaleX, 24 * scaleY, inputInsertAtHead);
 
     if (showInsertAtTail && insertDropdownOpen)
-        DrawInputBox2(420, 655, inputInsertAtTail);
+        DrawInputBox(268 * scaleX, 576 * scaleY, 128 * scaleX, 24 * scaleY, inputInsertAtTail);
 
     if (showInsertAtIndexInput && insertDropdownOpen)
     {
-        DrawInputBox(603, 655, inputValue);
-        DrawInputBox(692, 655, inputIndex);
+        DrawInputBox(396 * scaleX, 576 * scaleY, 64 * scaleX, 24 * scaleY, inputValue);
+        DrawInputBox(460 * scaleX, 576 * scaleY, 64 * scaleX, 24 * scaleY, inputIndex);
 
-        DrawText("Value", 603, 715, 20, YELLOW);
-        DrawText("Index", 692, 715, 20, YELLOW);
+        DrawText("Value", 396 * scaleX, 610 * scaleY, 20, YELLOW);
+        DrawText("Index", 460 * scaleX, 610 * scaleY, 20, YELLOW);
     }
 
     if (showDeleteAtIndexInput && deleteDropdownOpen)
-        DrawInputBox2(600, 710, inputDeleteIndex);
+        DrawInputBox(396 * scaleX, 604 * scaleY, 128 * scaleX, 24 * scaleY, inputDeleteIndex);
 
     if (showRandomInput)
-        DrawInputBox2(240, 820, inputRandom);
+        DrawInputBox(140 * scaleX, 660 * scaleY, 128 * scaleX, 24 * scaleY, inputRandom);
 
     if (showSearchInput && searchByValue)
-        DrawInputBox2(240, 765, searchByValInput);
+        DrawInputBox(140 * scaleX, 632 * scaleY, 128 * scaleX, 24 * scaleY, searchByValInput);
     
     if (showSearchInput && !searchByValue)
-        DrawInputBox2(420, 765, searchByIndInput);
+        DrawInputBox(268 * scaleX, 632 * scaleY, 128 * scaleX, 24 * scaleY, searchByIndInput);
      
     // Draw error message if needed
     if (errorTimer > 0)
@@ -1746,7 +1755,7 @@ void ds_viz::pages::LinkedListPage::Render()
 
 
     DrawPseudoCodeBlock();
-
+    pseudoToggleButton->Render();
     stepForwardButton->Render();
     stepBackwardButton->Render();   
 
