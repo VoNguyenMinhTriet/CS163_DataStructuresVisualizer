@@ -42,7 +42,7 @@ namespace raywtk
             };
         }
 
-        ~NodeWidget() {}
+        ~ListNodeWidget() {}
 
         void Update (float deltaTime) override
         {
