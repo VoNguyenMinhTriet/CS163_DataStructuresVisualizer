@@ -103,7 +103,6 @@ HeapVisualizer::HeapVisualizer()
     // Pseudo code display initialize
     pseudoCodeDisplay = std::make_unique<raywtk::PseudoCodeDisplay>(raylib::Vector2(PSEUDO_CODE_FRAME_COORDX + 5, PSEUDO_CODE_FRAME_COORDY + 5), 8, PSEUDO_CODE_LINE_WIDTH, PSEUDO_CODE_LINE_HEIGHT, raylib::Color::White(), raylib::Color::Yellow(), raylib::Color::Green());
     pseudoCodeDisplay->visible = false;
-    pseudoCodeDisplay->SetPseudoCodeLines(MAX_HEAPIFY_PSEUDO_CODE);
 
     // Pseudo code process text initialize
     pseudoCodeProcessText = raylib::Text("", 18, raylib::Color::White(), *font, 0);
@@ -172,7 +171,7 @@ inline int HeapVisualizer::right_child(int i)
 void HeapVisualizer::ResetStatus()
 {
     animation_steps.clear();
-    animationStep = 0, animationTimer = 1.0f;
+    animationStep = 0, isLastStepForward = true, animationTimer = 1.0f;
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, -1, ""));
 }
 
@@ -207,7 +206,7 @@ void HeapVisualizer::doingStep(int idStep, bool callAgain)
     
     if(step.type == raywtk::StepType::DeleteNode && !callAgain)
     {
-        animation_steps[idStep].node = std::move(nodes.back());
+        step.node = std::move(nodes.back());
         nodes.pop_back();
     }
     
@@ -227,6 +226,11 @@ void HeapVisualizer::doingStep(int idStep, bool callAgain)
     {
         pseudoCodeDisplay->SetPseudoCodeLines(step.pseudoCodeLines);
     }
+
+    if(step.node != nullptr)
+    {
+        animation_steps[idStep].node = std::move(step.node);
+    }
 }
 
 void HeapVisualizer::undoingStep(int idStep, bool callAgain) 
@@ -239,18 +243,18 @@ void HeapVisualizer::undoingStep(int idStep, bool callAgain)
     step.idPseudoCodeLine = animation_steps[idStep].idPseudoCodeLine;
     step.pseudoCodeProcessText = animation_steps[idStep].pseudoCodeProcessText;
     step.pseudoCodeLines = animation_steps[idStep].pseudoCodeLines;
+    step.lastPseudoCodeLines = animation_steps[idStep].lastPseudoCodeLines;
 
     pseudoCodeDisplay->SwapLineState(step.idPseudoCodeLine);
     pseudoCodeProcessText.SetText(step.pseudoCodeProcessText);
     if(step.type == raywtk::StepType::InsertNode) 
     {
+        nodes.back()->highlighted ^= 1;
         if(!callAgain) 
         {
-            animation_steps[idStep].node = std::move(nodes.back());
+            step.node = std::move(nodes.back());
             nodes.pop_back();
         }
-        
-        nodes.back()->highlighted ^= 1;
     }
 
     if(step.type == raywtk::StepType::Highlight1Node) 
@@ -278,7 +282,12 @@ void HeapVisualizer::undoingStep(int idStep, bool callAgain)
 
     if(step.type == raywtk::StepType::SetNewPseudoCodeLines && !callAgain) 
     {
-        pseudoCodeDisplay->SetPseudoCodeLines(step.pseudoCodeLines);
+        pseudoCodeDisplay->SetPseudoCodeLines(step.lastPseudoCodeLines);
+    }
+
+    if(step.node != nullptr)
+    {
+        animation_steps[idStep].node = std::move(step.node);
     }
 }
 
@@ -286,8 +295,6 @@ void HeapVisualizer::swapNodes(int i, int j, int idpseudoCodeLine, string pseudo
 {
     swap(values[i], values[j]);
     animation_steps.push_back(raywtk::Step(raywtk::StepType::Swap2Nodes, i, j, idpseudoCodeLine, pseudoCodeProcessText));
-    //swap(nodes[i]->position, nodes[j]->position);
-    //swap(nodes[i], nodes[j]);
 }
 
 void HeapVisualizer::maxHeapify(int i) 
@@ -353,7 +360,7 @@ raylib::Vector2 HeapVisualizer::GetPositionInDisplay(int index, int depth)
 void HeapVisualizer::BuildHeap(const vector<int> &val) 
 {
     ClearHeap();
-    animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function BuildHeap(input_values).", BUILD_HEAP_PSEUDO_CODE, nullptr));
+    animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function BuildHeap(input_values).", BUILD_HEAP_PSEUDO_CODE, vector<string>(), nullptr));
     animationText.SetText("Building heap with these input values.");
     
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, 0, "Clear heap."));
@@ -364,7 +371,6 @@ void HeapVisualizer::BuildHeap(const vector<int> &val)
         values.push_back(val[i]);
 
         animation_steps.push_back(raywtk::Step(raywtk::StepType::InsertNode, i, -1, 2, "Add " + to_string(val[i]) + " to the end of heap.", std::move(newNode)));
-        //nodes.push_back(std::move(newNode));
     }
 
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, 3, "Setting variable k to Parent(last element)."));
@@ -373,10 +379,10 @@ void HeapVisualizer::BuildHeap(const vector<int> &val)
     for (int i = k; i >= 0; --i)
     {
         animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, 5, "Calling to function MaxHeapify(i)."));
-        animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function MaxHeapify(i).", MAX_HEAPIFY_PSEUDO_CODE, nullptr));
+        animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function MaxHeapify(i).", MAX_HEAPIFY_PSEUDO_CODE, BUILD_HEAP_PSEUDO_CODE, nullptr));
         
         maxHeapify(i);
-        animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Backing to function BuildHeap(input_values).", BUILD_HEAP_PSEUDO_CODE, nullptr));
+        animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Backing to function BuildHeap(input_values).", BUILD_HEAP_PSEUDO_CODE, MAX_HEAPIFY_PSEUDO_CODE, nullptr));
     }
 
     //notification = std::make_unique<raywtk::Notification>("Build a new heap with these numbers successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
@@ -393,15 +399,14 @@ void HeapVisualizer::PushNewValue(int value)
     
     changeStateOperatorButton(false);
     animationText.SetText("Pushing value " + to_string(value) + " into heap.");
-    animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function PushNewValue(value).", PUSH_NEW_VALUE_PSEUDO_CODE, nullptr));
+    animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function PushNewValue(value).", PUSH_NEW_VALUE_PSEUDO_CODE, vector<string>(), nullptr));
     
     std::unique_ptr<raywtk::NodeWidget> newNode = std::make_unique<raywtk::NodeWidget>(value);
     newNode->position = GetPositionInDisplay(sz(values), 0);
     values.push_back(value);
 
     animation_steps.push_back(raywtk::Step(raywtk::StepType::InsertNode, sz(values) - 1, -1, 0, "Add " + to_string(value) + " to the end of heap.", std::move(newNode)));
-    //nodes.push_back(std::move(newNode));
-
+    
     animation_steps.push_back(raywtk::Step(raywtk::StepType::Highlight1Node, sz(values) - 1, -1, 1, "Setting variable i to index of the last element of heap.")); 
 
     int i = sz(values) - 1;
@@ -438,7 +443,7 @@ void HeapVisualizer::PopMaxValue()
     
     changeStateOperatorButton(false);
     animationText.SetText("Popping the element with maximum value (value = " + to_string(values[0]) + ") out of heap.");
-    animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function PopMaxValue().", POP_MAX_VALUE_PSEUDO_CODE, nullptr));
+    animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function PopMaxValue().", POP_MAX_VALUE_PSEUDO_CODE, vector<string>(), nullptr));
     
     int i = sz(values) - 1;
     animation_steps.push_back(raywtk::Step(raywtk::StepType::Highlight2Nodes, i, 0, -1, "Swap root with last element on heap."));
@@ -448,13 +453,12 @@ void HeapVisualizer::PopMaxValue()
     values.pop_back();
     animation_steps.push_back(raywtk::Step(raywtk::StepType::Highlight1Node, i, -1, 1, "Remove last element from heap."));
     animation_steps.push_back(raywtk::Step(raywtk::StepType::DeleteNode, i, -1, 1, "Remove last element from heap."));
-    //nodes.pop_back();
     
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, 2, "Call to function MaxHeapify(0).")); 
-    animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Call to function MaxHeapify(0).", MAX_HEAPIFY_PSEUDO_CODE, nullptr)); 
+    animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Call to function MaxHeapify(0).", MAX_HEAPIFY_PSEUDO_CODE, POP_MAX_VALUE_PSEUDO_CODE, nullptr)); 
     maxHeapify(0);
 
-    animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Back to function PopMaxValue().", POP_MAX_VALUE_PSEUDO_CODE, nullptr));
+    animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Back to function PopMaxValue().", POP_MAX_VALUE_PSEUDO_CODE, MAX_HEAPIFY_PSEUDO_CODE, nullptr));
 }
 
 void HeapVisualizer::ClearHeap()
@@ -533,22 +537,21 @@ void HeapVisualizer::Update(float dt)
 
     // Animation update
     animationTimer += (!animationPaused) * animationSpeed * dt;
-    /*if(animationTimer <= -1.0f && animationStep >= 0)
+    if(animationTimer <= -1.0f && animationStep > 1)
     {
         --animationStep;
         animationTimer = 0.0f;
+
         changeStateOperatorButton(false);
         if(animationStep + 1 < sz(animation_steps))
         {
-            undoingStep(animationStep + 1, true);
+            undoingStep(animationStep + 1, false);
         }
 
-        if(animationStep >= 0) 
-        {
-            undoingStep(animationStep, false);
-        }
+        isLastStepForward = false;
+        undoingStep(animationStep, true);
     }
-    else*/
+    else
         if(animationTimer >= 1.0f && animationStep < sz(animation_steps)) 
         {
             ++animationStep;
@@ -565,6 +568,8 @@ void HeapVisualizer::Update(float dt)
                 animationText.SetText("No animation is currently on display.");
                 pseudoCodeProcessText.SetText("End of timeline.");
             }
+
+            isLastStepForward = true;
         }
 
     // Show pseudo code button update

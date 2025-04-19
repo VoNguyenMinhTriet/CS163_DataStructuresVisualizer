@@ -103,7 +103,12 @@ namespace ds_viz::pages
 
         // Build heap button
         std::unique_ptr<raywtk::Button> buildHeapButton;
-        
+
+        // Children buttons of build heap button
+        std::unique_ptr<raywtk::Button> buildHeap_inputValuesButton;
+        std::unique_ptr<raywtk::Button> buildHeap_loadFromFileButton;
+        std::unique_ptr<raywtk::Button> buildHeap_initializeRandomButton;
+
         // Push new value button
         std::unique_ptr<raywtk::Button> pushValueButton;
         
@@ -113,9 +118,6 @@ namespace ds_viz::pages
         // Clear heap button
         std::unique_ptr<raywtk::Button> clearHeapButton;
 
-        // Skip back button
-        std::unique_ptr<raywtk::Button> skipBackButton;
-
         // Step back button
         std::unique_ptr<raywtk::Button> stepBackButton;
 
@@ -124,9 +126,6 @@ namespace ds_viz::pages
 
         // Step forward button
         std::unique_ptr<raywtk::Button> stepForwardButton;
-
-        // Skip forward button
-        std::unique_ptr<raywtk::Button> skipForwardButton;
         
         // Input box for build heap
         std::unique_ptr<raywtk::InputBox> inputBoxBuildHeap;
@@ -159,6 +158,7 @@ namespace ds_viz::pages
         float animationTimer = 0.0;
         float animationSpeed = 1.0f;
         bool animationPaused = false;
+        bool isLastStepForward = false;
 
         public:
             HeapVisualizer();
