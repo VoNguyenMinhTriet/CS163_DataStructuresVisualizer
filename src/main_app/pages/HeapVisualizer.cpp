@@ -6,6 +6,7 @@
 #include <ctime>
 #include <cstring>
 #include <cassert>
+#include <fstream>
 
 using namespace ds_viz::pages;
 
@@ -25,6 +26,11 @@ HeapVisualizer::HeapVisualizer()
     pseudoCodeFrame = raylib::Rectangle(PSEUDO_CODE_FRAME_COORDX, PSEUDO_CODE_FRAME_COORDY, PSEUDO_CODE_FRAME_WIDTH, PSEUDO_CODE_FRAME_HEIGHT);
     pseudoCodeFrameVisible = false;
 
+    animationTimelineBar = raylib::Rectangle(ANIMATION_TIMELINE_BAR_COORDX, ANIMATION_TIMELINE_BAR_COORDY, ANIMATION_TIMELINE_BAR_WIDTH, ANIMATION_TIMELINE_BAR_HEIGHT);
+    animationTimelineBarFilledColor = raylib::Color::Green();
+    animationTimelineBarBackgroundColor = raylib::Color::Gray();
+    animationTimelineBarVisible = false;
+
     // Notification Frame initialize
     //notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
@@ -36,10 +42,55 @@ HeapVisualizer::HeapVisualizer()
     buildHeapButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
     buildHeapButton->Click.append([this]() 
     {
-        inputBuildHeapButtonFlag = true; inputBoxBuildHeap->processing = true; 
+        buildHeap_initializeRandomButton->showing = buildHeap_loadFromFileButton->showing = buildHeap_inputValuesButton->showing = 1 - buildHeap_inputValuesButton->showing;
+        //notification = std::make_unique<raywtk::Notification>("Insert numbers (<= 31 numbers) to build a new heap.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+    });
+    
+    // Initialize random button initialize
+    buildHeap_initializeRandomButton = std::make_unique<raywtk::Button>();
+    buildHeap_initializeRandomButton->showing = false;
+    buildHeap_initializeRandomButton->buttonText = "Initialize random";
+    buildHeap_initializeRandomButton->buttonRect = raylib::Rectangle(BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX, BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
+    buildHeap_initializeRandomButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    buildHeap_initializeRandomButton->Click.append([this]() 
+    {
+        srand(time(0)); // Seed for random number generation
+        vector<int> randomValues;
+        
+        int numValues = rand() %  31 + 1; // Random number of values between 1 and 31
+        for(int i = 0; i < numValues; ++i) 
+        {
+            randomValues.push_back(rand() % 199 - 99); // Random values between -99 and 99
+        }
+        
+        BuildHeap(randomValues);
+        //notification = std::make_unique<raywtk::Notification>("Initialize heap with random values successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+    });
+    
+    // Build heap input values button initialize
+    buildHeap_inputValuesButton = std::make_unique<raywtk::Button>();
+    buildHeap_inputValuesButton->showing = false;
+    buildHeap_inputValuesButton->buttonText = "Input values";
+    buildHeap_inputValuesButton->buttonRect = raylib::Rectangle(BUILD_HEAP_INPUT_VALUES_BUTTON_COORDX, BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
+    buildHeap_inputValuesButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    buildHeap_inputValuesButton->Click.append([this]() 
+    {
+        inputBuildHeapButtonFlag = inputBoxBuildHeap->processing = true; 
         //notification = std::make_unique<raywtk::Notification>("Insert numbers (<= 31 numbers) to build a new heap.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
     });
 
+    // Load from file button initialize
+    buildHeap_loadFromFileButton = std::make_unique<raywtk::Button>();
+    buildHeap_loadFromFileButton->showing = false;
+    buildHeap_loadFromFileButton->buttonText = "Load from file";
+    buildHeap_loadFromFileButton->buttonRect = raylib::Rectangle(BUILD_HEAP_LOAD_FROM_FILE_BUTTON_COORDX, BUILD_HEAP_LOAD_FROM_FILE_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
+    buildHeap_loadFromFileButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    buildHeap_loadFromFileButton->Click.append([this]() 
+    {
+        waitingForLoadFromFile = true;
+        //notification = std::make_unique<raywtk::Notification>("Load heap from file successfully.", raywtk::NotificationType::SUCCESS, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+    });
+    
     // Push new value button initialize
     pushValueButton = std::make_unique<raywtk::Button>();
     pushValueButton->showing = false;
@@ -171,6 +222,8 @@ inline int HeapVisualizer::right_child(int i)
 void HeapVisualizer::ResetStatus()
 {
     animation_steps.clear();
+    waitingForLoadFromFile = false;
+    animationTimelineBarVisible = false;
     animationStep = 0, isLastStepForward = true, animationTimer = 1.0f;
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, -1, ""));
 }
@@ -357,9 +410,37 @@ raylib::Vector2 HeapVisualizer::GetPositionInDisplay(int index, int depth)
     return position;
 }
 
+std::vector<int> HeapVisualizer::GetValuesFromFiles(const std::string &filename) 
+{
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        //notification = std::make_unique<raywtk::Notification>("Failed to open file.", raywtk::NotificationType::ERROR, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+        return vector<int>();
+    }
+
+    std::vector<int> values;
+    std::string line;
+    int x;
+
+    while(file >> x)
+    {
+        if(sz(values) >= 31)
+        {
+            //notification = std::make_unique<raywtk::Notification>("Failed to get more values in files since number of values reached 31 (maximum of heap size is 31).", raywtk::NotificationType::ERROR, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
+            break;
+        }
+
+        values.push_back(x);
+    }
+    
+    file.close();
+    return values;
+}
+
 void HeapVisualizer::BuildHeap(const vector<int> &val) 
 {
     ClearHeap();
+    animationTimelineBarVisible = true;
     animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function BuildHeap(input_values).", BUILD_HEAP_PSEUDO_CODE, vector<string>(), nullptr));
     animationText.SetText("Building heap with these input values.");
     
@@ -398,6 +479,7 @@ void HeapVisualizer::PushNewValue(int value)
     }
     
     changeStateOperatorButton(false);
+    animationTimelineBarVisible = true;
     animationText.SetText("Pushing value " + to_string(value) + " into heap.");
     animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function PushNewValue(value).", PUSH_NEW_VALUE_PSEUDO_CODE, vector<string>(), nullptr));
     
@@ -442,6 +524,7 @@ void HeapVisualizer::PopMaxValue()
     }
     
     changeStateOperatorButton(false);
+    animationTimelineBarVisible = true;
     animationText.SetText("Popping the element with maximum value (value = " + to_string(values[0]) + ") out of heap.");
     animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function PopMaxValue().", POP_MAX_VALUE_PSEUDO_CODE, vector<string>(), nullptr));
     
@@ -472,7 +555,22 @@ void HeapVisualizer::ClearHeap()
 
 void HeapVisualizer::changeStateOperatorButton(bool state)
 {
-    pushValueButton->enabled = popMaxValueButton->enabled = buildHeapButton->enabled = clearHeapButton->enabled = state;
+    pushValueButton->enabled = popMaxValueButton->enabled = buildHeapButton->enabled = clearHeapButton->enabled = buildHeap_initializeRandomButton->enabled = buildHeap_inputValuesButton->enabled = buildHeap_loadFromFileButton->enabled = state;
+}
+
+void HeapVisualizer::DrawTimelineBar(raylib::Rectangle bar, raylib::Color backgroundColor, raylib::Color filledColor, int currentStep, int totalSteps) 
+{
+    if (totalSteps <= 0) 
+        return;
+
+    // Calculate the width of the filled portion of the bar
+    float progressWidth = (float(currentStep - 1) / (totalSteps - 1)) * bar.GetWidth();
+
+    // Draw the background of the timeline bar
+    DrawRectangle(bar.GetX(), bar.GetY(), bar.GetWidth(), bar.GetHeight(), backgroundColor);
+
+    // Draw the filled portion of the timeline bar
+    DrawRectangle(bar.GetX(), bar.GetY(), progressWidth, bar.GetHeight(), filledColor);
 }
 
 void HeapVisualizer::Update(float dt) 
@@ -486,10 +584,16 @@ void HeapVisualizer::Update(float dt)
     // Build heap button update
     buildHeapButton->Update(dt);
 
+    // Initialize random button update
+    buildHeap_initializeRandomButton->Update(dt);
+
+    // Input box build heap update
+    buildHeap_inputValuesButton->Update(dt);
+
     // Show input box build heap update
     if(inputBuildHeapButtonFlag) 
     {
-        if(raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON) && !raylib::Mouse::GetPosition().CheckCollision(buildHeapButton->buttonRect) && !raylib::Mouse::GetPosition().CheckCollision(inputBoxBuildHeap->rect))
+        if(raylib::Mouse::IsButtonPressed(MOUSE_LEFT_BUTTON) && !raylib::Mouse::GetPosition().CheckCollision(buildHeap_inputValuesButton->buttonRect) && !raylib::Mouse::GetPosition().CheckCollision(inputBoxBuildHeap->rect))
         {
             inputBuildHeapButtonFlag = false;
             inputBoxBuildHeap->Reset();
@@ -504,6 +608,17 @@ void HeapVisualizer::Update(float dt)
                 inputBoxBuildHeap->Reset();
             }
         }
+    }
+
+    // Load from file button update
+    buildHeap_loadFromFileButton->Update(dt);
+
+    if(waitingForLoadFromFile && IsFileDropped())
+    {
+        std::vector<std::string> droppedFiles = raylib::LoadDroppedFiles();
+        std::string filePath = droppedFiles[0];
+        std::vector<int> vals = GetValuesFromFiles(filePath);
+        BuildHeap(vals);
     }
 
     // Push new value button update
@@ -620,14 +735,23 @@ void HeapVisualizer::Render()
     // Build heap button render
     buildHeapButton->Render();
 
+    // Initialize random to build heap button render
+    buildHeap_initializeRandomButton->Render();
+
+    // Input values to build heap button render
+    buildHeap_inputValuesButton->Render();  
+
+    // Input box of input values to build heap button render
+    inputBoxBuildHeap->Render();
+
+    // Load from file to build heap button render
+    buildHeap_loadFromFileButton->Render();
+
     // Input box push new value button render
     inputBoxPushNewValue->Render();
 
     // Insert new value button render
     pushValueButton->Render();
-    
-    // Input box build heap button render
-    inputBoxBuildHeap->Render();
 
     // Pop max value button render
     popMaxValueButton->Render();
@@ -662,6 +786,11 @@ void HeapVisualizer::Render()
 
     // Step back button render
     stepBackButton->Render();
+
+    if(animationTimelineBarVisible) 
+    {
+        DrawTimelineBar(animationTimelineBar, animationTimelineBarBackgroundColor, animationTimelineBarFilledColor, animationStep, sz(animation_steps));
+    }
 
     // Edges render
     for (int i = 1; i < sz(nodes); ++i) 

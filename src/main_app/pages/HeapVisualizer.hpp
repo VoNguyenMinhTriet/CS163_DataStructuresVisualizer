@@ -19,14 +19,21 @@ const int OPERATOR_BUTTON_HEIGHT = 25;
 const int BUILD_HEAP_BUTTON_COORDX = 10;
 const int BUILD_HEAP_BUTTON_COORDY = 565;
 
-const int PUSH_VALUE_BUTTON_COORDX = 10;
-const int PUSH_VALUE_BUTTON_COORDY = 595;
+const int BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
+const int BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDY = BUILD_HEAP_BUTTON_COORDY;
+const int BUILD_HEAP_INPUT_VALUES_BUTTON_COORDX = BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX;
+const int BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY = BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
+const int BUILD_HEAP_LOAD_FROM_FILE_BUTTON_COORDX = BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX;
+const int BUILD_HEAP_LOAD_FROM_FILE_BUTTON_COORDY = BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
 
-const int POP_VALUE_BUTTON_COORDX = 10;
-const int POP_VALUE_BUTTON_COORDY = 625;
+const int PUSH_VALUE_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX;
+const int PUSH_VALUE_BUTTON_COORDY = BUILD_HEAP_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
 
-const int CLEAR_HEAP_BUTTON_COORDX = 10;
-const int CLEAR_HEAP_BUTTON_COORDY = 655;
+const int POP_VALUE_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX;
+const int POP_VALUE_BUTTON_COORDY = PUSH_VALUE_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
+
+const int CLEAR_HEAP_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX;
+const int CLEAR_HEAP_BUTTON_COORDY = POP_VALUE_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
 
 const int SHOW_OPERATOR_BUTTON_COORDX = -7;
 const int SHOW_OPERATOR_BUTTON_COORDY = BUILD_HEAP_BUTTON_COORDY;
@@ -38,8 +45,8 @@ const int SHOW_PSEUDO_CODE_DISPLAY_BUTTON_COORDY = PSEUDO_CODE_FRAME_COORDY;
 const int SHOW_PSEUDO_CODE_DISPLAY_BUTTON_WIDTH = 14;
 const int SHOW_PSEUDO_CODE_DISPLAY_BUTTON_HEIGHT = PSEUDO_CODE_FRAME_HEIGHT;
 
-const int INPUT_BOX_BUILD_HEAP_COORDX = BUILD_HEAP_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
-const int INPUT_BOX_BUILD_HEAP_COORDY = BUILD_HEAP_BUTTON_COORDY;
+const int INPUT_BOX_BUILD_HEAP_COORDX = BUILD_HEAP_INPUT_VALUES_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
+const int INPUT_BOX_BUILD_HEAP_COORDY = BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY;
 const int INPUT_BOX_BUILD_HEAP_WIDTH = 250;
 const int INPUT_BOX_BUILD_HEAP_HEIGHT = OPERATOR_BUTTON_HEIGHT;
 
@@ -69,6 +76,11 @@ const int STEP_FORWARD_BUTTON_COORDY = PAUSE_RESUME_BUTTON_COORDY;
 const int STEP_FORWARD_BUTTON_WIDTH = PAUSE_RESUME_BUTTON_WIDTH;
 const int STEP_FORWARD_BUTTON_HEIGHT = PAUSE_RESUME_BUTTON_HEIGHT;
 
+const int ANIMATION_TIMELINE_BAR_COORDX = 0;
+const int ANIMATION_TIMELINE_BAR_COORDY = 715;
+const int ANIMATION_TIMELINE_BAR_WIDTH = 1280;
+const int ANIMATION_TIMELINE_BAR_HEIGHT = 10;
+
 #define sz(x) int((x).size())
 
 namespace ds_viz::pages
@@ -91,6 +103,12 @@ namespace ds_viz::pages
         // Working frame
         raylib::Rectangle workingFrame;
 
+        // Animation timeline bar
+        raylib::Rectangle animationTimelineBar;
+        raylib::Color animationTimelineBarFilledColor;
+        raylib::Color animationTimelineBarBackgroundColor;
+        bool animationTimelineBarVisible = false;
+
         // Pseudo code frame
         raylib::Rectangle pseudoCodeFrame;
         bool pseudoCodeFrameVisible = false;
@@ -108,6 +126,8 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::Button> buildHeap_inputValuesButton;
         std::unique_ptr<raywtk::Button> buildHeap_loadFromFileButton;
         std::unique_ptr<raywtk::Button> buildHeap_initializeRandomButton;
+        
+        bool waitingForLoadFromFile = false;
 
         // Push new value button
         std::unique_ptr<raywtk::Button> pushValueButton;
@@ -168,6 +188,7 @@ namespace ds_viz::pages
             void swapNodes(int i, int j, int idPseudoCode, string pseudoCodeProcessText); // swap two nodes i and j on heap
             void maxHeapify(int i); // max heapify for subtree of node with index i
             raylib::Vector2 GetPositionInDisplay(int index, int depth); // get position for node with index 'index' on working frame
+            std::vector<int> GetValuesFromFiles(const std::string &filename); // get values from file
             void BuildHeap(const vector<int> &val); // build new heap
             void PushNewValue(int value); // push 'value' into heap
             void PopMaxValue(); // pop the max value out of heap (root of heap)
@@ -176,6 +197,7 @@ namespace ds_viz::pages
             void doingStep(int idStep, bool callAgain); // perform an animation step
             void undoingStep(int idStep, bool callAgain); // undo an animation step
             void changeStateOperatorButton(bool state); // change all opreator buttons state to state (state = 0 -> turn off, state = 1 -> turn on)
+            void DrawTimelineBar(raylib::Rectangle bar, raylib::Color backgroundColor, raylib::Color filledColor, int currentStep, int totalSteps); // draw animation timeline bar
             void Update(float dt) override;
             void Render() override;
     };
