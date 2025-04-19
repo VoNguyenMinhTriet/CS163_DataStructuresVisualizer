@@ -3,8 +3,8 @@
 #include <memory>
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "pages/page.hpp"
-#include "widget_toolkit/interfaces.hpp"
-#include "widget_toolkit/theme_manager.hpp"
+#include "../widget_toolkit/interfaces.hpp"
+#include "../widget_toolkit/theme_manager.hpp"
 
 #define DEFAULT_FPS 60
 #define DEFAULT_WIN_WIDTH 1280
@@ -12,6 +12,8 @@
 
 namespace ds_viz
 {
+    class Page;
+    
     // This class also serves as the app's lifetime.
     class MainWindow : public raywtk::IRenderable
     {

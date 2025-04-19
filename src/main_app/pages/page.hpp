@@ -1,5 +1,6 @@
 #pragma once
 #include "widget_toolkit/interfaces.hpp"
+#include "main_app/main_window.hpp"
 
 namespace ds_viz
 {
@@ -12,6 +13,7 @@ namespace ds_viz
         MainWindow *_context;
 
         public:
+        Page (MainWindow &context) : _context(&context) { }
         void SetContext (MainWindow *context) { _context = context; }
 
         virtual ~Page() { }
