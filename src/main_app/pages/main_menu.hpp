@@ -4,9 +4,9 @@
 #include "./page.hpp"
 #include <memory>
 #include <raylib.h>
-#include "widget_toolkit/controls/button2.hpp"
-#include "widget_toolkit/controls/text_button.hpp"
-#include "./HeapVisualizer.hpp"
+#include "widget_toolkit/controls/button.hpp"
+#include "./heap/HeapVisualizer.hpp"
+#include "main_app/themes/dark_simple/dark_simple.hpp"
 
 namespace ds_viz::pages
 {
@@ -22,7 +22,10 @@ namespace ds_viz::pages
         {
             font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
             title = raylib::Text("DATA LA VISTA", 128, raylib::Color::White(), *font, 0);
-            CreateButton("Heap Visualization", 200, 300, [this]() { OnLLButtonClick(); });
+            CreateButton("Heap Visualization", 800, 400, [this]() 
+            { 
+                _context->ChangePage(std::make_shared<ds_viz::pages::HeapVisualizer>());
+            });
         }
 
         void CreateButton(const std::string& text, float x, float y, std::function<void()> callback)
@@ -33,11 +36,6 @@ namespace ds_viz::pages
             button->Click.append(callback);
             button->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
             buttons.push_back(std::move(button));
-        }
-
-        void OnLLButtonClick()
-        {
-            _context->ChangePage(std::make_shared<ds_viz::pages::HeapVisualizer>());
         }
 
         void Update (float dt) override 

@@ -1,35 +1,35 @@
 #pragma once
 
 #include "raylib-cpp/Color.hpp"
-#include "widget_toolkit/controls/button2.hpp"
+#include "widget_toolkit/controls/heap_button.hpp"
 #include "widget_toolkit/interfaces.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
 
 namespace ds_viz::themes::dark_simple
 {
-    class ButtonStyle : public raywtk::IStyle
+    class HeapButtonStyle : public raywtk::IStyle
     {
     public:
         raylib::Font font;
 
         // Constructor
-        ButtonStyle() : font("./ttf/Inter-Bold.ttf", 128, nullptr, 250) // Load font during initialization
-            {
-            }
+        HeapButtonStyle() : font("./ttf/Inter-Bold.ttf", 128, nullptr, 250) // Load font during initialization
+        {
+        }
 
-            // Destructor
-            ~ButtonStyle()
-            {
-                font.Unload(); // Unload font to free resources
-            }    
+        // Destructor
+        ~HeapButtonStyle()
+        {
+            font.Unload(); // Unload font to free resources
+        }    
 
         void RenderWithStyle (raywtk::IRenderable *self) override 
         {
-            raywtk::Button *buttonSelf = dynamic_cast<raywtk::Button *>(self);
+            raywtk::HeapButton *buttonSelf = dynamic_cast<raywtk::HeapButton *>(self);
             raylib::Color color = raylib::Color::Gray();
 
-            if (buttonSelf->state != raywtk::ButtonClass::Unenabled)
-                color = (buttonSelf->state == raywtk::ButtonClass::Hover) ? raylib::Color::Yellow() : raylib::Color::Pink();
+            if (buttonSelf->state != raywtk::HeapButtonClass::Unenabled)
+                color = (buttonSelf->state == raywtk::HeapButtonClass::Hover) ? raylib::Color::Yellow() : raylib::Color::Pink();
             
             buttonSelf->buttonRect.DrawRounded(0.5, 8, color);
             

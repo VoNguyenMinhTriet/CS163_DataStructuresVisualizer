@@ -1,6 +1,6 @@
 #include "./HeapVisualizer.hpp"
 #include "main_app/main_window.hpp"
-#include "./main_menu.hpp"
+#include "../main_menu.hpp"
 #include <iostream>
 #include <cstdlib> // For rand()
 #include <ctime>
@@ -20,7 +20,7 @@ HeapVisualizer::HeapVisualizer()
     //notificationTitle = raylib::Text("Notification: ", 40, raylib::Color::Yellow(), *font, 0);
 
     // Working Frame initialize
-    workingFrame = raylib::Rectangle(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY, WORKING_FRAME_WIDTH, WORKING_FRAME_HEIGHT);
+    //workingFrame = raylib::Rectangle(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY, WORKING_FRAME_WIDTH, WORKING_FRAME_HEIGHT);
 
     // Pseudo Code Frame initialize
     pseudoCodeFrame = raylib::Rectangle(PSEUDO_CODE_FRAME_COORDX, PSEUDO_CODE_FRAME_COORDY, PSEUDO_CODE_FRAME_WIDTH, PSEUDO_CODE_FRAME_HEIGHT);
@@ -35,11 +35,11 @@ HeapVisualizer::HeapVisualizer()
     //notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
     // Build heap button initialize
-    buildHeapButton = std::make_unique<raywtk::Button>();
+    buildHeapButton = std::make_unique<raywtk::HeapButton>();
     buildHeapButton->showing = false;
     buildHeapButton->buttonText = "Build heap";
     buildHeapButton->buttonRect = raylib::Rectangle(BUILD_HEAP_BUTTON_COORDX, BUILD_HEAP_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
-    buildHeapButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    buildHeapButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     buildHeapButton->Click.append([this]() 
     {
         buildHeap_initializeRandomButton->showing = buildHeap_loadFromFileButton->showing = buildHeap_inputValuesButton->showing = 1 - buildHeap_inputValuesButton->showing;
@@ -47,11 +47,11 @@ HeapVisualizer::HeapVisualizer()
     });
     
     // Initialize random button initialize
-    buildHeap_initializeRandomButton = std::make_unique<raywtk::Button>();
+    buildHeap_initializeRandomButton = std::make_unique<raywtk::HeapButton>();
     buildHeap_initializeRandomButton->showing = false;
     buildHeap_initializeRandomButton->buttonText = "Initialize random";
     buildHeap_initializeRandomButton->buttonRect = raylib::Rectangle(BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX, BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
-    buildHeap_initializeRandomButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    buildHeap_initializeRandomButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     buildHeap_initializeRandomButton->Click.append([this]() 
     {
         srand(time(0)); // Seed for random number generation
@@ -68,11 +68,11 @@ HeapVisualizer::HeapVisualizer()
     });
     
     // Build heap input values button initialize
-    buildHeap_inputValuesButton = std::make_unique<raywtk::Button>();
+    buildHeap_inputValuesButton = std::make_unique<raywtk::HeapButton>();
     buildHeap_inputValuesButton->showing = false;
     buildHeap_inputValuesButton->buttonText = "Input values";
     buildHeap_inputValuesButton->buttonRect = raylib::Rectangle(BUILD_HEAP_INPUT_VALUES_BUTTON_COORDX, BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
-    buildHeap_inputValuesButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    buildHeap_inputValuesButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     buildHeap_inputValuesButton->Click.append([this]() 
     {
         inputBuildHeapButtonFlag = inputBoxBuildHeap->processing = true; 
@@ -80,11 +80,11 @@ HeapVisualizer::HeapVisualizer()
     });
 
     // Load from file button initialize
-    buildHeap_loadFromFileButton = std::make_unique<raywtk::Button>();
+    buildHeap_loadFromFileButton = std::make_unique<raywtk::HeapButton>();
     buildHeap_loadFromFileButton->showing = false;
     buildHeap_loadFromFileButton->buttonText = "Load from file";
     buildHeap_loadFromFileButton->buttonRect = raylib::Rectangle(BUILD_HEAP_LOAD_FROM_FILE_BUTTON_COORDX, BUILD_HEAP_LOAD_FROM_FILE_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
-    buildHeap_loadFromFileButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    buildHeap_loadFromFileButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     buildHeap_loadFromFileButton->Click.append([this]() 
     {
         waitingForLoadFromFile = true;
@@ -92,11 +92,11 @@ HeapVisualizer::HeapVisualizer()
     });
     
     // Push new value button initialize
-    pushValueButton = std::make_unique<raywtk::Button>();
+    pushValueButton = std::make_unique<raywtk::HeapButton>();
     pushValueButton->showing = false;
     pushValueButton->buttonText = "Push new value";
     pushValueButton->buttonRect = raylib::Rectangle(PUSH_VALUE_BUTTON_COORDX, PUSH_VALUE_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
-    pushValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    pushValueButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     pushValueButton->Click.append([this]() 
     {
         inputPushNewValueButtonFlag = true; inputBoxPushNewValue->processing = true; 
@@ -104,32 +104,32 @@ HeapVisualizer::HeapVisualizer()
     });
     
     // Pop max value button initialize
-    popMaxValueButton = std::make_unique<raywtk::Button>();
+    popMaxValueButton = std::make_unique<raywtk::HeapButton>();
     popMaxValueButton->showing = false;
     popMaxValueButton->buttonText = "Pop max value";
     popMaxValueButton->buttonRect = raylib::Rectangle(POP_VALUE_BUTTON_COORDX, POP_VALUE_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
-    popMaxValueButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    popMaxValueButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     popMaxValueButton->Click.append([this]() 
     {
         PopMaxValue();
     });
 
     // Clear heap button initialize
-    clearHeapButton = std::make_unique<raywtk::Button>();
+    clearHeapButton = std::make_unique<raywtk::HeapButton>();
     clearHeapButton->showing = false;
     clearHeapButton->buttonText = "Clear heap";
     clearHeapButton->buttonRect = raylib::Rectangle(CLEAR_HEAP_BUTTON_COORDX, CLEAR_HEAP_BUTTON_COORDY, OPERATOR_BUTTON_WIDTH, OPERATOR_BUTTON_HEIGHT);
-    clearHeapButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    clearHeapButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     clearHeapButton->Click.append([this]() 
     {
         ClearHeap();
     });
     
     // Show operator button
-    showOperatorButton = std::make_unique<raywtk::Button>();
+    showOperatorButton = std::make_unique<raywtk::HeapButton>();
     showOperatorButton->buttonText = "";
     showOperatorButton->buttonRect = raylib::Rectangle(SHOW_OPERATOR_BUTTON_COORDX, SHOW_OPERATOR_BUTTON_COORDY, SHOW_OPERATOR_BUTTON_WIDTH, SHOW_OPERATOR_BUTTON_HEIGHT);
-    showOperatorButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    showOperatorButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     showOperatorButton->Click.append([this]()
     {
         buildHeapButton->showing = pushValueButton->showing = popMaxValueButton->showing = clearHeapButton->showing = 1 - clearHeapButton->showing;
@@ -159,42 +159,42 @@ HeapVisualizer::HeapVisualizer()
     pseudoCodeProcessText = raylib::Text("", 18, raylib::Color::White(), *font, 0);
 
     // Show pseudo code display button initialize
-    showPseudoCodeDisplayButton = std::make_unique<raywtk::Button>();
+    showPseudoCodeDisplayButton = std::make_unique<raywtk::HeapButton>();
     showPseudoCodeDisplayButton->buttonText = "";
     showPseudoCodeDisplayButton->buttonRect = raylib::Rectangle(SHOW_PSEUDO_CODE_DISPLAY_BUTTON_COORDX, SHOW_PSEUDO_CODE_DISPLAY_BUTTON_COORDY, SHOW_PSEUDO_CODE_DISPLAY_BUTTON_WIDTH, SHOW_PSEUDO_CODE_DISPLAY_BUTTON_HEIGHT);
-    showPseudoCodeDisplayButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    showPseudoCodeDisplayButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     showPseudoCodeDisplayButton->Click.append([this]()
     {
         pseudoCodeFrameVisible = pseudoCodeDisplay->visible = 1 - pseudoCodeFrameVisible;
     });
     
     // Step forward button initialize
-    stepForwardButton = std::make_unique<raywtk::Button>();
+    stepForwardButton = std::make_unique<raywtk::HeapButton>();
     stepForwardButton->enabled = false;
     stepForwardButton->buttonText = "Step forward";
     stepForwardButton->buttonRect = raylib::Rectangle(STEP_FORWARD_BUTTON_COORDX, STEP_FORWARD_BUTTON_COORDY, STEP_FORWARD_BUTTON_WIDTH, STEP_FORWARD_BUTTON_HEIGHT);
-    stepForwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    stepForwardButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     stepForwardButton->Click.append([this]()
     {
         animationTimer = 1.0f;
     });
 
     // Step back button initialize
-    stepBackButton = std::make_unique<raywtk::Button>();
+    stepBackButton = std::make_unique<raywtk::HeapButton>();
     stepBackButton->enabled = false;
     stepBackButton->buttonText = "Step back";
     stepBackButton->buttonRect = raylib::Rectangle(STEP_BACK_BUTTON_COORDX, STEP_BACK_BUTTON_COORDY, STEP_BACK_BUTTON_WIDTH, STEP_BACK_BUTTON_HEIGHT);
-    stepBackButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    stepBackButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     stepBackButton->Click.append([this]()
     {
         animationTimer = -1.0f;
     });
 
     // Pause/resume button initialize
-    pauseResumeButton = std::make_unique<raywtk::Button>();
+    pauseResumeButton = std::make_unique<raywtk::HeapButton>();
     pauseResumeButton->buttonText = "Pause";
     pauseResumeButton->buttonRect = raylib::Rectangle(PAUSE_RESUME_BUTTON_COORDX, PAUSE_RESUME_BUTTON_COORDY, PAUSE_RESUME_BUTTON_WIDTH, PAUSE_RESUME_BUTTON_HEIGHT);
-    pauseResumeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    pauseResumeButton->style = std::make_unique<ds_viz::themes::dark_simple::HeapButtonStyle>();
     pauseResumeButton->Click.append([this]()
     {
         animationTimer = 0.0f;
@@ -715,7 +715,7 @@ void HeapVisualizer::Render()
     //notificationTitle.Draw(NOTIFICATION_FRAME_COORDX + 10, NOTIFICATION_FRAME_COORDY + 10);
     
     // Working Frame render
-    workingFrame.DrawRoundedLines(0.0f, 10, raylib::Color::Gray());
+    //workingFrame.DrawRoundedLines(0.0f, 10, raylib::Color::Gray());
     
     // Pseudo Code Frame render
     if(pseudoCodeFrameVisible)

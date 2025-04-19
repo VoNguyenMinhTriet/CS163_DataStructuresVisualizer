@@ -12,7 +12,7 @@ using namespace std;
 
 namespace raywtk
 {
-    enum class ButtonClass
+    enum class HeapButtonClass
     {
         Inactive = 0,
         Normal = 1,
@@ -21,7 +21,7 @@ namespace raywtk
         Unenabled = 4
     };
 
-    class Button : public IScreenElement
+    class HeapButton : public IScreenElement
     {
     public:
         raylib::Rectangle buttonRect;
@@ -35,43 +35,43 @@ namespace raywtk
         eventpp::CallbackList<void()> Click;
 
         // Styling
-        ButtonClass state = ButtonClass::Normal;
+        HeapButtonClass state = HeapButtonClass::Normal;
         std::unique_ptr<IStyle> style;
 
-        void Update (float deltaTime) override
+        void Update(float deltaTime) override
         {
             HandleMouseInput();
         }
 
-        void HandleMouseInput ()
+        void HandleMouseInput()
         {
             if (!showing) 
             {
-                state = ButtonClass::Inactive;
+                state = HeapButtonClass::Inactive;
                 return;
             }
 
             if(!enabled)
             {
-                state = ButtonClass::Unenabled;
+                state = HeapButtonClass::Unenabled;
                 return;
             }
 
-            state = ButtonClass::Normal;
+            state = HeapButtonClass::Normal;
 
             if (buttonRect.CheckCollision(raylib::Mouse::GetPosition()))
             {
-                state = ButtonClass::Hover;
+                state = HeapButtonClass::Hover;
 
                 if (raylib::Mouse::IsButtonPressed(MouseButton::MOUSE_BUTTON_LEFT))
                     Click();
 
                 if (raylib::Mouse::IsButtonDown(MouseButton::MOUSE_BUTTON_LEFT))
-                    state = ButtonClass::Pressed;
+                    state = HeapButtonClass::Pressed;
             }
         }
 
-        void Render () override
+        void Render() override
         {
             if(!showing)
             {
@@ -81,7 +81,7 @@ namespace raywtk
             if (style)
                 style->RenderWithStyle(this);
             else
-                ThemeManager::GetCurrentTheme().GetStyle(typeid(Button).name()).RenderWithStyle(this);
+                ThemeManager::GetCurrentTheme().GetStyle(typeid(HeapButton).name()).RenderWithStyle(this);
         }
     };
 }

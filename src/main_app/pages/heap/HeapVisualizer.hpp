@@ -3,15 +3,20 @@
 #include <memory>
 #include <vector>
 #include "raylib-cpp/raylib-cpp.hpp"
-#include "widget_toolkit/controls/button2.hpp"
+#include "widget_toolkit/controls/heap_button.hpp"
 #include "widget_toolkit/notification/Notification.hpp"
 #include "widget_toolkit/tree_widgets/node.hpp"
 #include "widget_toolkit/input_box/InputBox.hpp"
-#include "widget_toolkit/controls/text_button.hpp"
+#include "main_app/themes/dark_simple/heap/heap_text_button.hpp"
 #include "widget_toolkit/animation/animation_step.hpp"
 #include "widget_toolkit/display_frame/display_frame.hpp"
 #include "widget_toolkit/pseudo_code/pseudo_code_display.hpp"
-#include "./page.hpp"
+#include "../page.hpp"
+
+const int PSEUDO_CODE_FRAME_HEIGHT = 130;
+const int PSEUDO_CODE_FRAME_WIDTH = 300;
+const int PSEUDO_CODE_FRAME_COORDX = DEFAULT_WIN_WIDTH - PSEUDO_CODE_FRAME_WIDTH - 10;
+const int PSEUDO_CODE_FRAME_COORDY = 680 - PSEUDO_CODE_FRAME_HEIGHT;
 
 const int OPERATOR_BUTTON_WIDTH = 150;
 const int OPERATOR_BUTTON_HEIGHT = 25;
@@ -81,6 +86,12 @@ const int ANIMATION_TIMELINE_BAR_COORDY = 715;
 const int ANIMATION_TIMELINE_BAR_WIDTH = 1280;
 const int ANIMATION_TIMELINE_BAR_HEIGHT = 10;
 
+
+/*const int NOTIFICATION_FRAME_HEIGHT = 200;
+const int NOTIFICATION_FRAME_WIDTH = 700;
+const int NOTIFICATION_FRAME_COORDX = 1180;
+const int NOTIFICATION_FRAME_COORDY = 0;*/
+
 #define sz(x) int((x).size())
 
 namespace ds_viz::pages
@@ -117,35 +128,35 @@ namespace ds_viz::pages
         //std::unique_ptr<raywtk::DisplayFrame> notificationFrame;
         
         // Show operator button
-        std::unique_ptr<raywtk::Button> showOperatorButton;
+        std::unique_ptr<raywtk::HeapButton> showOperatorButton;
 
         // Build heap button
-        std::unique_ptr<raywtk::Button> buildHeapButton;
+        std::unique_ptr<raywtk::HeapButton> buildHeapButton;
 
         // Children buttons of build heap button
-        std::unique_ptr<raywtk::Button> buildHeap_inputValuesButton;
-        std::unique_ptr<raywtk::Button> buildHeap_loadFromFileButton;
-        std::unique_ptr<raywtk::Button> buildHeap_initializeRandomButton;
+        std::unique_ptr<raywtk::HeapButton> buildHeap_inputValuesButton;
+        std::unique_ptr<raywtk::HeapButton> buildHeap_loadFromFileButton;
+        std::unique_ptr<raywtk::HeapButton> buildHeap_initializeRandomButton;
         
         bool waitingForLoadFromFile = false;
 
         // Push new value button
-        std::unique_ptr<raywtk::Button> pushValueButton;
+        std::unique_ptr<raywtk::HeapButton> pushValueButton;
         
         // Pop max value button
-        std::unique_ptr<raywtk::Button> popMaxValueButton;
+        std::unique_ptr<raywtk::HeapButton> popMaxValueButton;
         
         // Clear heap button
-        std::unique_ptr<raywtk::Button> clearHeapButton;
+        std::unique_ptr<raywtk::HeapButton> clearHeapButton;
 
         // Step back button
-        std::unique_ptr<raywtk::Button> stepBackButton;
+        std::unique_ptr<raywtk::HeapButton> stepBackButton;
 
         // Pause/resume back button
-        std::unique_ptr<raywtk::Button> pauseResumeButton;
+        std::unique_ptr<raywtk::HeapButton> pauseResumeButton;
 
         // Step forward button
-        std::unique_ptr<raywtk::Button> stepForwardButton;
+        std::unique_ptr<raywtk::HeapButton> stepForwardButton;
         
         // Input box for build heap
         std::unique_ptr<raywtk::InputBox> inputBoxBuildHeap;
@@ -168,7 +179,7 @@ namespace ds_viz::pages
         std::vector<raywtk::Step> animation_steps;
         
         // Show pseudo code display button
-        std::unique_ptr<raywtk::Button> showPseudoCodeDisplayButton;
+        std::unique_ptr<raywtk::HeapButton> showPseudoCodeDisplayButton;
 
         // pseudo code display
         std::unique_ptr<raywtk::PseudoCodeDisplay> pseudoCodeDisplay;
