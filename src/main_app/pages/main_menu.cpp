@@ -31,7 +31,7 @@ ds_viz::pages::MainMenuPage::MainMenuPage(ds_viz::MainWindow &context) : Page(co
 
     _trieButton.Click.append([this]() {
         _deferredStateChange = [this]() {
-            //_context->ChangePage(std::make_shared<TriePage>(*_context));
+            _context->ChangePage(std::make_shared<TriePage>(*_context));
         };
     });
     _graphButton.Click.append([this]() {
