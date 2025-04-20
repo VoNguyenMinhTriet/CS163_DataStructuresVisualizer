@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 #include "../page.hpp"
 #include "main_app/pages/trie/trie_scene.hpp"
@@ -332,3 +332,4 @@ class TriePage : public Page
     void Render() override;
 };
 } // namespace ds_viz::pages
+*/

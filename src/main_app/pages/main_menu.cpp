@@ -19,10 +19,10 @@ ds_viz::pages::MainMenuPage::MainMenuPage(ds_viz::MainWindow &context) : Page(co
     font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128));
     title = raylib::Text("DATA LA VISTA", 128, raylib::Color::White(), *font, 0);
 
-    _trieButton.buttonRect = raylib::Rectangle {128, 128, 128, 64};
-    _graphButton.buttonRect = raylib::Rectangle {128, 256, 128, 64};
-    _heapButton.buttonRect = raylib::Rectangle {128, 384, 128, 64};
-    _linkedListButton.buttonRect = raylib::Rectangle {128, 512, 128, 64};
+    _trieButton.buttonRect = raylib::Rectangle {250, 250, 300, 100};
+    _graphButton.buttonRect = raylib::Rectangle {750, 250, 300, 100};
+    _heapButton.buttonRect = raylib::Rectangle {250, 450, 300, 100};
+    _linkedListButton.buttonRect = raylib::Rectangle {750, 450, 300, 100};
 
     _trieButton.buttonText = "Trie";
     _graphButton.buttonText = "Graph";
@@ -31,7 +31,7 @@ ds_viz::pages::MainMenuPage::MainMenuPage(ds_viz::MainWindow &context) : Page(co
 
     _trieButton.Click.append([this]() {
         _deferredStateChange = [this]() {
-            _context->ChangePage(std::make_shared<TriePage>(*_context));
+            //_context->ChangePage(std::make_shared<TriePage>(*_context));
         };
     });
     _graphButton.Click.append([this]() {

@@ -4,10 +4,12 @@
 #include <vector>
 #include "main_app/main_window.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
+#include "widget_toolkit/controls/button.hpp"
 #include "widget_toolkit/controls/heap_button.hpp"
 #include "widget_toolkit/notification/Notification.hpp"
 #include "widget_toolkit/graph_widgets/heap_node.hpp"
 #include "widget_toolkit/input_box/heap_input_box.hpp"
+#include "main_app/themes/dark_simple/image_button.hpp"
 #include "main_app/themes/dark_simple/heap/heap_text_button.hpp"
 #include "widget_toolkit/animation/animation_step.hpp"
 #include "widget_toolkit/display_frame/display_frame.hpp"
@@ -93,90 +95,17 @@ const int HEAP_WORKING_FRAME_WIDTH = 1180;
 const int HEAP_WORKING_FRAME_COORDX = 50;
 const int HEAP_WORKING_FRAME_COORDY = 0;
 
+const int HEAP_HOME_BUTTON_COORDX = 1210;
+const int HEAP_HOME_BUTTON_COORDY = 10;
+const int HEAP_HOME_BUTTON_WIDTH = 50;
+const int HEAP_HOME_BUTTON_HEIGHT = 50;
+
 //const int NOTIFICATION_FRAME_HEIGHT = 200;const int NOTIFICATION_FRAME_WIDTH = 700;const int NOTIFICATION_FRAME_COORDX = 1180;const int NOTIFICATION_FRAME_COORDY = 0;
 
 namespace ds_viz::pages
 {
     class HeapVisualizer : public Page
     {
-        static constexpr float PSEUDO_CODE_FRAME_HEIGHT = 130;
-        static constexpr float PSEUDO_CODE_FRAME_WIDTH = 300;
-        static constexpr float PSEUDO_CODE_FRAME_COORDX = DEFAULT_WIN_WIDTH - PSEUDO_CODE_FRAME_WIDTH - 10;
-        static constexpr float PSEUDO_CODE_FRAME_COORDY = 680 - PSEUDO_CODE_FRAME_HEIGHT;
-
-        static constexpr float OPERATOR_BUTTON_WIDTH = 150;
-        static constexpr float OPERATOR_BUTTON_HEIGHT = 25;
-
-        static constexpr float BUILD_HEAP_BUTTON_COORDX = 10;
-        static constexpr float BUILD_HEAP_BUTTON_COORDY = 565;
-
-        static constexpr float BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
-        static constexpr float BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDY = BUILD_HEAP_BUTTON_COORDY;
-        static constexpr float BUILD_HEAP_INPUT_VALUES_BUTTON_COORDX = BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX;
-        static constexpr float BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY = BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
-        static constexpr float BUILD_HEAP_LOAD_FROM_FILE_BUTTON_COORDX = BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX;
-        static constexpr float BUILD_HEAP_LOAD_FROM_FILE_BUTTON_COORDY = BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
-
-        static constexpr float PUSH_VALUE_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX;
-        static constexpr float PUSH_VALUE_BUTTON_COORDY = BUILD_HEAP_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
-
-        static constexpr float POP_VALUE_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX;
-        static constexpr float POP_VALUE_BUTTON_COORDY = PUSH_VALUE_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
-
-        static constexpr float CLEAR_HEAP_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX;
-        static constexpr float CLEAR_HEAP_BUTTON_COORDY = POP_VALUE_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
-
-        static constexpr float SHOW_OPERATOR_BUTTON_COORDX = -7;
-        static constexpr float SHOW_OPERATOR_BUTTON_COORDY = BUILD_HEAP_BUTTON_COORDY;
-        static constexpr float SHOW_OPERATOR_BUTTON_WIDTH = 14;
-        static constexpr float SHOW_OPERATOR_BUTTON_HEIGHT = 30 * 3 + OPERATOR_BUTTON_HEIGHT;
-
-        static constexpr float SHOW_PSEUDO_CODE_DISPLAY_BUTTON_COORDX = 1273;
-        static constexpr float SHOW_PSEUDO_CODE_DISPLAY_BUTTON_COORDY = PSEUDO_CODE_FRAME_COORDY;
-        static constexpr float SHOW_PSEUDO_CODE_DISPLAY_BUTTON_WIDTH = 14;
-        static constexpr float SHOW_PSEUDO_CODE_DISPLAY_BUTTON_HEIGHT = PSEUDO_CODE_FRAME_HEIGHT;
-
-        static constexpr float INPUT_BOX_BUILD_HEAP_COORDX = BUILD_HEAP_INPUT_VALUES_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
-        static constexpr float INPUT_BOX_BUILD_HEAP_COORDY = BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY;
-        static constexpr float INPUT_BOX_BUILD_HEAP_WIDTH = 250;
-        static constexpr float INPUT_BOX_BUILD_HEAP_HEIGHT = OPERATOR_BUTTON_HEIGHT;
-
-        static constexpr float INPUT_BOX_PUSH_VALUE_COORDX = PUSH_VALUE_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
-        static constexpr float INPUT_BOX_PUSH_VALUE_COORDY = PUSH_VALUE_BUTTON_COORDY;
-        static constexpr float INPUT_BOX_PUSH_VALUE_WIDTH = 75;
-        static constexpr float INPUT_BOX_PUSH_VALUE_HEIGHT = OPERATOR_BUTTON_HEIGHT;
-
-        static constexpr float NOTIFICATION_COORDX = NOTIFICATION_FRAME_COORDX + 20;
-        static constexpr float NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 80;
-
-        static constexpr float PSEUDO_CODE_LINE_WIDTH = 240;
-        static constexpr float PSEUDO_CODE_LINE_HEIGHT = 16;
-
-        static constexpr float PAUSE_RESUME_BUTTON_COORDX = (1280 - 120) / 2;
-        static constexpr float PAUSE_RESUME_BUTTON_COORDY = 660;
-        static constexpr float PAUSE_RESUME_BUTTON_WIDTH = 120;
-        static constexpr float PAUSE_RESUME_BUTTON_HEIGHT = 25;
-
-        static constexpr float STEP_BACK_BUTTON_COORDX = PAUSE_RESUME_BUTTON_COORDX - PAUSE_RESUME_BUTTON_WIDTH - 5;
-        static constexpr float STEP_BACK_BUTTON_COORDY = PAUSE_RESUME_BUTTON_COORDY;
-        static constexpr float STEP_BACK_BUTTON_WIDTH = PAUSE_RESUME_BUTTON_WIDTH;
-        static constexpr float STEP_BACK_BUTTON_HEIGHT = PAUSE_RESUME_BUTTON_HEIGHT;
-
-        static constexpr float STEP_FORWARD_BUTTON_COORDX = PAUSE_RESUME_BUTTON_COORDX + PAUSE_RESUME_BUTTON_WIDTH + 5;
-        static constexpr float STEP_FORWARD_BUTTON_COORDY = PAUSE_RESUME_BUTTON_COORDY;
-        static constexpr float STEP_FORWARD_BUTTON_WIDTH = PAUSE_RESUME_BUTTON_WIDTH;
-        static constexpr float STEP_FORWARD_BUTTON_HEIGHT = PAUSE_RESUME_BUTTON_HEIGHT;
-
-        static constexpr float ANIMATION_TIMELINE_BAR_COORDX = 0;
-        static constexpr float ANIMATION_TIMELINE_BAR_COORDY = 715;
-        static constexpr float ANIMATION_TIMELINE_BAR_WIDTH = 1280;
-        static constexpr float ANIMATION_TIMELINE_BAR_HEIGHT = 10;
-
-
-        /*static constexpr float NOTIFICATION_FRAME_HEIGHT = 200;
-        static constexpr float NOTIFICATION_FRAME_WIDTH = 700;
-        static constexpr float NOTIFICATION_FRAME_COORDX = 1180;
-        static constexpr float NOTIFICATION_FRAME_COORDY = 0;*/
 
         // font and title
         std::unique_ptr<raylib::Font> font;
@@ -264,12 +193,29 @@ namespace ds_viz::pages
         // pseudo code display
         std::unique_ptr<raywtk::HeapPseudoCodeDisplay> pseudoCodeDisplay;
 
+        // home button
+        raylib::Texture homeButtonTex;
+        std::unique_ptr<raywtk::Button> homeButton;
+
         // variables to manage animation speed
         int animationStep = 0;
         float animationTimer = 0.0;
-        float animationSpeed = 1.0f;
         bool animationPaused = false;
         bool isLastStepForward = false;
+        
+        // animation speed bar
+        float speedBarX = HEAP_STEP_BACK_BUTTON_COORDX + 40;
+        float speedBarY = HEAP_STEP_BACK_BUTTON_COORDY - 20;
+        float speedBarWidth = 300;
+        float speedBarHeight = 10;
+        float speedKnobRadius = 8;
+        
+        float speedMin = 0.5f;  // Minimum speed factor
+        float speedMax = 10.0f;  // Maximum speed factor
+        float animationSpeed = speedMin;
+        float speedKnobX = speedBarX;  // Start at the lowest speed
+        bool isDraggingSpeedKnob = false;
+        std::vector<float> speedSteps = {0.5f, 1.0f, 2.0f, 4.0f, 10.0f};
 
         public:
             HeapVisualizer(ds_viz::MainWindow &context);
@@ -290,6 +236,7 @@ namespace ds_viz::pages
             void undoingStep(int idStep, bool callAgain); // undo an animation step
             void changeStateOperatorButton(bool state); // change all opreator buttons state to state (state = 0 -> turn off, state = 1 -> turn on)
             void DrawTimelineBar(raylib::Rectangle bar, raylib::Color backgroundColor, raylib::Color filledColor, int currentStep, int totalSteps); // draw animation timeline bar
+            void DrawSpeedBar(); // draw speed bar
             void Update(float dt) override;
             void Render() override;
     };

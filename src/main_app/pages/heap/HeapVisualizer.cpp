@@ -151,7 +151,7 @@ HeapVisualizer::HeapVisualizer(ds_viz::MainWindow &context) : ds_viz::Page(conte
 
     // Animation initialize
     animation_steps.clear();
-    animationStep = 0, animationTimer = 1.0f, animationSpeed = 1.0f;
+    animationStep = 0, animationTimer = 1.0f, animationSpeed = speedMin;
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, -1, ""));
 
     // Pseudo code display initialize
@@ -204,6 +204,18 @@ HeapVisualizer::HeapVisualizer(ds_viz::MainWindow &context) : ds_viz::Page(conte
         animationPaused = 1 - animationPaused;
         pauseResumeButton->buttonText = (animationPaused) ? "Play" : "Pause";
         stepBackButton->enabled = stepForwardButton->enabled = 1 - stepBackButton->enabled;
+    });
+
+    // Home button initialize
+    homeButtonTex = raylib::Texture(raylib::Image("./images/return_button.png"));
+    homeButton = std::make_unique<raywtk::Button>();
+    homeButton->buttonText = "";
+    homeButton->buttonRect = raylib::Rectangle(HEAP_HOME_BUTTON_COORDX, HEAP_HOME_BUTTON_COORDY, HEAP_HOME_BUTTON_WIDTH, HEAP_HOME_BUTTON_HEIGHT);
+    homeButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&homeButtonTex);
+    homeButton->Click.append([this]()
+    {
+        ClearHeap();
+        _context->ChangePage(std::make_shared<ds_viz::pages::MainMenuPage>(*_context));
     });
 }
 
@@ -576,6 +588,17 @@ void HeapVisualizer::DrawTimelineBar(raylib::Rectangle bar, raylib::Color backgr
     DrawRectangle(bar.GetX(), bar.GetY(), progressWidth, bar.GetHeight(), filledColor);
 }
 
+void HeapVisualizer::DrawSpeedBar()
+{
+    DrawRectangle(speedBarX, speedBarY, speedBarWidth, speedBarHeight, RAYWHITE);
+    DrawCircle(speedKnobX, (speedBarY + speedBarHeight / 2), speedKnobRadius, RED);
+    DrawText("Speed:", (speedBarX - 80), (speedBarY - 5), 20, WHITE);
+    
+    char speedText[10];
+    sprintf(speedText, "%.2fx", animationSpeed);
+    DrawText(speedText, (speedBarX + speedBarWidth + 10), (speedBarY - 5), 20, YELLOW);
+}
+
 void HeapVisualizer::Update(float dt) 
 {
     // Notification Frame update
@@ -705,6 +728,28 @@ void HeapVisualizer::Update(float dt)
     // Step back button update
     stepBackButton->Update(dt);
 
+    // Home button update
+    homeButton->Update(dt);
+
+    // Adjust speed update
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+    {
+        Vector2 mousePos = GetMousePosition();
+        if (isDraggingSpeedKnob || CheckCollisionPointCircle(mousePos, {speedKnobX, speedBarY + speedBarHeight / 2}, speedKnobRadius))
+        {
+            isDraggingSpeedKnob = true;
+            speedKnobX = Clamp(mousePos.x, speedBarX, speedBarX + speedBarWidth);
+
+            // Update speed while dragging 
+            float t = (speedKnobX - speedBarX) / speedBarWidth;
+            animationSpeed = speedMin + t * (speedMax - speedMin);
+        }
+    }
+    else 
+    {
+        isDraggingSpeedKnob = false;
+    }
+
     // vector nodes update
     for(auto &node : nodes)
     {
@@ -787,10 +832,17 @@ void HeapVisualizer::Render()
     // Step back button render
     stepBackButton->Render();
 
+    // Home button render
+    homeButton->Render();
+
+    // Animation timeline bar render
     if(animationTimelineBarVisible) 
     {
         DrawTimelineBar(animationTimelineBar, animationTimelineBarBackgroundColor, animationTimelineBarFilledColor, animationStep, sz(animation_steps));
     }
+
+    // Speed bar render
+    DrawSpeedBar();
 
     // Edges render
     for (int i = 1; i < sz(nodes); ++i) 
