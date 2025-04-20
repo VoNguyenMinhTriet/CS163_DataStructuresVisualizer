@@ -1,4 +1,4 @@
-/*#pragma once
+#pragma once
 
 #include "./trie_timeline.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
@@ -63,7 +63,7 @@ namespace ds_viz::pages::trie
         public:
         raylib::Camera2D cam;
         std::unique_ptr<TrieNode> root = std::make_unique<TrieNode>();
-        TrieScene () : cam(raylib::Vector2 {640, 360}, raylib::Vector2 {0, 0}, 0, 2), animationTimeline(nullptr) { }
+        TrieScene();
 
         void Update(float deltaTime) override;
 
@@ -86,12 +86,14 @@ namespace ds_viz::pages::trie
         void BuildSearchTimeline(const std::string &key);
         void BuildAddTimeline(const std::string& key);
         void BuildRemoveTimeline(const std::string& key);
-        void ClearTimeline() { animationTimeline = nullptr; }
+        void ClearTimeline();
         void StepForward();
         void StepBackward();
         std::string GetCaption() const;
         std::string GetStatusMessage() const;
         std::string GetCode() const;
         int GetCurrentLine();
+
+        ~TrieScene();
     };
-}*/
+}
