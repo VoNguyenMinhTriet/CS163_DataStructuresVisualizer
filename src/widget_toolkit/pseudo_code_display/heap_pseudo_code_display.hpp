@@ -44,7 +44,7 @@ namespace raywtk
 {
     
     // Class for displaying pseudo-code
-    class PseudoCodeDisplay : public IScreenElement {
+    class HeapPseudoCodeDisplay : public IScreenElement {
         public:
             // Enum for line states
             enum class LineState {
@@ -57,7 +57,7 @@ namespace raywtk
             bool visible = true;
 
             // Constructor
-            PseudoCodeDisplay(raylib::Vector2 position, int numLines, float lineWidth, float lineHeight,
+            HeapPseudoCodeDisplay(raylib::Vector2 position, int numLines, float lineWidth, float lineHeight,
                 raylib::Color defaultColor, raylib::Color highlightColor, raylib::Color executedColor)
                 : position(position), numLines(numLines), lineWidth(lineWidth), lineHeight(lineHeight),
                 defaultColor(defaultColor), highlightColor(highlightColor), executedColor(executedColor),
@@ -68,7 +68,7 @@ namespace raywtk
             }
 
             // Destructor
-            ~PseudoCodeDisplay() {
+            ~HeapPseudoCodeDisplay() {
                 font.Unload(); // Unload font to free resources
             }
             

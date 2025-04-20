@@ -1,4 +1,4 @@
-#include "./trie_timeline.hpp"
+/*#include "./trie_timeline.hpp"
 
 #include <optional>
 #include <string>
@@ -564,3 +564,4 @@ void ds_viz::pages::trie::AddTimeline::ApplyTimeline(TrieScene& scene)
     while (currentStep != stepTimeline.end())
         StepForward();
 };
+*/

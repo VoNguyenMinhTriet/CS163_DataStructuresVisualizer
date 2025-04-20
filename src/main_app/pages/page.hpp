@@ -1,6 +1,5 @@
 #pragma once
 #include "widget_toolkit/interfaces.hpp"
-#include "main_app/main_window.hpp"
 
 namespace ds_viz
 {

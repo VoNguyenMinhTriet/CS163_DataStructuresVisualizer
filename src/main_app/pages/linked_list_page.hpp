@@ -5,9 +5,10 @@
 #include <stack>
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "widget_toolkit/controls/button.hpp"
-#include "widget_toolkit/graph_widget/listnode.hpp"
+#include "widget_toolkit/graph_widgets/listnode.hpp"
 #include "main_app/themes/dark_simple/text_button.hpp"
 #include "./page.hpp"
+#include "main_app/main_window.hpp"
 
 
 namespace ds_viz::pages 
@@ -184,7 +185,7 @@ namespace ds_viz::pages
                                     
     public:
 
-    LinkedListPage(); 
+    LinkedListPage(ds_viz::MainWindow &context); 
     ~LinkedListPage();
 
     void OnRandomButtonClick(int numNodes);
@@ -222,4 +223,3 @@ namespace ds_viz::pages
     void Render() override;
     };
 }
-

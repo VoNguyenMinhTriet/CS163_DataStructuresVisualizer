@@ -1,7 +1,7 @@
 #include "./GraphVisualizer.hpp"
 #include "main_app/main_window.hpp"
 #include "./main_menu.hpp"
-#include "../themes/dark_simple/back_button.hpp"
+#include "./page.hpp"
 #include <algorithm>
 #include <iostream>
 #include <cstdlib> // For rand()
@@ -13,7 +13,7 @@ using namespace ds_viz::pages;
 
 
 
-ds_viz::pages::GraphVisualizer::GraphVisualizer() 
+ds_viz::pages::GraphVisualizer::GraphVisualizer(ds_viz::MainWindow &context) : ds_viz::Page(context) 
 {
     // font and title initialize
     font = std::make_unique<raylib::Font>("./ttf/InterDisplay-Black.ttf", 128, nullptr, 250);
@@ -940,4 +940,3 @@ void ds_viz::pages::GraphVisualizer::Render()
         node->Render();
     }
 }
-

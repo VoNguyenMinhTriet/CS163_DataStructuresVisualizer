@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 #include "./trie_timeline.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
@@ -94,4 +94,4 @@ namespace ds_viz::pages::trie
         std::string GetCode() const;
         int GetCurrentLine();
     };
-}
+}*/

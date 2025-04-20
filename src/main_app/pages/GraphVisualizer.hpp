@@ -17,6 +17,7 @@
 #include "widget_toolkit/input_box/InputBox.hpp"
 #include "main_app/themes/dark_simple/text_button.hpp"
 #include "./page.hpp"
+#include "main_app/main_window.hpp"
 #include "widget_toolkit/notification/Notification.hpp"
 #include "widget_toolkit/pseudo_code_display/PseudoCode.hpp"
 
@@ -225,7 +226,7 @@ namespace ds_viz::pages
         bool animationRunning = false;    // Flag to control animation
 
         public:
-            GraphVisualizer();
+            GraphVisualizer(ds_viz::MainWindow &context);
             void LoadGraphFromFile(const std::string& filePath); // load graph from file
             void InitializeGraph(int n); // initialize graph with n nodes
             void InsertNewNode(); // insert new node

@@ -7,7 +7,6 @@
 #include "widget_toolkit/interfaces.hpp"
 #include "widget_toolkit/theme_manager.hpp"
 #include "./text_button.hpp"
-#include "./button.hpp"
 #include "./text_box.hpp"
 #include "./code_box.hpp"
 
