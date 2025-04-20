@@ -10,7 +10,7 @@
 
 ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_viz::Page(context) 
 {
-    font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
+    font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 100));
     title = raylib::Text("Singly-Linked List", 128, raylib::Color::White(), *font, 0);
     
     nodeFont = std::make_shared<raylib::Font>("./ttf/InterDisplay-ExtraBold.ttf", 128);
@@ -26,6 +26,25 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
     repositionButton->buttonRect = raylib::Rectangle(12 * scaleX, 660 * scaleY, 128 * scaleX, 24 * scaleY);
     repositionButton->Click.append([this]() { RepositionNodes(); });
     repositionButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
+
+    // input from keyboard button
+    inputButton = std::make_unique<raywtk::Button>();
+    inputButton->buttonText = "Input values";
+    inputButton->buttonRect = raylib::Rectangle(12 * scaleX, 520 * scaleY, 128 * scaleX, 24 * scaleY);
+    inputButton->Click.append([this]() { 
+        showInputValues = true;
+        showInsertAtHead = false;
+        showInsertAtTail = false;
+        showInsertAtIndexInput = false;
+        showDeleteAtIndexInput = false;
+        showSearchInput = false;
+        showRandomInput = false;
+        insertDropdownOpen = false;
+        deleteDropdownOpen = false;
+        searchDropdownOpen = false;
+        createDropdownOpen = false;
+    });
+    inputButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
     // action bar toggle
     actionBarButton = std::make_unique<raywtk::Button>();
@@ -45,6 +64,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         showDeleteAtIndexInput = false;
         showSearchInput  = false;
         showRandomInput = false;
+        showInputValues = false;
     });
 
     // Pseudo-code toggle button
@@ -72,6 +92,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         showDeleteAtIndexInput = false;
         showSearchInput  = false;
         showRandomInput = false;
+        showInputValues = false;
     });
     insertButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
@@ -89,6 +110,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
                 showInsertAtHead = true;
                 showInsertAtTail = false;
                 showInsertAtIndexInput = false;
+                showInputValues = false;
             });
         }
 
@@ -98,6 +120,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
                 showInsertAtHead = false;
                 showInsertAtTail = true;
                 showInsertAtIndexInput = false;
+                showInputValues = false;
             });
         }
 
@@ -107,6 +130,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
                 showInsertAtHead = false;
                 showInsertAtTail = false;
                 showInsertAtIndexInput = true;
+                showInputValues = false;
             });
         }
 
@@ -128,6 +152,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         showDeleteAtIndexInput = false;
         showSearchInput  = false;
         showRandomInput = false;
+        showInputValues = false;
     });
     deleteButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
@@ -143,6 +168,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         {
             btn->Click.append([this]() {
                 showDeleteAtIndexInput = false;
+                showInputValues = false;
                 DeleteAtHead();
             });
         }
@@ -151,6 +177,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         {
             btn->Click.append([this]() {
                 showDeleteAtIndexInput = false;
+                showInputValues = false;
                 DeleteAtTail();
             });
         }
@@ -159,6 +186,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         {
             btn->Click.append([this]() {
                 showDeleteAtIndexInput = true;
+                showInputValues = false;
             });
         }
 
@@ -180,6 +208,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         showDeleteAtIndexInput = false;
         showSearchInput  = false;
         showRandomInput = false;
+        showInputValues = false;
     });
     searchButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
@@ -196,6 +225,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
             btn->Click.append([this]() {
                 showSearchInput = true;
                 searchByValue = true;
+                showInputValues = false;
             });
         }
 
@@ -204,6 +234,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
             btn->Click.append([this]() {
                 showSearchInput = true;
                 searchByValue = false;
+                showInputValues = false;
             });
         }
 
@@ -225,6 +256,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         showDeleteAtIndexInput = false;
         showSearchInput  = false;
         showRandomInput = false;
+        showInputValues = false;
     });
     createButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
@@ -240,6 +272,8 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         {
             btn->Click.append([this]() {
                 showRandomInput = true;
+                showInputValues = false;
+                showInputValues = false;
             });
         }
 
@@ -247,6 +281,8 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         {
             btn->Click.append([this]() {
                 showRandomInput = false;
+                showInputValues = false;
+                showInputValues = false;
                 OnClearButtonClick();
             });
         }
@@ -255,6 +291,8 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         {
             btn->Click.append([this]() {
                 showRandomInput = false;
+                showInputValues = false;
+                showInputValues = false;
                 OnLoadFileButtonClick();
             });
         }
@@ -325,6 +363,21 @@ void ds_viz::pages::LinkedListPage::OnRandomButtonClick(int numNodes)
     Append();
 }
 
+// Generate List from keyboard
+void ds_viz::pages::LinkedListPage::OnInputButtonClick(std::vector<int> &values)
+{
+    animationStates.clear();
+    currentAnimationState = -1;
+    head.reset(); 
+    size = 0;
+
+    for (int value : values) {
+        InsertRandom(value);
+    }
+
+    Append();
+}
+
 // A.k.a insert at tail in 1 frame
 void ds_viz::pages::LinkedListPage::InsertRandom(int value)
 {
@@ -390,16 +443,16 @@ void ds_viz::pages::LinkedListPage::OnLoadFileButtonClick()
         head.reset();
         size = 0;
 
-        for (int i = 0; i < std::min(n, 18); i++) 
+        for (int i = 0; i < std::min(n, 12); i++) 
         {
             int x;
             fin >> x;
             InsertRandom(x);
         }
 
-        if (n > 18)
+        if (n > 12)
         {
-            errorMessage = "Maximum number of nodes is 18!";
+            errorMessage = "Maximum number of nodes is 12!";
             errorTimer = 2.0f;
         }
 
@@ -1284,10 +1337,10 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                     errorTimer = 2.0f;
                 }
                 
-                else if (size == 18)
+                else if (size == 12)
                 {
                     inputInsertAtHead.clear();
-                    errorMessage = "Maximum number of nodes is 18!";
+                    errorMessage = "Maximum number of nodes is 12!";
                     errorTimer = 2.0f;
                 }
 
@@ -1332,10 +1385,10 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                     errorTimer = 2.0f;
                 }
                 
-                else if (size == 18)
+                else if (size == 12)
                 {
                     inputInsertAtTail.clear();
-                    errorMessage = "Maximum number of nodes is 18!";
+                    errorMessage = "Maximum number of nodes is 12!";
                     errorTimer = 2.0f;
                 }
 
@@ -1401,11 +1454,11 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                         errorMessage = "Index is out of bounds!";
                         errorTimer = 2.0f;
                     }
-                    else if (size >= 18) 
+                    else if (size >= 12) 
                     {
                         inputValue.clear();
                         inputIndex.clear();
-                        errorMessage = "Maximum number of nodes is 18!";
+                        errorMessage = "Maximum number of nodes is 12!";
                         errorTimer = 2.0f;
                     }
                     else
@@ -1441,10 +1494,10 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
             {
                 int numNodes = std::stoi(inputRandom);
             
-                if (numNodes < 1 || numNodes > 18) 
+                if (numNodes < 1 || numNodes > 12) 
                 {
                     inputRandom.clear();
-                    errorMessage = "Maximum number of nodes is 18!";
+                    errorMessage = "Maximum number of nodes is 12!";
                     errorTimer = 2.0f;
                 }
                 
@@ -1457,11 +1510,84 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
             
             catch (...)
             {
-                errorMessage = "Please enter a valid integer between 1 and 18!";
+                errorMessage = "Please enter a valid integer between 1 and 12!";
                 errorTimer = 2.0f;
             }
 
             showRandomInput = false; 
+        }
+    }
+
+    if (showInputValues)
+    {  
+        int key = GetKeyPressed();
+        if ((key >= '0' && key <= '9') || key == '-' || key == ',' || key == ' ') 
+            input += static_cast<char>(key);
+        else if (key == KEY_BACKSPACE && !input.empty()) 
+            input.pop_back();
+        else if (key == KEY_ENTER && !input.empty()) 
+        {
+            try 
+            {
+                values.clear();
+                inrange = true;
+
+                std::string processedInput = input;
+                std::replace(processedInput.begin(), processedInput.end(), ',', ' ');
+                
+                std::stringstream ss(processedInput);
+                std::string token;
+                
+                while (ss >> token) 
+                {
+                    if (!token.empty())
+                    {   
+                        int value = std::stoi(token);
+                        values.push_back(value);
+                    }
+                }
+
+                for (int i: values)
+                {
+                    if (i < -999 || i > 999) 
+                    {
+                        inrange = false;
+                        break;
+                    }
+                }
+
+                if (!inrange)
+                {
+                    errorMessage = "Value must be between -999 and 999!";
+                    errorTimer = 2.0f;
+                }
+                
+                else if (values.size() > 12)
+                {
+                    errorMessage = "Maximum number of nodes is 12!";
+                    errorTimer = 2.0f;
+                }
+                
+                else if (values.empty())
+                {
+                    errorMessage = "Please enter at least one value!";
+                    errorTimer = 2.0f;
+                }
+            
+                else
+                    OnInputButtonClick(values);
+
+                input.clear();
+                values.clear();
+                showInputValues = false;
+            }
+            
+            catch (...)
+            {
+                errorMessage = "Enter maximum 12 nodes, between -999 and 999!";
+                errorTimer = 2.0f;
+                input.clear();
+            }
         }
     }
 
@@ -1606,6 +1732,7 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
 
     if (actionBarVisible) 
     {
+        inputButton->Update(dt);
         insertButton->Update(dt);
         deleteButton->Update(dt);
         searchButton->Update(dt);
@@ -1701,6 +1828,9 @@ void ds_viz::pages::LinkedListPage::Render()
     if (showRandomInput)
         DrawInputBox(140 * scaleX, 660 * scaleY, 128 * scaleX, 24 * scaleY, inputRandom);
 
+    if (showInputValues)
+        DrawInputBox(140 * scaleX, 520 * scaleY, 350 * scaleX, 24 * scaleY, input);
+
     if (showSearchInput && searchByValue)
         DrawInputBox(140 * scaleX, 632 * scaleY, 128 * scaleX, 24 * scaleY, searchByValInput);
     
@@ -1723,6 +1853,7 @@ void ds_viz::pages::LinkedListPage::Render()
 
     if (actionBarVisible) 
     {
+        inputButton->Render();
         insertButton->Render();
         deleteButton->Render();
         searchButton->Render();

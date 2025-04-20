@@ -42,6 +42,7 @@ namespace ds_viz::pages
 
         // List of buttons
         std::unique_ptr<raywtk::Button> repositionButton;
+        std::unique_ptr<raywtk::Button> inputButton;
         std::unique_ptr<raywtk::Button> undoButton;
         std::unique_ptr<raywtk::Button> redoButton;
         std::unique_ptr<raywtk::Button> returnButton;
@@ -115,6 +116,11 @@ namespace ds_viz::pages
 
         bool showRandomInput = false;  
         std::string inputRandom;
+
+        bool showInputValues = false; 
+        std::string input; 
+        std::vector<int> values;
+        bool inrange = true;
 
         bool showDeleteAtIndexInput = false;
         std::string inputDeleteIndex;
@@ -191,6 +197,7 @@ namespace ds_viz::pages
 
     void OnRandomButtonClick(int numNodes);
     void InsertRandom(int value);
+    void OnInputButtonClick(std::vector<int> &values);
     void OnLoadFileButtonClick();
     void OnClearButtonClick();
     void ResetColor();
