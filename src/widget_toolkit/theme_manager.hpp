@@ -13,7 +13,7 @@ namespace raywtk
         // This form of IStyle resolution will not work if we want to
         // reuse the style for derived controls, e.g. ToggleButton.
         // Additionally, multi-inheritance and C++'s reflection sucks.
-        std::unordered_map<std::string, std::shared_ptr<IStyle>> styles;
+        std::unordered_map<std::string, std::unique_ptr<IStyle>> styles;
 
         IStyle &GetStyle (const char *controlID)
         {

@@ -26,13 +26,17 @@ ds_viz::pages::TriePage::TriePage(MainWindow& context) : Page(context)
         _scene.ClearTimeline();
         _scene.root = std::make_unique<trie::TrieNode>();
     });
+    _homeButton.Click.append([this] { GoBackHome(); });
     std::stringstream outSs; outSs << stepsPerSecond;
     _stepsPerSecTextBox.text = outSs.str();
+    Update(0);
 }
 
 void ds_viz::pages::TriePage::Render()
 {
     _scene.Render();
+
+    _homeButton.Render();
     _toggleShowActionsButton.Render();
     _prevStepButton.Render();
     _playPauseButton.Render();
@@ -147,6 +151,9 @@ void ds_viz::pages::TriePage::Update(float deltaTime)
     _codeBox.code = _scene.GetCode();
     _codeBox.highlightedLine = _scene.GetCurrentLine();
 
+    _homeButton.buttonRect = raylib::Rectangle(4, 4, 28, 28);
+
+    _homeButton.Update(deltaTime);
     _toggleShowActionsButton.Update(deltaTime);
     _showCodeBoxButton.Update(deltaTime);
     _prevStepButton.Update(deltaTime);
@@ -269,4 +276,14 @@ void ds_viz::pages::TriePage::Update(float deltaTime)
         _currentTime = 0;
 
     _scene.Update(deltaTime);
+
+    if (_deferredStateChange != nullptr) _deferredStateChange();
+}
+
+void ds_viz::pages::TriePage::GoBackHome()
+{
+    _deferredStateChange = [this]() {
+        _context->ChangePage(
+            std::make_shared<ds_viz::pages::MainMenuPage>(*_context));
+    };
 }

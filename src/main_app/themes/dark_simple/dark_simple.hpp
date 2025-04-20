@@ -7,7 +7,6 @@
 #include "widget_toolkit/interfaces.hpp"
 #include "widget_toolkit/theme_manager.hpp"
 #include "./text_button.hpp"
-#include "./button.hpp"
 #include "./text_box.hpp"
 #include "./code_box.hpp"
 
@@ -25,23 +24,23 @@ namespace ds_viz::themes::dark_simple
             _darkSimpleTheme.styles
                 .insert({
                     typeid(ds_viz::MainWindow).name(),
-                    std::shared_ptr<raywtk::IStyle>(new MainWindowStyle())
+                    std::unique_ptr<raywtk::IStyle>(new MainWindowStyle())
                 });
             _darkSimpleTheme.styles
                 .insert({
                     typeid(raywtk::Button).name(),
-                    std::shared_ptr<raywtk::IStyle>(new ButtonStyle())
+                    std::unique_ptr<raywtk::IStyle>(new ButtonStyle())
                 });
           
             _darkSimpleTheme.styles
                 .insert({
                     typeid(raywtk::TextBox).name(),
-                    std::shared_ptr<raywtk::IStyle>(new TextBoxStyle())
+                    std::unique_ptr<raywtk::IStyle>(new TextBoxStyle())
                 });
             _darkSimpleTheme.styles
                 .insert({
                     typeid(raywtk::CodeBox).name(),
-                    std::shared_ptr<raywtk::IStyle>(new CodeBoxStyle())
+                    std::unique_ptr<raywtk::IStyle>(new CodeBoxStyle())
                 });
         }
 

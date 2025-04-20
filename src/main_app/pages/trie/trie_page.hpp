@@ -1,5 +1,8 @@
+#pragma once
+
 #include "../page.hpp"
 #include "main_app/pages/trie/trie_scene.hpp"
+#include "main_app/pages/main_menu.hpp"
 #include "raylib-cpp/Font.hpp"
 #include "raylib-cpp/Functions.hpp"
 #include "raylib-cpp/Rectangle.hpp"
@@ -8,6 +11,7 @@
 #include "widget_toolkit/controls/text_box.hpp"
 #include "widget_toolkit/controls/code_box.hpp"
 #include <fstream>
+#include <functional>
 #include <future>
 #include <string>
 #include <vector>
@@ -236,7 +240,11 @@ class TriePage : public Page
     bool _isPlaying = false;
     float _currentTime = 0;
 
+    std::function<void()> _deferredStateChange;
+
     // Controls
+
+    raywtk::Button _homeButton;
 
     raywtk::Button _toggleShowActionsButton;
     raywtk::Button _initializeButton;
@@ -314,6 +322,8 @@ class TriePage : public Page
             _loadingFile = false;
         });
     }
+
+    void GoBackHome();
 
   public:
     TriePage(MainWindow& context);

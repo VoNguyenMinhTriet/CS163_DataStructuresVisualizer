@@ -9,7 +9,7 @@ const float NODE_RADIUS = 20.0f;
 
 namespace raywtk 
 {
-    class NodeWidget : public IScreenElement
+    class TreeNodeWidget : public IScreenElement
     {
         bool held = false;
 
@@ -23,10 +23,10 @@ namespace raywtk
         std::function<void()> content; // Optional content function
         eventpp::CallbackList<void()> Click; // Optional click handler
         int value; // Store node's value
-        std::unique_ptr<NodeWidget> next = nullptr; // Pointer to next node
+        std::unique_ptr<TreeNodeWidget> next = nullptr; // Pointer to next node
         bool highlighted = false;
 
-        NodeWidget(int val): value(val), content([this]() 
+        TreeNodeWidget(int val): value(val), content([this]() 
         {
             std::string text = std::to_string(value);
             int fontSize = 20;

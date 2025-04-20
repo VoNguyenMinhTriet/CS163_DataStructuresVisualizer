@@ -1,7 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+#include <string>
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "../interfaces.hpp"
+#include "widget_toolkit/tree_widgets/node.hpp"
 
 namespace raywtk 
 {
@@ -19,14 +23,14 @@ namespace raywtk
     struct Step {
         StepType type;
         int u, v, idPseudoCodeLine;
-        string pseudoCodeProcessText;
-        std::unique_ptr<raywtk::NodeWidget> node;
+        std::string pseudoCodeProcessText;
+        std::unique_ptr<raywtk::TreeNodeWidget> node;
         std::vector<std::string> pseudoCodeLines;
         std::vector<std::string> lastPseudoCodeLines;
 
-        Step() : type(StepType::None), u(-1), v(-1), idPseudoCodeLine(-1), pseudoCodeProcessText(""), pseudoCodeLines(vector<string>()), lastPseudoCodeLines(vector<string>()),  node(nullptr) {};
-        Step(StepType type, int u, int v, int idPseudoCodeLine, string pseudoCodeProcessText) : type(type), u(u), v(v), idPseudoCodeLine(idPseudoCodeLine), pseudoCodeProcessText(pseudoCodeProcessText), pseudoCodeLines(vector<string>()), lastPseudoCodeLines(vector<string>()), node(nullptr) {};
-        Step(StepType type, int u, int v, int idPseudoCodeLine, string pseudoCodeProcessText, std::unique_ptr<raywtk::NodeWidget> node) : type(type), u(u), v(v), idPseudoCodeLine(idPseudoCodeLine), pseudoCodeProcessText(pseudoCodeProcessText), pseudoCodeLines(vector<string>()), lastPseudoCodeLines(vector<string>()), node(std::move(node)) {};
-        Step(StepType type, int u, int v, int idPseudoCodeLine, string pseudoCodeProcessText, std::vector<std::string> pseudoCodeLines, std::vector<std::string> lastPseudoCodeLines, std::unique_ptr<raywtk::NodeWidget> node) : type(type), u(u), v(v), idPseudoCodeLine(idPseudoCodeLine), pseudoCodeProcessText(pseudoCodeProcessText), pseudoCodeLines(pseudoCodeLines), lastPseudoCodeLines(lastPseudoCodeLines), node(std::move(node)) {};
+        Step() : type(StepType::None), u(-1), v(-1), idPseudoCodeLine(-1), pseudoCodeProcessText(""), pseudoCodeLines(std::vector<std::string>()), lastPseudoCodeLines(std::vector<std::string>()),  node(nullptr) {};
+        Step(StepType type, int u, int v, int idPseudoCodeLine, std::string pseudoCodeProcessText) : type(type), u(u), v(v), idPseudoCodeLine(idPseudoCodeLine), pseudoCodeProcessText(pseudoCodeProcessText), pseudoCodeLines(std::vector<std::string>()), lastPseudoCodeLines(std::vector<std::string>()), node(nullptr) {};
+        Step(StepType type, int u, int v, int idPseudoCodeLine, std::string pseudoCodeProcessText, std::unique_ptr<raywtk::TreeNodeWidget> node) : type(type), u(u), v(v), idPseudoCodeLine(idPseudoCodeLine), pseudoCodeProcessText(pseudoCodeProcessText), pseudoCodeLines(std::vector<std::string>()), lastPseudoCodeLines(std::vector<std::string>()), node(std::move(node)) {};
+        Step(StepType type, int u, int v, int idPseudoCodeLine, std::string pseudoCodeProcessText, std::vector<std::string> pseudoCodeLines, std::vector<std::string> lastPseudoCodeLines, std::unique_ptr<raywtk::TreeNodeWidget> node) : type(type), u(u), v(v), idPseudoCodeLine(idPseudoCodeLine), pseudoCodeProcessText(pseudoCodeProcessText), pseudoCodeLines(pseudoCodeLines), lastPseudoCodeLines(lastPseudoCodeLines), node(std::move(node)) {};
     };
 }

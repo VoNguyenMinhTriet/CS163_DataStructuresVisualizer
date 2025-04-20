@@ -10,7 +10,7 @@
 
 using namespace ds_viz::pages;
 
-HeapVisualizer::HeapVisualizer() 
+HeapVisualizer::HeapVisualizer(MainWindow &context) : Page(context)
 {
     // font and title initialize
     font = std::make_unique<raylib::Font>("./ttf/InterDisplay-Black.ttf", 128, nullptr, 250);
@@ -152,7 +152,7 @@ HeapVisualizer::HeapVisualizer()
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, -1, ""));
 
     // Pseudo code display initialize
-    pseudoCodeDisplay = std::make_unique<raywtk::PseudoCodeDisplay>(raylib::Vector2(PSEUDO_CODE_FRAME_COORDX + 5, PSEUDO_CODE_FRAME_COORDY + 5), 8, PSEUDO_CODE_LINE_WIDTH, PSEUDO_CODE_LINE_HEIGHT, raylib::Color::White(), raylib::Color::Yellow(), raylib::Color::Green());
+    pseudoCodeDisplay = std::make_unique<raywtk::HeapPseudoCodeDisplay>(raylib::Vector2(PSEUDO_CODE_FRAME_COORDX + 5, PSEUDO_CODE_FRAME_COORDY + 5), 8, PSEUDO_CODE_LINE_WIDTH, PSEUDO_CODE_LINE_HEIGHT, raylib::Color::White(), raylib::Color::Yellow(), raylib::Color::Green());
     pseudoCodeDisplay->visible = false;
 
     // Pseudo code process text initialize
@@ -447,7 +447,7 @@ void HeapVisualizer::BuildHeap(const vector<int> &val)
     animation_steps.push_back(raywtk::Step(raywtk::StepType::None, -1, -1, 0, "Clear heap."));
 
     for (int i = 0; i < min(31, sz(val)); ++i) {
-        std::unique_ptr<raywtk::NodeWidget> newNode = std::make_unique<raywtk::NodeWidget>(val[i]);
+        std::unique_ptr<raywtk::TreeNodeWidget> newNode = std::make_unique<raywtk::TreeNodeWidget>(val[i]);
         newNode->position = GetPositionInDisplay(sz(values), 0);
         values.push_back(val[i]);
 
@@ -483,7 +483,7 @@ void HeapVisualizer::PushNewValue(int value)
     animationText.SetText("Pushing value " + to_string(value) + " into heap.");
     animation_steps.push_back(raywtk::Step(raywtk::StepType::SetNewPseudoCodeLines, -1, -1, -1, "Calling to function PushNewValue(value).", PUSH_NEW_VALUE_PSEUDO_CODE, vector<string>(), nullptr));
     
-    std::unique_ptr<raywtk::NodeWidget> newNode = std::make_unique<raywtk::NodeWidget>(value);
+    std::unique_ptr<raywtk::TreeNodeWidget> newNode = std::make_unique<raywtk::TreeNodeWidget>(value);
     newNode->position = GetPositionInDisplay(sz(values), 0);
     values.push_back(value);
 
@@ -806,4 +806,14 @@ void HeapVisualizer::Render()
     {
         node->Render();
     }
+}
+
+void ds_viz::pages::HeapVisualizer::BuildHeap(const vector<float>& val)
+{
+    std::vector<int> intVal(val.size());
+    for (size_t i = 0; i < val.size(); ++i)
+    {
+        intVal[i] = static_cast<int>(val[i]);
+    }
+    BuildHeap(intVal);
 }

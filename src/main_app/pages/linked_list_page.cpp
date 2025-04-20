@@ -7,7 +7,7 @@
 #include <cstdlib> // For rand()
 #include <ctime>
 
-ds_viz::pages::LinkedListPage::LinkedListPage() 
+ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : Page(context)
 {
     font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
     title = raylib::Text("Singly-Linked List", 128, raylib::Color::White(), *font, 0);
@@ -516,7 +516,7 @@ void ds_viz::pages::LinkedListPage::OnReturnButtonClick()
     animationStates.clear();
     currentAnimationState = -1;
     if (_context)
-        _context->ChangePage(std::make_shared<ds_viz::pages::MainMenuPage>());
+        _context->ChangePage(std::make_shared<ds_viz::pages::MainMenuPage>(*_context));
     else
         std::cerr<<"Error"<<std::endl;
 }
