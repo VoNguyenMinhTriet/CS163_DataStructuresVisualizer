@@ -1,4 +1,4 @@
-/*#include "./trie_scene.hpp"
+#include "./trie_scene.hpp"
 
 #include "./trie_timeline.hpp"
 #include "raylib-cpp/Color.hpp"
@@ -234,4 +234,15 @@ int ds_viz::pages::trie::TrieScene::GetCurrentLine()
         return 0;
     return animationTimeline->GetCurrentLine();
 }
-*/
+
+ds_viz::pages::trie::TrieScene::~TrieScene() = default;
+
+ds_viz::pages::trie::TrieScene::TrieScene() :
+    cam(raylib::Vector2 {640, 360}, raylib::Vector2 {0, 0}, 0, 2),
+    animationTimeline(nullptr)
+{}
+
+void ds_viz::pages::trie::TrieScene::ClearTimeline()
+{
+    animationTimeline = nullptr;
+}

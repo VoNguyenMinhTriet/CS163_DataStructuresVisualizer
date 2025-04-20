@@ -1,6 +1,5 @@
-/*#pragma once
+#pragma once
 
-#include "./trie_scene.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
 
 #include <functional>
@@ -12,6 +11,8 @@
 #include <sstream>
 #include <string>
 #include <utility>
+#include <concepts>
+#include "./trie_scene.hpp"
 
 namespace ds_viz::pages::trie
 {
@@ -79,8 +80,8 @@ class SearchTimeline : public ITimeline
         }
     };
 
-    template <>
-    class SetVariableStep<std::optional<bool>> : public IAction
+    template <std::same_as<std::optional<bool>> T>
+    class SetVariableStep<T> : public IAction
     {
         std::optional<bool>& _variable;
         std::optional<bool> _previousValue;
@@ -127,8 +128,8 @@ class SearchTimeline : public ITimeline
         }
     };
 
-    template <>
-    class SetVariableStep<TrieNode*> : public IAction
+    template <std::same_as<TrieNode *> T>
+    class SetVariableStep<T> : public IAction
     {
         TrieNode*& _variable;
         TrieNode* _previousValue;
@@ -628,4 +629,3 @@ class RemoveTimeline : public ITimeline
 };
 
 } // namespace ds_viz::pages::trie
-*/

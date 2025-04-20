@@ -14,7 +14,7 @@ linux-dbg_build:
     mkdir -p {{bin-linux-dir}}
     clang++ {{prepend(src-dir, prepend('/', src-files))}} \
             -o {{bin-linux-output}} \
-            -g -fsanitize=address \
+            -g -fsanitize=address --std=c++23 \
             {{prepend('$(pkg-config --libs --cflags ', append(')', libs))}} \
             {{prepend('-I', include-dirs)}}
 
@@ -25,7 +25,7 @@ win-msys2-dbg_build:
     mkdir -p {{bin-win-dir}}
     g++ {{prepend(src-dir, prepend('/', src-files))}} \
             -o {{bin-win-output}} \
-            -g -static-libgcc -static-libstdc++ -mwindows \
+            -g -static-libgcc -static-libstdc++ -mwindows --std=c++23 \
             {{prepend('$(pkg-config --libs --cflags --static ', append(')', libs))}} \
             {{prepend('-I', include-dirs)}}
 
