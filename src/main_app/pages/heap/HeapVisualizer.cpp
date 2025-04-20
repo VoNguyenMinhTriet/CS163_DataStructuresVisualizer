@@ -15,9 +15,13 @@ using namespace ds_viz::pages;
 
 HeapVisualizer::HeapVisualizer(ds_viz::MainWindow &context) : ds_viz::Page(context)
 {
+    // window width and height initalize
+    //windowWidth = _context->ref_raylib_window->GetWidth();
+    //windowHeight = _context->ref_raylib_window->GetHeight();
+
     // font and title initialize
     font = std::make_unique<raylib::Font>("./ttf/InterDisplay-Black.ttf", 128, nullptr, 250);
-    title = raylib::Text("Heap Visualizer", 40, raylib::Color::White(), *font, 0);
+    title = raylib::Text("Heap Visualizer", 100, raylib::Color(255, 255, 255, 128), *font, 0);
     
     // notification title
     //notificationTitle = raylib::Text("Notification: ", 40, raylib::Color::Yellow(), *font, 0);
@@ -601,6 +605,10 @@ void HeapVisualizer::DrawSpeedBar()
 
 void HeapVisualizer::Update(float dt) 
 {
+    // window width and height update
+    //windowWidth = _context->ref_raylib_window->GetWidth();
+    //windowHeight = _context->ref_raylib_window->GetHeight();
+
     // Notification Frame update
     //notificationFrame->Update(dt);
 
@@ -772,7 +780,8 @@ void HeapVisualizer::Render()
     }
     
     // title draw
-    title.Draw(100, 25);
+    int titleTextLen = MeasureTextEx(title.GetFont(), title.GetText().c_str(), title.GetFontSize(), 0).x;
+    title.Draw((1280 - titleTextLen) / 2.0, 25);
     
     // Notification Frame render
     //notificationFrame->Render();
@@ -811,7 +820,7 @@ void HeapVisualizer::Render()
     // if(notification != nullptr) { notification->Render(); }
 
     // Animation text render
-    animationText.Draw(5, 690);
+    animationText.Draw(5, windowHeight - 30);
 
     // Show pseudo code button render
     showPseudoCodeDisplayButton->Render();
@@ -821,7 +830,7 @@ void HeapVisualizer::Render()
 
     // Pseudo code process text render
     int pseudoCodeProcessTextLen = MeasureTextEx(pseudoCodeProcessText.GetFont(), pseudoCodeProcessText.GetText().c_str(), pseudoCodeProcessText.GetFontSize(), 0).x;
-    pseudoCodeProcessText.Draw(DEFAULT_WIN_WIDTH - pseudoCodeProcessTextLen - 5, 690);
+    pseudoCodeProcessText.Draw(windowWidth - 5 - pseudoCodeProcessTextLen, windowHeight - 30);
 
     // Pause/resume button render
     pauseResumeButton->Render();

@@ -61,7 +61,7 @@ namespace raywtk
                 raylib::Color defaultColor, raylib::Color highlightColor, raylib::Color executedColor)
                 : position(position), numLines(numLines), lineWidth(lineWidth), lineHeight(lineHeight),
                 defaultColor(defaultColor), highlightColor(highlightColor), executedColor(executedColor),
-                font("./ttf/Inter-Medium.ttf", 128, nullptr, 250) // Load font during initialization
+                font("./ttf/Inter-Regular.ttf", 18) // Load font during initialization
             {
                 pseudoCodeLines.resize(numLines, "");
                 lineStates.resize(numLines, LineState::DEFAULT);
@@ -114,12 +114,13 @@ namespace raywtk
                 {
                     return;
                 }
-
+                
+                int fontSize = 18;
                 for (int i = 0; i < numLines; ++i) 
                 {
                     raylib::Color lineColor = GetColorForState(lineStates[i]);
                     raylib::Rectangle lineRect(position.x, position.y + i * lineHeight, lineWidth, lineHeight);
-                    raylib::DrawTextEx(font, pseudoCodeLines[i].c_str(), raylib::Vector2(position.x + 5, position.y + i * lineHeight + 2), 18, 0, lineColor);
+                    raylib::DrawTextEx(font, pseudoCodeLines[i].c_str(), raylib::Vector2(position.x + 5, position.y + i * lineHeight + 2), fontSize, 0, lineColor);
                 }
             }
             
