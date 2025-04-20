@@ -16,47 +16,20 @@ namespace ds_viz::pages
     {
         std::unique_ptr<raylib::Font> font;
         raylib::Text title;
-        std::vector<std::unique_ptr<raywtk::Button>> buttons;
+
+        raywtk::Button _trieButton;
+        raywtk::Button _graphButton;
+        raywtk::Button _heapButton;
+        raywtk::Button _linkedListButton;
+
+        std::function<void()> _deferredStateChange;
 
     public:
-        MainMenuPage(MainWindow &context) : Page(context)
-        {
-            font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
-            title = raylib::Text("DATA LA VISTA", 128, raylib::Color::White(), *font, 0);
-            CreateButton("Linked-list Visualization", 200, 200, [this]() 
-            { 
-                _context->ChangePage(std::make_shared<ds_viz::pages::LinkedListPage>(*_context));
-            });
+        MainMenuPage(MainWindow &context);
 
-            CreateButton("Heap Visualization", 700, 200, [this]() 
-            { 
-                _context->ChangePage(std::make_shared<ds_viz::pages::HeapVisualizer>(*_context));
-            });
+        void Update(float dt) override;
 
-            CreateButton("Graph Visualization", 200, 400, [this]() 
-            { 
-                _context->ChangePage(std::make_shared<ds_viz::pages::GraphVisualizer>(*_context));
-            });
-        }
+        void Render() override;
 
-        void CreateButton(const std::string& text, float x, float y, std::function<void()> callback)
-        {
-            auto button = std::make_unique<raywtk::Button>();
-            button->buttonRect = raylib::Rectangle(x, y, 400, 100);
-            button->buttonText = text;
-            button->Click.append(callback);
-            button->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
-            buttons.push_back(std::move(button));
-        }
-
-        void Update (float dt) override 
-        {
-            for (auto& button: buttons) 
-            {
-                button->Update(dt);
-            }
-        }
-
-        void Render () override;
     };
 }

@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <stack>
+#include "main_app/main_window.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "widget_toolkit/controls/button.hpp"
 #include "widget_toolkit/graph_widgets/listnode.hpp"

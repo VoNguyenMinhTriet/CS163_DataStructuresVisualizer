@@ -1,7 +1,11 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+#include <string>
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "../interfaces.hpp"
+#include "widget_toolkit/tree_widgets/node.hpp"
 
 namespace raywtk 
 {

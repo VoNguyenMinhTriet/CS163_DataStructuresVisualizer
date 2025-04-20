@@ -807,3 +807,13 @@ void HeapVisualizer::Render()
         node->Render();
     }
 }
+
+void ds_viz::pages::HeapVisualizer::BuildHeap(const vector<float>& val)
+{
+    std::vector<int> intVal(val.size());
+    for (size_t i = 0; i < val.size(); ++i)
+    {
+        intVal[i] = static_cast<int>(val[i]);
+    }
+    BuildHeap(intVal);
+}

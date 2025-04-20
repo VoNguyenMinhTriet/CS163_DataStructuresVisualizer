@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include "main_app/main_window.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "widget_toolkit/controls/heap_button.hpp"
 #include "widget_toolkit/notification/Notification.hpp"
@@ -98,6 +99,85 @@ namespace ds_viz::pages
 {
     class HeapVisualizer : public Page
     {
+        static constexpr float PSEUDO_CODE_FRAME_HEIGHT = 130;
+        static constexpr float PSEUDO_CODE_FRAME_WIDTH = 300;
+        static constexpr float PSEUDO_CODE_FRAME_COORDX = DEFAULT_WIN_WIDTH - PSEUDO_CODE_FRAME_WIDTH - 10;
+        static constexpr float PSEUDO_CODE_FRAME_COORDY = 680 - PSEUDO_CODE_FRAME_HEIGHT;
+
+        static constexpr float OPERATOR_BUTTON_WIDTH = 150;
+        static constexpr float OPERATOR_BUTTON_HEIGHT = 25;
+
+        static constexpr float BUILD_HEAP_BUTTON_COORDX = 10;
+        static constexpr float BUILD_HEAP_BUTTON_COORDY = 565;
+
+        static constexpr float BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
+        static constexpr float BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDY = BUILD_HEAP_BUTTON_COORDY;
+        static constexpr float BUILD_HEAP_INPUT_VALUES_BUTTON_COORDX = BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX;
+        static constexpr float BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY = BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
+        static constexpr float BUILD_HEAP_LOAD_FROM_FILE_BUTTON_COORDX = BUILD_HEAP_INITIALIZE_RANDOM_BUTTON_COORDX;
+        static constexpr float BUILD_HEAP_LOAD_FROM_FILE_BUTTON_COORDY = BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
+
+        static constexpr float PUSH_VALUE_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX;
+        static constexpr float PUSH_VALUE_BUTTON_COORDY = BUILD_HEAP_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
+
+        static constexpr float POP_VALUE_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX;
+        static constexpr float POP_VALUE_BUTTON_COORDY = PUSH_VALUE_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
+
+        static constexpr float CLEAR_HEAP_BUTTON_COORDX = BUILD_HEAP_BUTTON_COORDX;
+        static constexpr float CLEAR_HEAP_BUTTON_COORDY = POP_VALUE_BUTTON_COORDY + OPERATOR_BUTTON_HEIGHT + 5;
+
+        static constexpr float SHOW_OPERATOR_BUTTON_COORDX = -7;
+        static constexpr float SHOW_OPERATOR_BUTTON_COORDY = BUILD_HEAP_BUTTON_COORDY;
+        static constexpr float SHOW_OPERATOR_BUTTON_WIDTH = 14;
+        static constexpr float SHOW_OPERATOR_BUTTON_HEIGHT = 30 * 3 + OPERATOR_BUTTON_HEIGHT;
+
+        static constexpr float SHOW_PSEUDO_CODE_DISPLAY_BUTTON_COORDX = 1273;
+        static constexpr float SHOW_PSEUDO_CODE_DISPLAY_BUTTON_COORDY = PSEUDO_CODE_FRAME_COORDY;
+        static constexpr float SHOW_PSEUDO_CODE_DISPLAY_BUTTON_WIDTH = 14;
+        static constexpr float SHOW_PSEUDO_CODE_DISPLAY_BUTTON_HEIGHT = PSEUDO_CODE_FRAME_HEIGHT;
+
+        static constexpr float INPUT_BOX_BUILD_HEAP_COORDX = BUILD_HEAP_INPUT_VALUES_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
+        static constexpr float INPUT_BOX_BUILD_HEAP_COORDY = BUILD_HEAP_INPUT_VALUES_BUTTON_COORDY;
+        static constexpr float INPUT_BOX_BUILD_HEAP_WIDTH = 250;
+        static constexpr float INPUT_BOX_BUILD_HEAP_HEIGHT = OPERATOR_BUTTON_HEIGHT;
+
+        static constexpr float INPUT_BOX_PUSH_VALUE_COORDX = PUSH_VALUE_BUTTON_COORDX + OPERATOR_BUTTON_WIDTH + 5;
+        static constexpr float INPUT_BOX_PUSH_VALUE_COORDY = PUSH_VALUE_BUTTON_COORDY;
+        static constexpr float INPUT_BOX_PUSH_VALUE_WIDTH = 75;
+        static constexpr float INPUT_BOX_PUSH_VALUE_HEIGHT = OPERATOR_BUTTON_HEIGHT;
+
+        static constexpr float NOTIFICATION_COORDX = NOTIFICATION_FRAME_COORDX + 20;
+        static constexpr float NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 80;
+
+        static constexpr float PSEUDO_CODE_LINE_WIDTH = 240;
+        static constexpr float PSEUDO_CODE_LINE_HEIGHT = 16;
+
+        static constexpr float PAUSE_RESUME_BUTTON_COORDX = (1280 - 120) / 2;
+        static constexpr float PAUSE_RESUME_BUTTON_COORDY = 660;
+        static constexpr float PAUSE_RESUME_BUTTON_WIDTH = 120;
+        static constexpr float PAUSE_RESUME_BUTTON_HEIGHT = 25;
+
+        static constexpr float STEP_BACK_BUTTON_COORDX = PAUSE_RESUME_BUTTON_COORDX - PAUSE_RESUME_BUTTON_WIDTH - 5;
+        static constexpr float STEP_BACK_BUTTON_COORDY = PAUSE_RESUME_BUTTON_COORDY;
+        static constexpr float STEP_BACK_BUTTON_WIDTH = PAUSE_RESUME_BUTTON_WIDTH;
+        static constexpr float STEP_BACK_BUTTON_HEIGHT = PAUSE_RESUME_BUTTON_HEIGHT;
+
+        static constexpr float STEP_FORWARD_BUTTON_COORDX = PAUSE_RESUME_BUTTON_COORDX + PAUSE_RESUME_BUTTON_WIDTH + 5;
+        static constexpr float STEP_FORWARD_BUTTON_COORDY = PAUSE_RESUME_BUTTON_COORDY;
+        static constexpr float STEP_FORWARD_BUTTON_WIDTH = PAUSE_RESUME_BUTTON_WIDTH;
+        static constexpr float STEP_FORWARD_BUTTON_HEIGHT = PAUSE_RESUME_BUTTON_HEIGHT;
+
+        static constexpr float ANIMATION_TIMELINE_BAR_COORDX = 0;
+        static constexpr float ANIMATION_TIMELINE_BAR_COORDY = 715;
+        static constexpr float ANIMATION_TIMELINE_BAR_WIDTH = 1280;
+        static constexpr float ANIMATION_TIMELINE_BAR_HEIGHT = 10;
+
+
+        /*static constexpr float NOTIFICATION_FRAME_HEIGHT = 200;
+        static constexpr float NOTIFICATION_FRAME_WIDTH = 700;
+        static constexpr float NOTIFICATION_FRAME_COORDX = 1180;
+        static constexpr float NOTIFICATION_FRAME_COORDY = 0;*/
+
         // font and title
         std::unique_ptr<raylib::Font> font;
         raylib::Text title;
@@ -201,6 +281,7 @@ namespace ds_viz::pages
             raylib::Vector2 GetPositionInDisplay(int index, int depth); // get position for node with index 'index' on working frame
             std::vector<int> GetValuesFromFiles(const std::string &filename); // get values from file
             void BuildHeap(const vector<int> &val); // build new heap
+            void BuildHeap(const vector<float>& val);
             void PushNewValue(int value); // push 'value' into heap
             void PopMaxValue(); // pop the max value out of heap (root of heap)
             void ClearHeap(); // clear heap

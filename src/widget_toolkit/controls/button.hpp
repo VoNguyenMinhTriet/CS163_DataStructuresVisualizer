@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "eventpp/callbacklist.h"
+#include "raylib-cpp/raylib-cpp.hpp"
 #include "../interfaces.hpp"
 #include "../theme_manager.hpp"
 
