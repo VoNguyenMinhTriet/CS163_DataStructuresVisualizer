@@ -5,6 +5,7 @@
 #include "pages/page.hpp"
 #include "../widget_toolkit/interfaces.hpp"
 #include "../widget_toolkit/theme_manager.hpp"
+#include <functional>
 
 #define DEFAULT_FPS 60
 #define DEFAULT_WIN_WIDTH 1280
@@ -29,7 +30,8 @@ namespace ds_viz
         std::unique_ptr<raylib::Window> ref_raylib_window;
 
         std::unique_ptr<raywtk::IStyle> style;
-        std::shared_ptr<Page> content;
+        std::shared_ptr<Page> content, content_To;
+        std::function<void()> _deferredStateChange = nullptr;
 
         void Render () override;
         void ChangePage (std::shared_ptr<Page> to);
