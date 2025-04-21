@@ -11,26 +11,42 @@
 ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_viz::Page(context) 
 {
     font = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128, 0, 250));
-    title = raylib::Text("Singly-Linked List", 128, raylib::Color::White(), *font, 0);
+    title = raylib::Text("Linked List", 60, raylib::Color(255, 255, 255, 128), *font, 0);
     
     nodeFont = std::make_shared<raylib::Font>("./ttf/InterDisplay-ExtraBold.ttf", 128);
-    textFont = std::make_shared<raylib::Font>("./ttf/Inter-Regular.ttf", 128);
-    codeFont = std::make_shared<raylib::Font>("./ttf/Cascadia.ttf", 128);
-    
-    scaleX = static_cast<float>(GetScreenWidth()) / baseWidth;
-    scaleY = static_cast<float>(GetScreenHeight()) / baseHeight;    
+    textFont = std::make_shared<raylib::Font>("./ttf/Inter-Regular.ttf", 18);
+    codeFont = std::make_shared<raylib::Font>("./ttf/Cascadia.ttf", 18);  
 
     // repositioning nodes button
     repositionButton = std::make_unique<raywtk::Button>();
     repositionButton->buttonText = "Reposition";
-    repositionButton->buttonRect = raylib::Rectangle(12 * scaleX, 660 * scaleY, 128 * scaleX, 24 * scaleY);
+    repositionButton->buttonRect = raylib::Rectangle(12, 660, 128, 24);
     repositionButton->Click.append([this]() { RepositionNodes(); });
     repositionButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
+
+    // input from keyboard button
+    inputButton = std::make_unique<raywtk::Button>();
+    inputButton->buttonText = "Input values";
+    inputButton->buttonRect = raylib::Rectangle(12, 520, 128, 24);
+    inputButton->Click.append([this]() { 
+        showInputValues = true;
+        showInsertAtHead = false;
+        showInsertAtTail = false;
+        showInsertAtIndexInput = false;
+        showDeleteAtIndexInput = false;
+        showSearchInput = false;
+        showRandomInput = false;
+        insertDropdownOpen = false;
+        deleteDropdownOpen = false;
+        searchDropdownOpen = false;
+        createDropdownOpen = false;
+    });
+    inputButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
     // action bar toggle
     actionBarButton = std::make_unique<raywtk::Button>();
     actionBarButton->buttonText = ">";
-    actionBarButton->buttonRect = raylib::Rectangle(0 * scaleX, 548 * scaleY, 8 * scaleX, 136 * scaleY); 
+    actionBarButton->buttonRect = raylib::Rectangle(0, 524, 8, 160); 
     actionBarButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
     actionBarButton->Click.append([this]() { 
         actionBarVisible = !actionBarVisible; // Toggle visibility
@@ -45,12 +61,13 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         showDeleteAtIndexInput = false;
         showSearchInput  = false;
         showRandomInput = false;
+        showInputValues = false;
     });
 
     // Pseudo-code toggle button
     pseudoToggleButton = std::make_unique<raywtk::Button>();
     pseudoToggleButton->buttonText = "<";
-    pseudoToggleButton->buttonRect = raylib::Rectangle(1265 * scaleX, 393 * scaleY, 8 * scaleX, 280 * scaleY);
+    pseudoToggleButton->buttonRect = raylib::Rectangle(1265, 393, 8, 280);
     pseudoToggleButton->Click.append([this]() {
         showPseudoCode = !showPseudoCode; // Toggle pseudo-code visibility
         pseudoToggleButton->buttonText = showPseudoCode ? "<" : ">";
@@ -60,7 +77,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
     // Insert buttons (Main button)
     insertButton = std::make_unique<raywtk::Button>();
     insertButton->buttonText = "Insert";
-    insertButton->buttonRect = raylib::Rectangle(12 * scaleX, 548 * scaleY, 128 * scaleX, 24 * scaleY);
+    insertButton->buttonRect = raylib::Rectangle(12, 548, 128, 24);
     insertButton->Click.append([this]() { 
         insertDropdownOpen = !insertDropdownOpen;
         deleteDropdownOpen = false; 
@@ -72,6 +89,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         showDeleteAtIndexInput = false;
         showSearchInput  = false;
         showRandomInput = false;
+        showInputValues = false;
     });
     insertButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
@@ -80,7 +98,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
     {
         auto btn = std::make_unique<raywtk::Button>();
         btn->buttonText = insertOptions[i];
-        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128) * scaleX, 548 * scaleY, 128 * scaleX, 24 * scaleY);
+        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128), 548, 128, 24);
         btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
         if (insertOptions[i] == "At Head")
@@ -89,6 +107,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
                 showInsertAtHead = true;
                 showInsertAtTail = false;
                 showInsertAtIndexInput = false;
+                showInputValues = false;
             });
         }
 
@@ -98,6 +117,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
                 showInsertAtHead = false;
                 showInsertAtTail = true;
                 showInsertAtIndexInput = false;
+                showInputValues = false;
             });
         }
 
@@ -107,6 +127,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
                 showInsertAtHead = false;
                 showInsertAtTail = false;
                 showInsertAtIndexInput = true;
+                showInputValues = false;
             });
         }
 
@@ -116,7 +137,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
     // delete buttons (Main button)
     deleteButton = std::make_unique<raywtk::Button>();
     deleteButton->buttonText = "Delete";
-    deleteButton->buttonRect = raylib::Rectangle(12 * scaleX, 576 * scaleY, 128 * scaleX, 24 * scaleY);
+    deleteButton->buttonRect = raylib::Rectangle(12, 576, 128, 24);
     deleteButton->Click.append([this]() { 
         insertDropdownOpen = false;
         deleteDropdownOpen = !deleteDropdownOpen; 
@@ -128,6 +149,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         showDeleteAtIndexInput = false;
         showSearchInput  = false;
         showRandomInput = false;
+        showInputValues = false;
     });
     deleteButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
@@ -136,13 +158,14 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
     {
         auto btn = std::make_unique<raywtk::Button>();
         btn->buttonText = deleteOptions[i];
-        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128) * scaleX, 576 * scaleY , 128 * scaleX, 24 * scaleY);
+        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128), 576 , 128, 24);
         btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
         if (deleteOptions[i] == "At Head")
         {
             btn->Click.append([this]() {
                 showDeleteAtIndexInput = false;
+                showInputValues = false;
                 DeleteAtHead();
             });
         }
@@ -151,6 +174,7 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         {
             btn->Click.append([this]() {
                 showDeleteAtIndexInput = false;
+                showInputValues = false;
                 DeleteAtTail();
             });
         }
@@ -159,61 +183,17 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         {
             btn->Click.append([this]() {
                 showDeleteAtIndexInput = true;
+                showInputValues = false;
             });
         }
 
         deleteDropdownButtons.push_back(std::move(btn));
     }
 
-    // search buttons (Main button)
-    searchButton = std::make_unique<raywtk::Button>();
-    searchButton->buttonText = "Search";
-    searchButton->buttonRect = raylib::Rectangle(12 * scaleX, 604 * scaleY , 128 * scaleX, 24 * scaleY);
-    searchButton->Click.append([this]() { 
-        insertDropdownOpen = false;
-        deleteDropdownOpen = false; 
-        searchDropdownOpen = !searchDropdownOpen;
-        createDropdownOpen = false;
-        showInsertAtHead = false;
-        showInsertAtTail = false;
-        showInsertAtIndexInput = false;
-        showDeleteAtIndexInput = false;
-        showSearchInput  = false;
-        showRandomInput = false;
-    });
-    searchButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
-
-    // Dropdown buttons
-    for (size_t i = 0; i < searchOptions.size(); i++)
-    {
-        auto btn = std::make_unique<raywtk::Button>();
-        btn->buttonText = searchOptions[i];
-        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128) * scaleX, 604 * scaleY, 128 * scaleX, 24 * scaleY);
-        btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
-
-        if (searchOptions[i] == "By Value")
-        {
-            btn->Click.append([this]() {
-                showSearchInput = true;
-                searchByValue = true;
-            });
-        }
-
-        else if (searchOptions[i] == "By Index")
-        {
-            btn->Click.append([this]() {
-                showSearchInput = true;
-                searchByValue = false;
-            });
-        }
-
-        searchDropdownButtons.push_back(std::move(btn));
-    }
-
     // Create buttons (Main button)
     createButton = std::make_unique<raywtk::Button>();
     createButton->buttonText = "Create";
-    createButton->buttonRect = raylib::Rectangle(12 * scaleX, 632 * scaleY, 128 * scaleX, 24 * scaleY);
+    createButton->buttonRect = raylib::Rectangle(12, 604, 128, 24);
     createButton->Click.append([this]() { 
         insertDropdownOpen = false;
         deleteDropdownOpen = false; 
@@ -225,21 +205,72 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         showDeleteAtIndexInput = false;
         showSearchInput  = false;
         showRandomInput = false;
+        showInputValues = false;
     });
     createButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
+
+    // search buttons (Main button)
+    searchButton = std::make_unique<raywtk::Button>();
+    searchButton->buttonText = "Search";
+    searchButton->buttonRect = raylib::Rectangle(12, 632 , 128, 24);
+    searchButton->Click.append([this]() { 
+        insertDropdownOpen = false;
+        deleteDropdownOpen = false; 
+        searchDropdownOpen = !searchDropdownOpen;
+        createDropdownOpen = false;
+        showInsertAtHead = false;
+        showInsertAtTail = false;
+        showInsertAtIndexInput = false;
+        showDeleteAtIndexInput = false;
+        showSearchInput  = false;
+        showRandomInput = false;
+        showInputValues = false;
+    });
+    searchButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
+
+    // Dropdown buttons
+    for (size_t i = 0; i < searchOptions.size(); i++)
+    {
+        auto btn = std::make_unique<raywtk::Button>();
+        btn->buttonText = searchOptions[i];
+        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128), 632, 128, 24);
+        btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
+
+        if (searchOptions[i] == "By Value")
+        {
+            btn->Click.append([this]() {
+                showSearchInput = true;
+                searchByValue = true;
+                showInputValues = false;
+            });
+        }
+
+        else if (searchOptions[i] == "By Index")
+        {
+            btn->Click.append([this]() {
+                showSearchInput = true;
+                searchByValue = false;
+                showInputValues = false;
+            });
+        }
+
+        searchDropdownButtons.push_back(std::move(btn));
+    }
 
     // Dropdown buttons
     for (size_t i = 0; i < createOptions.size(); i++)
     {
         auto btn = std::make_unique<raywtk::Button>();
         btn->buttonText = createOptions[i];
-        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128) * scaleX, 632 * scaleY, 128 * scaleX, 24 * scaleY);
+        btn->buttonRect = raylib::Rectangle((12 + (i + 1) * 128), 604, 128, 24);
         btn->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
         if (createOptions[i] == "Random")
         {
             btn->Click.append([this]() {
                 showRandomInput = true;
+                showInputValues = false;
+                showInputValues = false;
             });
         }
 
@@ -247,6 +278,8 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         {
             btn->Click.append([this]() {
                 showRandomInput = false;
+                showInputValues = false;
+                showInputValues = false;
                 OnClearButtonClick();
             });
         }
@@ -255,6 +288,8 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
         {
             btn->Click.append([this]() {
                 showRandomInput = false;
+                showInputValues = false;
+                showInputValues = false;
                 OnLoadFileButtonClick();
             });
         }
@@ -263,37 +298,36 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
     }
 
     // Step-forward button
-    stepforwardTex = raylib::Texture(raylib::Image("./images/step-forward.png"));
     stepForwardButton = std::make_unique<raywtk::Button>();
-    stepForwardButton->buttonRect = raylib::Rectangle(630 * scaleX, 670 * scaleY, 40 * scaleX, 40 * scaleY);
+    stepForwardButton->buttonRect = raylib::Rectangle(650, 660, 128, 24);
+    stepForwardButton->buttonText = "Step Forward";
     stepForwardButton->Click.append([this]() { OnStepForwardClick(); });
-    stepForwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&stepforwardTex);
- 
+    stepForwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
     // Step-back button
-    stepbackTex = raylib::Texture(raylib::Image("./images/step-backward.png"));
     stepBackwardButton = std::make_unique<raywtk::Button>();
-    stepBackwardButton->buttonRect = raylib::Rectangle(568 * scaleX, 670 * scaleY, 40 * scaleX, 40 * scaleY);
+    stepBackwardButton->buttonRect = raylib::Rectangle(515, 660, 128, 24);
+    stepBackwardButton->buttonText = "Step Back";
     stepBackwardButton->Click.append([this]() { OnStepBackwardClick(); });
-    stepBackwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&stepbackTex);
+    stepBackwardButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>(textFont);
 
     // undo button
     undoButtonTex = raylib::Texture(raylib::Image("./images/undo_button.png"));
     undoButton = std::make_unique<raywtk::Button>();
-    undoButton->buttonRect = raylib::Rectangle(1060 * scaleX, 10 * scaleY, 50 * scaleX, 50 * scaleY);
+    undoButton->buttonRect = raylib::Rectangle(85, 10, 50, 50);
     undoButton->Click.append([this]() { OnUndoButtonClick(); });
     undoButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&undoButtonTex);
 
     // redo button
     redoButtonTex = raylib::Texture(raylib::Image("./images/redo_button.png"));
     redoButton = std::make_unique<raywtk::Button>();
-    redoButton->buttonRect = raylib::Rectangle(1135 * scaleX, 10 * scaleY, 50 * scaleX, 50 * scaleY);
+    redoButton->buttonRect = raylib::Rectangle(160, 10, 50, 50);
     redoButton->Click.append([this]() { OnRedoButtonClick(); });
     redoButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&redoButtonTex);
 
     // return button
     returnButtonTex = raylib::Texture(raylib::Image("./images/return_button.png"));
     returnButton = std::make_unique<raywtk::Button>();
-    returnButton->buttonRect = raylib::Rectangle(1210 * scaleX, 10 * scaleY, 50 * scaleX, 50 * scaleY);
+    returnButton->buttonRect = raylib::Rectangle(10, 10, 50, 50);
     returnButton->Click.append([this]() { OnReturnButtonClick(); });
     returnButton->style = std::make_unique<ds_viz::themes::dark_simple::ImageButtonStyle>(&returnButtonTex);
 }
@@ -321,6 +355,21 @@ void ds_viz::pages::LinkedListPage::OnRandomButtonClick(int numNodes)
         int randomValue = rand() % 1999 - 999; 
         InsertRandom(randomValue);
     } 
+
+    Append();
+}
+
+// Generate List from keyboard
+void ds_viz::pages::LinkedListPage::OnInputButtonClick(std::vector<int> &values)
+{
+    animationStates.clear();
+    currentAnimationState = -1;
+    head.reset(); 
+    size = 0;
+
+    for (int value : values) {
+        InsertRandom(value);
+    }
 
     Append();
 }
@@ -390,16 +439,16 @@ void ds_viz::pages::LinkedListPage::OnLoadFileButtonClick()
         head.reset();
         size = 0;
 
-        for (int i = 0; i < std::min(n, 18); i++) 
+        for (int i = 0; i < std::min(n, 12); i++) 
         {
             int x;
             fin >> x;
             InsertRandom(x);
         }
 
-        if (n > 18)
+        if (n > 12)
         {
-            errorMessage = "Maximum number of nodes is 18!";
+            errorMessage = "Maximum number of nodes is 12!";
             errorTimer = 2.0f;
         }
 
@@ -1162,13 +1211,13 @@ void ds_viz::pages::LinkedListPage::LoadListState(const ListState& state)
 
 void ds_viz::pages::LinkedListPage::CreateNotification(std::string &Message)
 {
-    int screenWidth = _context->ref_raylib_window->GetWidth();
-    int screenHeight = _context->ref_raylib_window->GetHeight();
+    int screenWidth = 1280;
+    int screenHeight = 720;
 
-    int boxWidth = 600;
+    int boxWidth = 400;
     int boxHeight = 40;
     int boxX = (screenWidth - boxWidth) / 2;
-    int boxY = screenHeight - 800;
+    int boxY = 80;
 
     int fontSize = 20;
     int textWidth = MeasureText(Message.c_str(), fontSize);
@@ -1187,7 +1236,7 @@ void ds_viz::pages::LinkedListPage::DrawInputBox(int X, int Y, int width, int he
     int segments = 8;       
 
     DrawRectangleRounded(raylib::Rectangle(X, Y, width, height), roundness, segments, raylib::Color::Black());
-    DrawText(input.c_str(), X + 7 * scaleX, Y + 7 * scaleY, 20, RAYWHITE);
+    DrawText(input.c_str(), X + 5, Y + 5, 20, RAYWHITE);
     DrawRectangleRoundedLines(raylib::Rectangle(X, Y, width, height), roundness, segments, raylib::Color::Pink());
 }
 
@@ -1214,26 +1263,26 @@ void ds_viz::pages::LinkedListPage::DrawPseudoCodeBlock()
     if (!showPseudoCode || pseudoCodeSteps.empty())
         return;
 
-    int boxX = 867 * scaleX;
-    int boxY = 400 * scaleY;
-    int boxWidth = 400 * scaleX;
-    int boxHeight = 267 * scaleY;
+    int boxX = 867;
+    int boxY = 400;
+    int boxWidth = 400;
+    int boxHeight = 267;
     
     float roundness = 0.1f; 
     int segments = 50;       
-    DrawRectangleRoundedLines(raylib::Rectangle(boxX - 5 * scaleX, boxY - 5 * scaleY, boxWidth + 10 * scaleX, boxHeight + 10 * scaleY), roundness, segments, raylib::Color::Pink());
+    DrawRectangleRoundedLines(raylib::Rectangle(boxX - 5, boxY - 5, boxWidth + 10, boxHeight + 10), roundness, segments, raylib::Color::Pink());
 
     DrawRectangle(boxX, boxY, boxWidth, boxHeight, raylib::Color::Black());
 
-    int fontSize = 16 * scaleY;
-    int lineHeight = 23 * scaleY;
+    int fontSize = 18;
+    int lineHeight = 23;
     for (size_t i = 0; i < pseudoCodeSteps.size(); ++i)
     {
         raylib::Font &font = *codeFont;
         if (i == currentStep)
-            raylib::DrawTextEx(font, pseudoCodeSteps[i].c_str(), raylib::Vector2(boxX + 10 * scaleX, boxY + 20 * scaleY + i * lineHeight), fontSize, 1, raylib::Color::Yellow());
+            raylib::DrawTextEx(font, pseudoCodeSteps[i].c_str(), raylib::Vector2(boxX + 10, boxY + 20 + i * lineHeight), fontSize, 1, raylib::Color::Yellow());
         else
-            raylib::DrawTextEx(font, pseudoCodeSteps[i].c_str(), raylib::Vector2(boxX + 10 * scaleX, boxY + 20 * scaleY + i * lineHeight), fontSize, 1, raylib::Color::White());
+            raylib::DrawTextEx(font, pseudoCodeSteps[i].c_str(), raylib::Vector2(boxX + 10, boxY + 20 + i * lineHeight), fontSize, 1, raylib::Color::White());
     }
 }
 
@@ -1284,10 +1333,10 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                     errorTimer = 2.0f;
                 }
                 
-                else if (size == 18)
+                else if (size == 12)
                 {
                     inputInsertAtHead.clear();
-                    errorMessage = "Maximum number of nodes is 18!";
+                    errorMessage = "Maximum number of nodes is 12!";
                     errorTimer = 2.0f;
                 }
 
@@ -1332,10 +1381,10 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                     errorTimer = 2.0f;
                 }
                 
-                else if (size == 18)
+                else if (size == 12)
                 {
                     inputInsertAtTail.clear();
-                    errorMessage = "Maximum number of nodes is 18!";
+                    errorMessage = "Maximum number of nodes is 12!";
                     errorTimer = 2.0f;
                 }
 
@@ -1401,11 +1450,11 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
                         errorMessage = "Index is out of bounds!";
                         errorTimer = 2.0f;
                     }
-                    else if (size >= 18) 
+                    else if (size >= 12) 
                     {
                         inputValue.clear();
                         inputIndex.clear();
-                        errorMessage = "Maximum number of nodes is 18!";
+                        errorMessage = "Maximum number of nodes is 12!";
                         errorTimer = 2.0f;
                     }
                     else
@@ -1441,10 +1490,10 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
             {
                 int numNodes = std::stoi(inputRandom);
             
-                if (numNodes < 1 || numNodes > 18) 
+                if (numNodes < 1 || numNodes > 12) 
                 {
                     inputRandom.clear();
-                    errorMessage = "Maximum number of nodes is 18!";
+                    errorMessage = "Maximum number of nodes is 12!";
                     errorTimer = 2.0f;
                 }
                 
@@ -1457,11 +1506,84 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
             
             catch (...)
             {
-                errorMessage = "Please enter a valid integer between 1 and 18!";
+                errorMessage = "Please enter a valid integer between 1 and 12!";
                 errorTimer = 2.0f;
             }
 
             showRandomInput = false; 
+        }
+    }
+
+    if (showInputValues)
+    {  
+        int key = GetKeyPressed();
+        if ((key >= '0' && key <= '9') || key == '-' || key == ',' || key == ' ') 
+            input += static_cast<char>(key);
+        else if (key == KEY_BACKSPACE && !input.empty()) 
+            input.pop_back();
+        else if (key == KEY_ENTER && !input.empty()) 
+        {
+            try 
+            {
+                values.clear();
+                inrange = true;
+
+                std::string processedInput = input;
+                std::replace(processedInput.begin(), processedInput.end(), ',', ' ');
+                
+                std::stringstream ss(processedInput);
+                std::string token;
+                
+                while (ss >> token) 
+                {
+                    if (!token.empty())
+                    {   
+                        int value = std::stoi(token);
+                        values.push_back(value);
+                    }
+                }
+
+                for (int i: values)
+                {
+                    if (i < -999 || i > 999) 
+                    {
+                        inrange = false;
+                        break;
+                    }
+                }
+
+                if (!inrange)
+                {
+                    errorMessage = "Value must be between -999 and 999!";
+                    errorTimer = 2.0f;
+                }
+                
+                else if (values.size() > 12)
+                {
+                    errorMessage = "Maximum number of nodes is 12!";
+                    errorTimer = 2.0f;
+                }
+                
+                else if (values.empty())
+                {
+                    errorMessage = "Please enter at least one value!";
+                    errorTimer = 2.0f;
+                }
+            
+                else
+                    OnInputButtonClick(values);
+
+                input.clear();
+                values.clear();
+                showInputValues = false;
+            }
+            
+            catch (...)
+            {
+                errorMessage = "Enter maximum 12 nodes, between -999 and 999!";
+                errorTimer = 2.0f;
+                input.clear();
+            }
         }
     }
 
@@ -1606,6 +1728,7 @@ void ds_viz::pages::LinkedListPage::Update(float dt)
 
     if (actionBarVisible) 
     {
+        inputButton->Update(dt);
         insertButton->Update(dt);
         deleteButton->Update(dt);
         searchButton->Update(dt);
@@ -1681,31 +1804,34 @@ void ds_viz::pages::LinkedListPage::Render()
 
     // Draw input bars only if active
     if (showInsertAtHead && insertDropdownOpen)
-        DrawInputBox(140 * scaleX, 576 * scaleY, 128 * scaleX, 24 * scaleY, inputInsertAtHead);
+        DrawInputBox(140, 576, 128, 24, inputInsertAtHead);
 
     if (showInsertAtTail && insertDropdownOpen)
-        DrawInputBox(268 * scaleX, 576 * scaleY, 128 * scaleX, 24 * scaleY, inputInsertAtTail);
+        DrawInputBox(268, 576, 128, 24, inputInsertAtTail);
 
     if (showInsertAtIndexInput && insertDropdownOpen)
     {
-        DrawInputBox(396 * scaleX, 576 * scaleY, 64 * scaleX, 24 * scaleY, inputValue);
-        DrawInputBox(460 * scaleX, 576 * scaleY, 64 * scaleX, 24 * scaleY, inputIndex);
+        DrawInputBox(396, 576, 64, 24, inputValue);
+        DrawInputBox(460, 576, 64, 24, inputIndex);
 
-        DrawText("Value", 396 * scaleX, 610 * scaleY, 20, YELLOW);
-        DrawText("Index", 460 * scaleX, 610 * scaleY, 20, YELLOW);
+        DrawText("Value", 396, 610, 20, YELLOW);
+        DrawText("Index", 460, 610, 20, YELLOW);
     }
 
     if (showDeleteAtIndexInput && deleteDropdownOpen)
-        DrawInputBox(396 * scaleX, 604 * scaleY, 128 * scaleX, 24 * scaleY, inputDeleteIndex);
+        DrawInputBox(396, 604, 128, 24, inputDeleteIndex);
 
     if (showRandomInput)
-        DrawInputBox(140 * scaleX, 660 * scaleY, 128 * scaleX, 24 * scaleY, inputRandom);
+        DrawInputBox(140, 632, 128, 24, inputRandom);
+
+    if (showInputValues)
+        DrawInputBox(140, 520, 350, 24, input);
 
     if (showSearchInput && searchByValue)
-        DrawInputBox(140 * scaleX, 632 * scaleY, 128 * scaleX, 24 * scaleY, searchByValInput);
+        DrawInputBox(140, 660, 128, 24, searchByValInput);
     
     if (showSearchInput && !searchByValue)
-        DrawInputBox(268 * scaleX, 632 * scaleY, 128 * scaleX, 24 * scaleY, searchByIndInput);
+        DrawInputBox(268, 660, 128, 24, searchByIndInput);
      
     // Draw error message if needed
     if (errorTimer > 0)
@@ -1723,6 +1849,7 @@ void ds_viz::pages::LinkedListPage::Render()
 
     if (actionBarVisible) 
     {
+        inputButton->Render();
         insertButton->Render();
         deleteButton->Render();
         searchButton->Render();
