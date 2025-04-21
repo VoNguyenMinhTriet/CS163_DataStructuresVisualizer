@@ -33,9 +33,17 @@ namespace ds_viz::pages
 
         static const int WORKING_FRAME_HEIGHT = 440;
         static const int WORKING_FRAME_WIDTH = 700;
+        
         static const int WORKING_FRAME_COORDX = DEFAULT_WIN_WIDTH - WORKING_FRAME_WIDTH;
         static const int WORKING_FRAME_COORDY = 0;
 
+        static const int MAIN_MENU_BUTTON_POSX = 5;
+        static const int MAIN_MENU_BUTTON_POSY = 5;
+
+        static const int MAIN_MENU_BUTTON_WIDTH = 25;
+        static const int MAIN_MENU_BUTTON_HEIGHT = 25;
+
+    
         static const int NOTIFICATION_FRAME_HEIGHT = 340;
         static const int NOTIFICATION_FRAME_WIDTH = DEFAULT_WIN_WIDTH - WORKING_FRAME_WIDTH;
         static const int NOTIFICATION_FRAME_COORDX = 0;
@@ -163,33 +171,35 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::GraphButton> adjustSpeedButton;
         // Toggle button for pseudo code 
         std::unique_ptr<raywtk::GraphButton> pseudoCodeToggleButton;
+        // Main menu button initialize
+        std::unique_ptr<raywtk::GraphButton> mainMenuButton;
         bool showOperatorButtons = true; // Initially, operator buttons are visible
         // Notification
         std::unique_ptr<raywtk::Notification> currentNotification;
         // Input box for init graph
         std::unique_ptr<raywtk::InputBox> inputBoxInitializeGraph;
-        bool inputInitializeGraphFlag;
+        bool inputInitializeGraphFlag = false;
         // Input box for insert new edge
         std::unique_ptr<raywtk::InputBox> inputBoxInsertEdge;
-        bool inputInsertEdgeButtonFlag;
+        bool inputInsertEdgeButtonFlag = false;
         // Input box for delete node
         std::unique_ptr<raywtk::InputBox> inputBoxDeleteNode;
-        bool inputDeleteNodeButtonFlag;
+        bool inputDeleteNodeButtonFlag = false;
         // Input box for delete edge
         std::unique_ptr<raywtk::InputBox> inputBoxDeleteEdge;
-        bool inputDeleteEdgeButtonFlag;
+        bool inputDeleteEdgeButtonFlag = false;
         // Input box for adjust speed
         std::unique_ptr<raywtk::InputBox> inputBoxAdjustSpeed;
-        bool inputAdjustSpeedFlag;
+        bool inputAdjustSpeedFlag = false;
 
         // Notification
         std::unique_ptr<raywtk::Notification> notification = nullptr;
 
         // Kruskal index processing
-        int indexProcessing;
+        int indexProcessing = 0;
         
         // Kruskal processing flag
-        bool kruskalFlag;
+        bool kruskalFlag = false;
         
         // par and sz for kruskal
         std::vector<int> par, sz;

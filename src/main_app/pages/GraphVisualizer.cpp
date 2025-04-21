@@ -29,6 +29,13 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer(ds_viz::MainWindow &context) : d
     // notificationFrame initialize
     notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
+    // Main menu button initialize
+    mainMenuButton = std::make_unique<raywtk::GraphButton>();
+    mainMenuButton->buttonText = "";
+    mainMenuButton->buttonRect = raylib::Rectangle(MAIN_MENU_BUTTON_POSX, MAIN_MENU_BUTTON_POSY, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT);
+    mainMenuButton->Click.append([this]() { _context->ChangePage(std::make_shared<ds_viz::pages::MainMenuPage>(*_context)); });
+    mainMenuButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
+
     // Load file button initialize
     loadFileButton = std::make_unique<raywtk::GraphButton>();
     loadFileButton->buttonText = "Load File";
@@ -812,6 +819,9 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
         }
     }
 
+    // Update the Main Menu button
+    mainMenuButton->Update(dt);
+
     // Update all nodes
     for (auto &node : nodes) {
         //node->Update(dt);
@@ -923,6 +933,9 @@ void ds_viz::pages::GraphVisualizer::Render()
     if (currentAnimationStep < animationSteps.size()) {
         RenderAnimationStep(animationSteps[currentAnimationStep], edges);
     }
+
+    // Render the Main Menu button
+    mainMenuButton->Render();
 
     // vector nodes render
     for(auto &node : nodes){
