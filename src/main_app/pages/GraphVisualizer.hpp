@@ -31,22 +31,32 @@ namespace ds_viz::pages
         static const int BUTTON_WIDTH = 150;
         static const int BUTTON_HEIGHT = 25;
 
+        static const int WORKING_FRAME_HEIGHT = 440;
+        static const int WORKING_FRAME_WIDTH = 700;
+        static const int WORKING_FRAME_COORDX = DEFAULT_WIN_WIDTH - WORKING_FRAME_WIDTH;
+        static const int WORKING_FRAME_COORDY = 0;
+
+        static const int NOTIFICATION_FRAME_HEIGHT = 340;
+        static const int NOTIFICATION_FRAME_WIDTH = DEFAULT_WIN_WIDTH - WORKING_FRAME_WIDTH;
+        static const int NOTIFICATION_FRAME_COORDX = 0;
+        static const int NOTIFICATION_FRAME_COORDY = 50;
+
         static const int DISTANCE_BETWEEN_BUTTONS = 5;
 
         static const int INPUT_BOX_WIDTH = 150;
         static const int INPUT_BOX_HEIGHT = BUTTON_HEIGHT;
 
-        static const int PSEUDOCODE_LINE_WIDTH = 700;
-        static const int PSEUDOCODE_LINE_HEIGHT = 50;
+        static const int PSEUDOCODE_LINE_WIDTH = DEFAULT_WIN_WIDTH - WORKING_FRAME_WIDTH;
+        static const int PSEUDOCODE_LINE_HEIGHT = 25;
 
         static const int TOGGLE_BUTTON_WIDTH = 10;
         static const int TOGGLE_BUTTON_HEIGHT = BUTTON_HEIGHT * 11 + DISTANCE_BETWEEN_BUTTONS * 10;
 
-        static const int PSEUDO_CODE_TOGGLE_BUTTON_POSX = 2500;
-        static const int PSEUDO_CODE_TOGGLE_BUTTON_POSY = 200;
-
         static const int PSEUDO_CODE_TOGGLE_BUTTON_WIDTH = 10;
         static const int PSEUDO_CODE_TOGGLE_BUTTON_HEIGHT = 5 * PSEUDOCODE_LINE_HEIGHT;
+
+        static const int PSEUDO_CODE_TOGGLE_BUTTON_POSX = DEFAULT_WIN_WIDTH - PSEUDO_CODE_TOGGLE_BUTTON_WIDTH;
+        static const int PSEUDO_CODE_TOGGLE_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + 60;
 
         static const int TOGGLE_BUTTON_POSX = 0;
         static const int TOGGLE_BUTTON_POSY = DEFAULT_WIN_HEIGHT - TOGGLE_BUTTON_HEIGHT;
@@ -101,19 +111,8 @@ namespace ds_viz::pages
 
         static const int INPUT_BOX_ADJUST_SPEED_POSX = ADJUST_SPEED_BUTTON_POSX + BUTTON_WIDTH;
         static const int INPUT_BOX_ADJUST_SPEED_POSY = ADJUST_SPEED_BUTTON_POSY;
-
-        static const int WORKING_FRAME_HEIGHT = 600;
-        static const int WORKING_FRAME_WIDTH = 950;
-        static const int WORKING_FRAME_COORDX = DEFAULT_WIN_WIDTH - WORKING_FRAME_WIDTH;
-        static const int WORKING_FRAME_COORDY = 0;
-
-        static const int NOTIFICATION_FRAME_HEIGHT = 200;
-        static const int NOTIFICATION_FRAME_WIDTH = 900;
-        static const int NOTIFICATION_FRAME_COORDX = 500;
-        static const int NOTIFICATION_FRAME_COORDY = 1000;
-
-        static const int NOTIFICATION_COORDX = NOTIFICATION_FRAME_COORDX + 20;
-        static const int NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 20;
+        static const int NOTIFICATION_COORDX = 0;
+        static const int NOTIFICATION_COORDY = 50;
 
         static const int PROGRESS_BAR_POSX = WORKING_FRAME_COORDX;
         static const int PROGRESS_BAR_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT;
