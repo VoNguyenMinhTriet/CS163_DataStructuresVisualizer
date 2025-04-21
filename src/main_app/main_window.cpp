@@ -19,8 +19,11 @@ void ds_viz::MainWindow::Render ()
 
 void ds_viz::MainWindow::ChangePage (std::shared_ptr<Page> to)
 {
-    content = to;
-    to->SetContext(this);
+    content_To = to;
+    _deferredStateChange = [this]() {
+        content = content_To;
+        content_To->SetContext(this);
+    };
 }
 
 int ds_viz::MainWindow::Run ()
@@ -37,6 +40,10 @@ int ds_viz::MainWindow::Run ()
     {
         if (content) content->Update(GetFrameTime());
         Render();
+        if(_deferredStateChange) {
+            _deferredStateChange();
+            _deferredStateChange = nullptr;
+        }
     }
 
     return 0;
