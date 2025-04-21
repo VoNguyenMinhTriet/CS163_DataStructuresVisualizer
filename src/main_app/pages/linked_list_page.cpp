@@ -14,8 +14,8 @@ ds_viz::pages::LinkedListPage::LinkedListPage(ds_viz::MainWindow &context) : ds_
     title = raylib::Text("Linked List", 60, raylib::Color(255, 255, 255, 128), *font, 0);
     
     nodeFont = std::make_shared<raylib::Font>("./ttf/InterDisplay-ExtraBold.ttf", 128);
-    textFont = std::make_shared<raylib::Font>("./ttf/Inter-Regular.ttf", 128);
-    codeFont = std::make_shared<raylib::Font>("./ttf/Cascadia.ttf", 128);  
+    textFont = std::make_shared<raylib::Font>("./ttf/Inter-Regular.ttf", 18);
+    codeFont = std::make_shared<raylib::Font>("./ttf/Cascadia.ttf", 18);  
 
     // repositioning nodes button
     repositionButton = std::make_unique<raywtk::Button>();
@@ -1211,13 +1211,13 @@ void ds_viz::pages::LinkedListPage::LoadListState(const ListState& state)
 
 void ds_viz::pages::LinkedListPage::CreateNotification(std::string &Message)
 {
-    int screenWidth = _context->ref_raylib_window->GetWidth();
-    int screenHeight = _context->ref_raylib_window->GetHeight();
+    int screenWidth = 1280;
+    int screenHeight = 720;
 
-    int boxWidth = 600;
+    int boxWidth = 400;
     int boxHeight = 40;
     int boxX = (screenWidth - boxWidth) / 2;
-    int boxY = screenHeight - 800;
+    int boxY = 80;
 
     int fontSize = 20;
     int textWidth = MeasureText(Message.c_str(), fontSize);
@@ -1274,7 +1274,7 @@ void ds_viz::pages::LinkedListPage::DrawPseudoCodeBlock()
 
     DrawRectangle(boxX, boxY, boxWidth, boxHeight, raylib::Color::Black());
 
-    int fontSize = 16;
+    int fontSize = 18;
     int lineHeight = 23;
     for (size_t i = 0; i < pseudoCodeSteps.size(); ++i)
     {

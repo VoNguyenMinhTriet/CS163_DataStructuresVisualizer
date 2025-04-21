@@ -27,8 +27,9 @@ namespace ds_viz::themes::dark_simple
             else
                 buttonSelf->buttonRect.DrawRounded(0.5, 8, raylib::Color::Pink());
             
-            int fontSize = 20;
+            int fontSize = 18;
             float spacing = 1.0f;
+            
             raylib::Vector2 textSize = textFont->MeasureText(buttonSelf->buttonText, fontSize, spacing);
             float textX = buttonSelf->buttonRect.x + (buttonSelf->buttonRect.width - textSize.x) / 2;
             float textY = buttonSelf->buttonRect.y + (buttonSelf->buttonRect.height - textSize.y) / 2;
