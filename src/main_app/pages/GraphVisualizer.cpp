@@ -29,14 +29,24 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer(ds_viz::MainWindow &context) : d
     // notificationFrame initialize
     notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
+    // Main menu button initialize
+    mainMenuButton = std::make_unique<raywtk::GraphButton>();
+    mainMenuButton->buttonText = "";
+    mainMenuButton->buttonRect = raylib::Rectangle(MAIN_MENU_BUTTON_POSX, MAIN_MENU_BUTTON_POSY, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT);
+    mainMenuButton->Click.append([this]() { _context->ChangePage(std::make_shared<ds_viz::pages::MainMenuPage>(*_context)); });
+    mainMenuButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
+
     // Load file button initialize
     loadFileButton = std::make_unique<raywtk::GraphButton>();
     loadFileButton->buttonText = "Load File";
     loadFileButton->buttonRect = raylib::Rectangle(LOAD_FILE_BUTTON_POSX, LOAD_FILE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     loadFileButton->Click.append([this]() { if (freeFlag) {  notification = std::make_unique<raywtk::Notification>(
-                "Please drag and drop the file here. The file format should be:\n"
-                "1. First two lines: two numbers n and m (number of vertices and edges).\n"
-                "2. Next m lines: (u, v, w) representing edges with weights.",
+                "Please drag and drop the file here. The file format\n" 
+                "should be:\n"
+                "1. First two lines: two numbers n and m (number of\n"
+                "vertices and edges).\n"
+                "2. Next m lines: (u, v, w) representing edges with\n"
+                "weights.",
                 raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY ); waitingForFile = true; }});
     loadFileButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
@@ -124,7 +134,8 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer(ds_viz::MainWindow &context) : d
     adjustSpeedButton->buttonRect = raylib::Rectangle(ADJUST_SPEED_BUTTON_POSX, ADJUST_SPEED_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     adjustSpeedButton->Click.append([this]() { if (freeFlag || kruskalFlag) { 
                                                     inputAdjustSpeedFlag = true; inputBoxAdjustSpeed->processing = true; freeFlag = false; 
-                                                    notification = std::make_unique<raywtk::Notification>( "Enter the number of steps per second for the Kruskal animation.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY );
+                                                    notification = std::make_unique<raywtk::Notification>( "Enter the number of steps per second for the\n"
+                                                                                                            "Kruskal animation.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY );
                                                 }});
     adjustSpeedButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
@@ -504,7 +515,6 @@ void ds_viz::pages::GraphVisualizer::RenderAnimationStep(const AnimationStep& st
             pseudoCodeDisplay->SetLineState(i, raywtk::PseudoCodeDisplay::LineState::DEFAULT);
         }
     }
-    pseudoCodeDisplay->Render();
 }
 
 void ds_viz::pages::GraphVisualizer::DeleteNode(int node) {
@@ -809,6 +819,9 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
         }
     }
 
+    // Update the Main Menu button
+    mainMenuButton->Update(dt);
+
     // Update all nodes
     for (auto &node : nodes) {
         //node->Update(dt);
@@ -921,27 +934,8 @@ void ds_viz::pages::GraphVisualizer::Render()
         RenderAnimationStep(animationSteps[currentAnimationStep], edges);
     }
 
-    // Render the speed display
-    float speed = 1.0f / animationStepDuration; // Calculate the speed in steps per second
-    std::string speedText = std::to_string(speed) + " steps per sec";
-
-    // Define the rectangle for the speed display
-    float rectWidth = 300.0f;
-    float rectHeight = 50.0f;
-    float rectX = WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH - rectWidth - 10; // Align to the right of the working frame
-    float rectY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10; // Below the progress bar
-
-    // Draw the rectangle border
-    raylib::Rectangle speedRect(rectX, rectY, rectWidth, rectHeight);
-    speedRect.DrawLines(raylib::Color::White());
-
-    // Draw the speed text inside the rectangle
-    int fontSize = 20;
-    int textWidth = MeasureText(speedText.c_str(), fontSize);
-    int textHeight = fontSize;
-    float textX = rectX + (rectWidth - textWidth) / 2; // Center the text horizontally
-    float textY = rectY + (rectHeight - textHeight) / 2; // Center the text vertically
-    raylib::DrawText(speedText.c_str(), textX, textY, fontSize, raylib::Color::White());
+    // Render the Main Menu button
+    mainMenuButton->Render();
 
     // vector nodes render
     for(auto &node : nodes){

@@ -29,7 +29,7 @@ namespace raywtk
         lineRect.DrawRoundedLines(0.1f, 13, PINK);
         for (int i = 0; i < numLines; ++i) {
             raylib::Color lineColor = GetColorForState(lineStates[i]);
-            raylib::DrawText(pseudoCodeLines[i].c_str(), position.x + 10, position.y + i * lineHeight + 10, 20, GetColorForState(lineStates[i]));
+            raylib::DrawText(pseudoCodeLines[i].c_str(), position.x + 5, position.y + i * lineHeight + 5, 18, GetColorForState(lineStates[i]));
         }
     }    
 
