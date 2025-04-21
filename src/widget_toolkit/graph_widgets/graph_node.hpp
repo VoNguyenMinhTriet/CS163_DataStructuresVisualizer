@@ -7,14 +7,14 @@
 #include "widget_toolkit/display_frame/display_frame.hpp"
 
 namespace raywtk {
-    class NodeWidget : public IScreenElement {
+    class GraphNode : public IScreenElement {
         bool held = false;
 
     public:
         raylib::Vector2 position;
         raylib::Vector2 velocity = {0.0f, 0.0f}; // Velocity for physics-based movement
         raylib::Camera2D* camera;
-        float radius = 20.0f;
+        float radius = 30.0f;
         raylib::Color color = raylib::Color::Blue();
         bool visible = true;
         std::function<void()> content; // Optional content function
@@ -22,7 +22,7 @@ namespace raywtk {
         int value; // Store node's value
         bool hightlighted = false; // In Kruskal's processing
 
-        NodeWidget(int val) : value(val), content([this]() {
+        GraphNode(int val) : value(val), content([this]() {
             std::string text = std::to_string(value);
             int fontSize = 30;
             int textWidth = MeasureText(text.c_str(), fontSize);
@@ -36,7 +36,7 @@ namespace raywtk {
         }) {}
 
         // Copy constructor
-        NodeWidget(const NodeWidget& other)
+        GraphNode(const GraphNode& other)
             : value(other.value), position(other.position), velocity(other.velocity), radius(other.radius),
               color(other.color), visible(other.visible), Click(other.Click), hightlighted(other.hightlighted) {
             // Reinitialize the content lambda to ensure it references the correct state
@@ -55,7 +55,7 @@ namespace raywtk {
         }
 
         // Repulsive force between nodes
-        void InteractWith(NodeWidget& other) {
+        void InteractWith(GraphNode& other) {
 
             auto getDistance = [](const raylib::Vector2& a, const raylib::Vector2& b) {
                 return (a - b).Length();
@@ -82,7 +82,7 @@ namespace raywtk {
         }
 
         // Attractive force between connected nodes (edges)
-        void ApplyAttractiveForce(NodeWidget& other, float springConstant, float desiredDistance) {
+        void ApplyAttractiveForce(GraphNode& other, float springConstant, float desiredDistance) {
             raylib::Vector2 delta = position - other.position;
             float distance = delta.Length();
             float forceMagnitude = springConstant * (distance - desiredDistance); // Hooke's law
@@ -114,7 +114,7 @@ namespace raywtk {
         void Update(float deltaTime) override {}
 
         // Update the node's position and interactions
-        void Update(float deltaTime, std::vector<std::unique_ptr<NodeWidget>>& allNodes, raylib::Rectangle bounds) {
+        void Update(float deltaTime, std::vector<std::unique_ptr<GraphNode>>& allNodes, raylib::Rectangle bounds) {
             if (visible) {
                 // Handle mouse interactions
                 if (position.CheckCollision(raylib::Mouse::GetPosition(), radius)) {

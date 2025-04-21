@@ -11,11 +11,14 @@
 #include <fstream>
 #include "raylib-cpp/raylib-cpp.hpp"
 #include "widget_toolkit/controls/button.hpp"
+#include "widget_toolkit/controls/graph_button.hpp"
 #include "widget_toolkit/graph_widgets/node.hpp"
+#include "widget_toolkit/graph_widgets/graph_node.hpp"
 #include "widget_toolkit/graph_widgets/edge.hpp"
 #include "widget_toolkit/display_frame/display_frame.hpp"
 #include "widget_toolkit/input_box/InputBox.hpp"
 #include "main_app/themes/dark_simple/text_button.hpp"
+#include "main_app/themes/dark_simple/graph_text_button.hpp"
 #include "./page.hpp"
 #include "main_app/main_window.hpp"
 #include "widget_toolkit/notification/Notification.hpp"
@@ -25,96 +28,105 @@ namespace ds_viz::pages
 {
     class GraphVisualizer : public Page
     {
-        static constexpr float BUTTON_WIDTH = 200;
-        static constexpr float BUTTON_HEIGHT = 50;
+        static const int BUTTON_WIDTH = 150;
+        static const int BUTTON_HEIGHT = 25;
 
-        static constexpr float DISTANCE_BETWEEN_BUTTONS = 10;
+        static const int WORKING_FRAME_HEIGHT = 440;
+        static const int WORKING_FRAME_WIDTH = 700;
+        static const int WORKING_FRAME_COORDX = DEFAULT_WIN_WIDTH - WORKING_FRAME_WIDTH;
+        static const int WORKING_FRAME_COORDY = 0;
 
-        static constexpr float INPUT_BOX_WIDTH = 200;
-        static constexpr float INPUT_BOX_HEIGHT = 50;
+        static const int NOTIFICATION_FRAME_HEIGHT = 340;
+        static const int NOTIFICATION_FRAME_WIDTH = DEFAULT_WIN_WIDTH - WORKING_FRAME_WIDTH;
+        static const int NOTIFICATION_FRAME_COORDX = 0;
+        static const int NOTIFICATION_FRAME_COORDY = 50;
 
-        static constexpr float PSEUDOCODE_LINE_WIDTH = 700;
-        static constexpr float PSEUDOCODE_LINE_HEIGHT = 50;
+        static const int DISTANCE_BETWEEN_BUTTONS = 5;
 
-        static constexpr float TOGGLE_BUTTON_WIDTH = 10;
-        static constexpr float TOGGLE_BUTTON_HEIGHT = BUTTON_HEIGHT * 11 + DISTANCE_BETWEEN_BUTTONS * 10;
+        static const int INPUT_BOX_WIDTH = 150;
+        static const int INPUT_BOX_HEIGHT = BUTTON_HEIGHT;
 
-        static constexpr float PSEUDO_CODE_TOGGLE_BUTTON_POSX = 2500;
-        static constexpr float PSEUDO_CODE_TOGGLE_BUTTON_POSY = 200;
+        static const int PSEUDOCODE_LINE_WIDTH = DEFAULT_WIN_WIDTH - WORKING_FRAME_WIDTH;
+        static const int PSEUDOCODE_LINE_HEIGHT = 25;
 
-        static constexpr float PSEUDO_CODE_TOGGLE_BUTTON_WIDTH = 10;
-        static constexpr float PSEUDO_CODE_TOGGLE_BUTTON_HEIGHT = 5 * PSEUDOCODE_LINE_HEIGHT;
+        static const int TOGGLE_BUTTON_WIDTH = 10;
+        static const int TOGGLE_BUTTON_HEIGHT = BUTTON_HEIGHT * 11 + DISTANCE_BETWEEN_BUTTONS * 10;
 
-        static constexpr float TOGGLE_BUTTON_POSX = 100;
-        static constexpr float TOGGLE_BUTTON_POSY = 200;
+        static const int PSEUDO_CODE_TOGGLE_BUTTON_WIDTH = 10;
+        static const int PSEUDO_CODE_TOGGLE_BUTTON_HEIGHT = 5 * PSEUDOCODE_LINE_HEIGHT;
 
-        static constexpr float PSEUDO_CODE_POS_X = PSEUDO_CODE_TOGGLE_BUTTON_POSX - PSEUDOCODE_LINE_WIDTH - 5;
-        static constexpr float PSEUDO_CODE_POS_Y = PSEUDO_CODE_TOGGLE_BUTTON_POSY;
+        static const int PSEUDO_CODE_TOGGLE_BUTTON_POSX = DEFAULT_WIN_WIDTH - PSEUDO_CODE_TOGGLE_BUTTON_WIDTH;
+        static const int PSEUDO_CODE_TOGGLE_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + 60;
 
-        static constexpr float LOAD_FILE_BUTTON_POSX = TOGGLE_BUTTON_POSX + TOGGLE_BUTTON_WIDTH + 5;
-        static constexpr float LOAD_FILE_BUTTON_POSY = TOGGLE_BUTTON_POSY;
+        static const int TOGGLE_BUTTON_POSX = 0;
+        static const int TOGGLE_BUTTON_POSY = DEFAULT_WIN_HEIGHT - TOGGLE_BUTTON_HEIGHT;
 
-        static constexpr float INIT_GRAPH_BUTTON_POSX = LOAD_FILE_BUTTON_POSX;
-        static constexpr float INIT_GRAPH_BUTTON_POSY = LOAD_FILE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+        static const int PSEUDO_CODE_POS_X = PSEUDO_CODE_TOGGLE_BUTTON_POSX - PSEUDOCODE_LINE_WIDTH - 5;
+        static const int PSEUDO_CODE_POS_Y = PSEUDO_CODE_TOGGLE_BUTTON_POSY;
 
-        static constexpr float INSERT_NODE_BUTTON_POSX = INIT_GRAPH_BUTTON_POSX;
-        static constexpr float INSERT_NODE_BUTTON_POSY = INIT_GRAPH_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+        static const int LOAD_FILE_BUTTON_POSX = TOGGLE_BUTTON_POSX + TOGGLE_BUTTON_WIDTH + 5;
+        static const int LOAD_FILE_BUTTON_POSY = TOGGLE_BUTTON_POSY;
 
-        static constexpr float INSERT_EDGE_BUTTON_POSX = INSERT_NODE_BUTTON_POSX;
-        static constexpr float INSERT_EDGE_BUTTON_POSY = INSERT_NODE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+        static const int INIT_GRAPH_BUTTON_POSX = LOAD_FILE_BUTTON_POSX;
+        static const int INIT_GRAPH_BUTTON_POSY = LOAD_FILE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
 
-        static constexpr float DELETE_NODE_BUTTON_POSX = INSERT_EDGE_BUTTON_POSX;
-        static constexpr float DELETE_NODE_BUTTON_POSY = INSERT_EDGE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+        static const int INSERT_NODE_BUTTON_POSX = INIT_GRAPH_BUTTON_POSX;
+        static const int INSERT_NODE_BUTTON_POSY = INIT_GRAPH_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
 
-        static constexpr float DELETE_EDGE_BUTTON_POSX = DELETE_NODE_BUTTON_POSX;
-        static constexpr float DELETE_EDGE_BUTTON_POSY = DELETE_NODE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+        static const int INSERT_EDGE_BUTTON_POSX = INSERT_NODE_BUTTON_POSX;
+        static const int INSERT_EDGE_BUTTON_POSY = INSERT_NODE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
 
-        static constexpr float KRUSKAL_BUTTON_POSX = DELETE_EDGE_BUTTON_POSX;
-        static constexpr float KRUSKAL_BUTTON_POSY = DELETE_EDGE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+        static const int DELETE_NODE_BUTTON_POSX = INSERT_EDGE_BUTTON_POSX;
+        static const int DELETE_NODE_BUTTON_POSY = INSERT_EDGE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
 
-        static constexpr float CLEAR_GRAPH_BUTTON_POSX = KRUSKAL_BUTTON_POSX;
-        static constexpr float CLEAR_GRAPH_BUTTON_POSY = KRUSKAL_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+        static const int DELETE_EDGE_BUTTON_POSX = DELETE_NODE_BUTTON_POSX;
+        static const int DELETE_EDGE_BUTTON_POSY = DELETE_NODE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
 
-        static constexpr float UNDO_BUTTON_POSX = CLEAR_GRAPH_BUTTON_POSX;
-        static constexpr float UNDO_BUTTON_POSY = CLEAR_GRAPH_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+        static const int KRUSKAL_BUTTON_POSX = DELETE_EDGE_BUTTON_POSX;
+        static const int KRUSKAL_BUTTON_POSY = DELETE_EDGE_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
 
-        static constexpr float REDO_BUTTON_POSX = UNDO_BUTTON_POSX;
-        static constexpr float REDO_BUTTON_POSY = UNDO_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+        static const int CLEAR_GRAPH_BUTTON_POSX = KRUSKAL_BUTTON_POSX;
+        static const int CLEAR_GRAPH_BUTTON_POSY = KRUSKAL_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
 
-        static constexpr float ADJUST_SPEED_BUTTON_POSX = REDO_BUTTON_POSX;
-        static constexpr float ADJUST_SPEED_BUTTON_POSY = REDO_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
+        static const int UNDO_BUTTON_POSX = CLEAR_GRAPH_BUTTON_POSX;
+        static const int UNDO_BUTTON_POSY = CLEAR_GRAPH_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
 
-        static constexpr float INPUT_BOX_INIT_GRAPH_POSX = INIT_GRAPH_BUTTON_POSX + BUTTON_WIDTH;
-        static constexpr float INPUT_BOX_INIT_GRAPH_POSY = INIT_GRAPH_BUTTON_POSY;
+        static const int REDO_BUTTON_POSX = UNDO_BUTTON_POSX;
+        static const int REDO_BUTTON_POSY = UNDO_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
 
-        static constexpr float INPUT_BOX_INSERT_EDGE_POSX = INSERT_EDGE_BUTTON_POSX + BUTTON_WIDTH;
-        static constexpr float INPUT_BOX_INSERT_EDGE_POSY = INSERT_EDGE_BUTTON_POSY;
+        static const int ADJUST_SPEED_BUTTON_POSX = REDO_BUTTON_POSX;
+        static const int ADJUST_SPEED_BUTTON_POSY = REDO_BUTTON_POSY + BUTTON_HEIGHT + DISTANCE_BETWEEN_BUTTONS;
 
-        static constexpr float INPUT_BOX_DELETE_NODE_POSX = DELETE_NODE_BUTTON_POSX + BUTTON_WIDTH;
-        static constexpr float INPUT_BOX_DELETE_NODE_POSY = DELETE_NODE_BUTTON_POSY;
+        static const int INPUT_BOX_INIT_GRAPH_POSX = INIT_GRAPH_BUTTON_POSX + BUTTON_WIDTH;
+        static const int INPUT_BOX_INIT_GRAPH_POSY = INIT_GRAPH_BUTTON_POSY;
 
-        static constexpr float INPUT_BOX_DELETE_EDGE_POSX = DELETE_EDGE_BUTTON_POSX + BUTTON_WIDTH;
-        static constexpr float INPUT_BOX_DELETE_EDGE_POSY = DELETE_EDGE_BUTTON_POSY;
+        static const int INPUT_BOX_INSERT_EDGE_POSX = INSERT_EDGE_BUTTON_POSX + BUTTON_WIDTH;
+        static const int INPUT_BOX_INSERT_EDGE_POSY = INSERT_EDGE_BUTTON_POSY;
 
-        static constexpr float INPUT_BOX_ADJUST_SPEED_POSX = ADJUST_SPEED_BUTTON_POSX + BUTTON_WIDTH;
-        static constexpr float INPUT_BOX_ADJUST_SPEED_POSY = ADJUST_SPEED_BUTTON_POSY;
+        static const int INPUT_BOX_DELETE_NODE_POSX = DELETE_NODE_BUTTON_POSX + BUTTON_WIDTH;
+        static const int INPUT_BOX_DELETE_NODE_POSY = DELETE_NODE_BUTTON_POSY;
 
-        static constexpr float NOTIFICATION_COORDX = NOTIFICATION_FRAME_COORDX + 20;
-        static constexpr float NOTIFICATION_COORDY = NOTIFICATION_FRAME_COORDY + 20;
+        static const int INPUT_BOX_DELETE_EDGE_POSX = DELETE_EDGE_BUTTON_POSX + BUTTON_WIDTH;
+        static const int INPUT_BOX_DELETE_EDGE_POSY = DELETE_EDGE_BUTTON_POSY;
 
-        static constexpr float PROGRESS_BAR_POSX = WORKING_FRAME_COORDX;
-        static constexpr float PROGRESS_BAR_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT;
-        static constexpr float PROGRESS_BAR_LENGTH = WORKING_FRAME_WIDTH;
-        static constexpr float PROGRESS_BAR_HEIGHT = 20;
+        static const int INPUT_BOX_ADJUST_SPEED_POSX = ADJUST_SPEED_BUTTON_POSX + BUTTON_WIDTH;
+        static const int INPUT_BOX_ADJUST_SPEED_POSY = ADJUST_SPEED_BUTTON_POSY;
+        static const int NOTIFICATION_COORDX = 0;
+        static const int NOTIFICATION_COORDY = 50;
 
-        static constexpr float PREV_STEP_BUTTON_POSX = WORKING_FRAME_COORDX;
-        static constexpr float PREV_STEP_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10;
+        static const int PROGRESS_BAR_POSX = WORKING_FRAME_COORDX;
+        static const int PROGRESS_BAR_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT;
+        static const int PROGRESS_BAR_LENGTH = WORKING_FRAME_WIDTH;
+        static const int PROGRESS_BAR_HEIGHT = 20;
 
-        static constexpr float CONTINUE_BUTTON_POSX = PREV_STEP_BUTTON_POSX + BUTTON_WIDTH + DISTANCE_BETWEEN_BUTTONS;
-        static constexpr float CONTINUE_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10;
+        static const int PREV_STEP_BUTTON_POSX = WORKING_FRAME_COORDX;
+        static const int PREV_STEP_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10;
 
-        static constexpr float NEXT_STEP_BUTTON_POSX = CONTINUE_BUTTON_POSX + BUTTON_WIDTH + DISTANCE_BETWEEN_BUTTONS;
-        static constexpr float NEXT_STEP_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10;
+        static const int CONTINUE_BUTTON_POSX = PREV_STEP_BUTTON_POSX + BUTTON_WIDTH + DISTANCE_BETWEEN_BUTTONS;
+        static const int CONTINUE_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10;
+
+        static const int NEXT_STEP_BUTTON_POSX = CONTINUE_BUTTON_POSX + BUTTON_WIDTH + DISTANCE_BETWEEN_BUTTONS;
+        static const int NEXT_STEP_BUTTON_POSY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10;
 
 
         // font and title
@@ -126,31 +138,31 @@ namespace ds_viz::pages
         // Notification frame
         std::unique_ptr<raywtk::DisplayFrame> notificationFrame;
         // Init graph button
-        std::unique_ptr<raywtk::Button> initializeGraphButton;
+        std::unique_ptr<raywtk::GraphButton> initializeGraphButton;
         // Load file button
-        std::unique_ptr<raywtk::Button> loadFileButton;
+        std::unique_ptr<raywtk::GraphButton> loadFileButton;
         // Insert new node
-        std::unique_ptr<raywtk::Button> insertNodeButton;
+        std::unique_ptr<raywtk::GraphButton> insertNodeButton;
         // Insert new edge
-        std::unique_ptr<raywtk::Button> insertEdgeButton;
+        std::unique_ptr<raywtk::GraphButton> insertEdgeButton;
         // Kruskal
-        std::unique_ptr<raywtk::Button> KruskalButton;
+        std::unique_ptr<raywtk::GraphButton> KruskalButton;
         // Delete node button
-        std::unique_ptr<raywtk::Button> deleteNodeButton;
+        std::unique_ptr<raywtk::GraphButton> deleteNodeButton;
         // Delete edge button
-        std::unique_ptr<raywtk::Button> deleteEdgeButton;
+        std::unique_ptr<raywtk::GraphButton> deleteEdgeButton;
         // Undo button
-        std::unique_ptr<raywtk::Button> undoButton;
+        std::unique_ptr<raywtk::GraphButton> undoButton;
         // Redo button
-        std::unique_ptr<raywtk::Button> redoButton;
+        std::unique_ptr<raywtk::GraphButton> redoButton;
         // Clear graph button
-        std::unique_ptr<raywtk::Button> clearGraphButton;
+        std::unique_ptr<raywtk::GraphButton> clearGraphButton;
         // Toggle button
-        std::unique_ptr<raywtk::Button> toggleButton;
+        std::unique_ptr<raywtk::GraphButton> toggleButton;
         // Adjust speed button
-        std::unique_ptr<raywtk::Button> adjustSpeedButton;
+        std::unique_ptr<raywtk::GraphButton> adjustSpeedButton;
         // Toggle button for pseudo code 
-        std::unique_ptr<raywtk::Button> pseudoCodeToggleButton;
+        std::unique_ptr<raywtk::GraphButton> pseudoCodeToggleButton;
         bool showOperatorButtons = true; // Initially, operator buttons are visible
         // Notification
         std::unique_ptr<raywtk::Notification> currentNotification;
@@ -186,7 +198,7 @@ namespace ds_viz::pages
         std::set<int> inMstList;
 
         // vector store nodes
-        std::vector<std::unique_ptr<raywtk::NodeWidget>> nodes;
+        std::vector<std::unique_ptr<raywtk::GraphNode>> nodes;
 
         // vector store edges
         std::vector<std::pair<std::pair<int, int>, int>> edges;
@@ -206,9 +218,9 @@ namespace ds_viz::pages
         size_t currentAnimationStep = 0;
 
         // Undo stack for storing the state of the graph
-        std::stack<std::pair<std::vector<std::unique_ptr<raywtk::NodeWidget>>, std::vector<std::pair<std::pair<int, int>, int>>>> undoStack;
+        std::stack<std::pair<std::vector<std::unique_ptr<raywtk::GraphNode>>, std::vector<std::pair<std::pair<int, int>, int>>>> undoStack;
         // Redo stack for storing the state of the graph
-        std::stack<std::pair<std::vector<std::unique_ptr<raywtk::NodeWidget>>, std::vector<std::pair<std::pair<int, int>, int>>>> redoStack;
+        std::stack<std::pair<std::vector<std::unique_ptr<raywtk::GraphNode>>, std::vector<std::pair<std::pair<int, int>, int>>>> redoStack;
 
         bool showPseudoCodeBox = true; 
         bool waitingForFile = false;
@@ -216,9 +228,9 @@ namespace ds_viz::pages
         // No processing operator flag
         bool freeFlag = true;
 
-        std::unique_ptr<raywtk::Button> prevStepButton;
-        std::unique_ptr<raywtk::Button> nextStepButton;
-        std::unique_ptr<raywtk::Button> continueButton;
+        std::unique_ptr<raywtk::GraphButton> prevStepButton;
+        std::unique_ptr<raywtk::GraphButton> nextStepButton;
+        std::unique_ptr<raywtk::GraphButton> continueButton;
 
         float progressBarLength = 400.0f; // Fixed length of the progress bar
         float progressBarHeight = 20.0f;  // Height of the progress bar
