@@ -13,7 +13,7 @@ namespace ds_viz::themes::dark_simple
         raylib::Font font;
 
         // Constructor
-        HeapButtonStyle() : font("./ttf/Inter-Bold.ttf", 128, nullptr, 250) // Load font during initialization
+        HeapButtonStyle() : font("./ttf/Inter-Regular.ttf", 18) // Load font during initialization
         {
         }
 

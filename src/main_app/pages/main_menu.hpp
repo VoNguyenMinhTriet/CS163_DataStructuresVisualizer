@@ -7,6 +7,7 @@
 #include "widget_toolkit/controls/button.hpp"
 #include "./heap/HeapVisualizer.hpp"
 #include "./GraphVisualizer.hpp"
+#include "./trie/trie_page.hpp"
 #include "./linked_list_page.hpp"
 #include "main_app/themes/dark_simple/dark_simple.hpp"
 

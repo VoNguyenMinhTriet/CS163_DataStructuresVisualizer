@@ -23,7 +23,7 @@ namespace raywtk
         bool enabled = true;
 
         // Text for button
-        std::string buttonText = "Button";
+        std::string buttonText = "";
         
         // Events
         eventpp::CallbackList<void()> Click;

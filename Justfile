@@ -28,6 +28,3 @@ win-msys2-dbg_build:
             -g -static-libgcc -static-libstdc++ -mwindows --std=c++20 \
             {{prepend('$(pkg-config --libs --cflags --static ', append(')', libs))}} \
             {{prepend('-I', include-dirs)}} 
-
-clean:
-    rm -rf {{bin-dir}}

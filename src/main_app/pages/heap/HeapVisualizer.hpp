@@ -20,7 +20,7 @@
 const int HEAP_PSEUDO_CODE_FRAME_HEIGHT = 130;
 const int HEAP_PSEUDO_CODE_FRAME_WIDTH = 300;
 const int HEAP_PSEUDO_CODE_FRAME_COORDX = 1280 - HEAP_PSEUDO_CODE_FRAME_WIDTH - 10;
-const int HEAP_PSEUDO_CODE_FRAME_COORDY = 680 - HEAP_PSEUDO_CODE_FRAME_HEIGHT;
+const int HEAP_PSEUDO_CODE_FRAME_COORDY = 720 - HEAP_PSEUDO_CODE_FRAME_HEIGHT - 40;
 
 const int HEAP_OPERATOR_BUTTON_WIDTH = 150;
 const int HEAP_OPERATOR_BUTTON_HEIGHT = 25;
@@ -95,7 +95,7 @@ const int HEAP_WORKING_FRAME_WIDTH = 1180;
 const int HEAP_WORKING_FRAME_COORDX = 50;
 const int HEAP_WORKING_FRAME_COORDY = 0;
 
-const int HEAP_HOME_BUTTON_COORDX = 1210;
+const int HEAP_HOME_BUTTON_COORDX = 10;
 const int HEAP_HOME_BUTTON_COORDY = 10;
 const int HEAP_HOME_BUTTON_WIDTH = 50;
 const int HEAP_HOME_BUTTON_HEIGHT = 50;
@@ -106,6 +106,9 @@ namespace ds_viz::pages
 {
     class HeapVisualizer : public Page
     {
+        // window width and height
+        int windowWidth = 1280;
+        int windowHeight = 720;
 
         // font and title
         std::unique_ptr<raylib::Font> font;
