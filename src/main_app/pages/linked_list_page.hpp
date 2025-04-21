@@ -18,13 +18,7 @@ namespace ds_viz::pages
     {
         // Font and title of page
         std::unique_ptr<raylib::Font> font;
-        raylib::Text title;
-        
-        // For scaling
-        const int baseWidth = 1280;  
-        const int baseHeight = 720;
-        float scaleX; 
-        float scaleY;     
+        raylib::Text title;  
 
         std::unique_ptr<raywtk::ListNodeWidget> head = nullptr; // Head node
         std::shared_ptr<raylib::Font> nodeFont; // Node font
@@ -32,7 +26,7 @@ namespace ds_viz::pages
         std::shared_ptr<raylib::Font> codeFont;
 
         float headX = 80; // Default X-coordinate of head
-        float headY = 400; // Default Y-coordinate of head
+        float headY = 300; // Default Y-coordinate of head
         float spacing = 100; // Default spacing between nodes
         int size = 0; // Size of Linked List
         
@@ -99,8 +93,6 @@ namespace ds_viz::pages
         raylib::Texture undoButtonTex;
         raylib::Texture redoButtonTex;
         raylib::Texture returnButtonTex;
-        raylib::Texture stepforwardTex;
-        raylib::Texture stepbackTex;
         
         // flags to show input bars
         bool showInsertAtHead = false;
@@ -165,18 +157,19 @@ namespace ds_viz::pages
         int searchState = 0;
 
         // Speed bar
-        float speedBarX = 100;  
-        float speedBarY = 50;
+        bool isDraggingSpeedKnob = false;
+        float speedBarX = 495;  
+        float speedBarY = 640;
         float speedBarWidth = 300;
         float speedBarHeight = 10;
         float speedKnobRadius = 8;
-
+    
         float speedMin = 0.25f;  // Minimum speed factor
         float speedMax = 2.0f;  // Maximum speed factor
-        float speedKnobX = speedBarX;  // Start at the lowest speed
-        bool isDraggingSpeedKnob = false;
-
         float animationSpeed = 1.0f;  // Default speed (1.0x)
+        float t = (animationSpeed - speedMin) / (speedMax - speedMin);
+        float speedKnobX = speedBarX + t * speedBarWidth;
+        
         std::vector<float> speedSteps = {0.25f, 0.5f, 1.0f, 1.5f, 2.0f};
 
         // Messages and notifications
