@@ -30,6 +30,7 @@ namespace raywtk
         for (int i = 0; i < numLines; ++i) {
             raylib::Color lineColor = GetColorForState(lineStates[i]);
             raylib::DrawText(pseudoCodeLines[i].c_str(), position.x + 5, position.y + i * lineHeight + 5, 18, GetColorForState(lineStates[i]));
+
         }
     }    
 
