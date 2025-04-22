@@ -8,6 +8,7 @@ namespace raywtk
         position(position), numLines(numLines), lineWidth(lineWidth), lineHeight(lineHeight), defaultColor(defaultColor), highlightColor(highlightColor), executedColor(executedColor) {
             pseudoCodeLines.resize(numLines, "");
             lineStates.resize(numLines, LineState::DEFAULT);
+            font = raylib::Font("./ttf/Inter-Regular.ttf", 18);
         }
 
     void PseudoCodeDisplay::SetPseudoCodeLines(const std::vector<std::string>& lines) {
@@ -27,10 +28,12 @@ namespace raywtk
     void PseudoCodeDisplay::Render() {
         raylib::Rectangle lineRect(position.x, position.y, lineWidth, lineHeight * numLines);
         lineRect.DrawRoundedLines(0.1f, 13, PINK);
+        // std::shared_ptr<raylib::Font> codeFont = std::make_shared<raylib::Font>("./ttf/Inter-Regular.ttf", 18);
+        float fontSize = 18;
+        float spacing = 1.0f;
         for (int i = 0; i < numLines; ++i) {
             raylib::Color lineColor = GetColorForState(lineStates[i]);
-            raylib::DrawText(pseudoCodeLines[i].c_str(), position.x + 5, position.y + i * lineHeight + 5, 18, GetColorForState(lineStates[i]));
-
+            font.DrawText(pseudoCodeLines[i].c_str(), raylib::Vector2(position.x + 3, position.y + i * lineHeight + 5), fontSize, spacing, lineColor);
         }
     }    
 

@@ -26,6 +26,11 @@ namespace raywtk
 
         void SetLineState(int lineIndex, LineState state);
 
+        // Destructor
+        ~PseudoCodeDisplay() {
+            font.Unload(); // Unload font to free resources
+        }
+
         void Render() override;
 
         void Update(float dt) override;
@@ -40,6 +45,8 @@ namespace raywtk
 
         std::vector<std::string> pseudoCodeLines;
         std::vector<LineState> lineStates;
+        std::shared_ptr<raylib::Font> codeFont;
+        inline static raylib::Font font;
 
         // Get the color for a specific line state
         raylib::Color GetColorForState(LineState state) const {

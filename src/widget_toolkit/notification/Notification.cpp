@@ -15,7 +15,7 @@ namespace raywtk
 
     void Notification::Render()
     {
-        DrawText(message.c_str(), x + 10, y + 10, 20, GetColor(type));
+        DrawText(message.c_str(), x + 10, y + 20, 20, GetColor(type));
     }
 
     Color Notification::GetColor(NotificationType type)
