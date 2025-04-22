@@ -30,11 +30,12 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer(ds_viz::MainWindow &context) : d
     notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
     // Main menu button initialize
+    mainMenuButtonTex = raylib::Texture(raylib::Image("./images/return_button.png"));
     mainMenuButton = std::make_unique<raywtk::GraphButton>();
     mainMenuButton->buttonText = "";
     mainMenuButton->buttonRect = raylib::Rectangle(MAIN_MENU_BUTTON_POSX, MAIN_MENU_BUTTON_POSY, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT);
-    mainMenuButton->Click.append([this]() { _context->ChangePage(std::make_shared<ds_viz::pages::MainMenuPage>(*_context)); });
-    mainMenuButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
+    mainMenuButton->Click.append([this]() { mainMenuButtonTex.Unload(); _context->ChangePage(std::make_shared<ds_viz::pages::MainMenuPage>(*_context)); });
+    mainMenuButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphImageButtonStyle>(&mainMenuButtonTex);
 
     // Load file button initialize
     loadFileButton = std::make_unique<raywtk::GraphButton>();
@@ -141,19 +142,19 @@ ds_viz::pages::GraphVisualizer::GraphVisualizer(ds_viz::MainWindow &context) : d
 
     // Toggle button initialize
     toggleButton = std::make_unique<raywtk::GraphButton>();
-    toggleButton->buttonText = ">";
+    toggleButton->buttonText = "<";
     toggleButton->buttonRect = raylib::Rectangle(TOGGLE_BUTTON_POSX, TOGGLE_BUTTON_POSY, TOGGLE_BUTTON_WIDTH, TOGGLE_BUTTON_HEIGHT);
     toggleButton->Click.append([this]() { showOperatorButtons = !showOperatorButtons; // Toggle visibility
-                                          toggleButton->buttonText = showOperatorButtons ? ">" : "<"; // Update button text
+                                          toggleButton->buttonText = showOperatorButtons ? "<" : ">"; // Update button text
                                         });
     toggleButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Toggle button for pseudo-code box
     pseudoCodeToggleButton = std::make_unique<raywtk::GraphButton>();
-    pseudoCodeToggleButton->buttonText = "<";
+    pseudoCodeToggleButton->buttonText = ">";
     pseudoCodeToggleButton->buttonRect = raylib::Rectangle(PSEUDO_CODE_TOGGLE_BUTTON_POSX, PSEUDO_CODE_TOGGLE_BUTTON_POSY, PSEUDO_CODE_TOGGLE_BUTTON_WIDTH, PSEUDO_CODE_TOGGLE_BUTTON_HEIGHT);
     pseudoCodeToggleButton->Click.append([this]() { showPseudoCodeBox = !showPseudoCodeBox; // Toggle visibility
-                                                    pseudoCodeToggleButton->buttonText = showPseudoCodeBox ? "<" : ">"; // Update button text
+                                                    pseudoCodeToggleButton->buttonText = showPseudoCodeBox ? ">" : "<"; // Update button text
                                                     }); 
     pseudoCodeToggleButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 

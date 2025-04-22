@@ -63,6 +63,8 @@
         "thread": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "heap_input_box": "cpp"
+        "heap_input_box": "cpp",
+        "fstream": "cpp",
+        "future": "cpp"
     }
 }
