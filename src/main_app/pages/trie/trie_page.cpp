@@ -2,8 +2,11 @@
 
 #include "main_app/pages/page.hpp"
 #include "raylib-cpp/Color.hpp"
+#include "raylib-cpp/Image.hpp"
 #include "raylib-cpp/Keyboard.hpp"
 #include "raylib-cpp/Rectangle.hpp"
+#include "raylib-cpp/Texture.hpp"
+#include "raylib-cpp/TextureUnmanaged.hpp"
 #include "raylib-cpp/Vector2.hpp"
 
 #include <raylib.h>
@@ -13,6 +16,9 @@
 
 ds_viz::pages::TriePage::TriePage(MainWindow& context) : Page(context)
 {
+    titleFont = std::unique_ptr<raylib::Font>(new raylib::Font("./ttf/InterDisplay-Black.ttf", 128));
+    title = raylib::Text("Trie", 128, raylib::Color(255, 255, 255, 48), *titleFont, 0);
+
     _toggleShowActionsButton.Click.append([this] { ToggleShowActions(); });
     _showCodeBoxButton.Click.append([this] { _codeBoxVisible = !_codeBoxVisible; });
     _initializeButton.Click.append([this] { InitializeRandomly(); });
@@ -34,13 +40,24 @@ ds_viz::pages::TriePage::TriePage(MainWindow& context) : Page(context)
 
 void ds_viz::pages::TriePage::Render()
 {
+    title.Draw(raylib::Vector2(
+        (_context->ref_raylib_window->GetWidth() - title.MeasureEx().x) / 2.0,
+        0));
+
     _scene.Render();
 
-    _homeButton.Render();
+    //_homeButton.Render();
+    homeIcon.Draw(raylib::Rectangle(0, 0, homeIcon.GetWidth(), homeIcon.GetHeight()),
+                     _homeButton.buttonRect);
+
     _toggleShowActionsButton.Render();
     _prevStepButton.Render();
+    RenderTextInCenter(_prevStepButton.buttonRect, *buttonFont, "Step backward", raylib::Color::Black());
     _playPauseButton.Render();
+    RenderTextInCenter(_playPauseButton.buttonRect, *buttonFont,
+        _isPlaying ? "Pause" : "Play", raylib::Color::Black());
     _nextStepButton.Render();
+    RenderTextInCenter(_nextStepButton.buttonRect, *buttonFont, "Step forward", raylib::Color::Black());
 
     if (actionsShown)
     {
@@ -88,6 +105,8 @@ void ds_viz::pages::TriePage::Render()
     progressBar.Draw(raylib::Color::Green());
     //
     _stepsPerSecTextBox.Render();
+    RenderTextInCenter(raylib::Rectangle(_context->ref_raylib_window->GetWidth() / 2.0f + 4, _context->ref_raylib_window->GetHeight() - 60, 42, 24),
+        *buttonFont, "steps/s", raylib::Color::White());
 }
 
 void ds_viz::pages::TriePage::Update(float deltaTime)
@@ -133,17 +152,17 @@ void ds_viz::pages::TriePage::Update(float deltaTime)
         12, _context->ref_raylib_window->GetHeight() - 60, 128, 24);
 
     _prevStepButton.buttonRect = raylib::Rectangle(
-        _context->ref_raylib_window->GetWidth() / 2.0 - 46,
-        _context->ref_raylib_window->GetHeight() - 36, 28, 28);
+        _context->ref_raylib_window->GetWidth() / 2.0 - 128,
+        _context->ref_raylib_window->GetHeight() - 32, 100, 24);
     _playPauseButton.buttonRect = raylib::Rectangle(
-        _context->ref_raylib_window->GetWidth() / 2.0 - 14,
-        _context->ref_raylib_window->GetHeight() - 36, 28, 28);
+        _context->ref_raylib_window->GetWidth() / 2.0 - 24,
+        _context->ref_raylib_window->GetHeight() - 32, 48, 24);
     _nextStepButton.buttonRect = raylib::Rectangle(
-        _context->ref_raylib_window->GetWidth() / 2.0 + 18,
-        _context->ref_raylib_window->GetHeight() - 36, 28, 28);
+        _context->ref_raylib_window->GetWidth() / 2.0 + 28,
+        _context->ref_raylib_window->GetHeight() - 32, 100, 24);
     _stepsPerSecTextBox.textBoxRect = raylib::Rectangle(
         _context->ref_raylib_window->GetWidth() / 2.0 - 46,
-        _context->ref_raylib_window->GetHeight() - 64, 46, 24);
+        _context->ref_raylib_window->GetHeight() - 60, 46, 24);
 
     _showCodeBoxButton.buttonRect = raylib::Rectangle(
         _context->ref_raylib_window->GetWidth() - 8, _context->ref_raylib_window->GetHeight() - 172, 16, 136);
@@ -276,14 +295,10 @@ void ds_viz::pages::TriePage::Update(float deltaTime)
         _currentTime = 0;
 
     _scene.Update(deltaTime);
-
-    if (_deferredStateChange != nullptr) _deferredStateChange();
 }
 
 void ds_viz::pages::TriePage::GoBackHome()
 {
-    _deferredStateChange = [this]() {
-        _context->ChangePage(
-            std::make_shared<ds_viz::pages::MainMenuPage>(*_context));
-    };
+    _context->ChangePage(
+        std::make_shared<ds_viz::pages::MainMenuPage>(*_context));
 }
