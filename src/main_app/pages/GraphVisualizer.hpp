@@ -14,6 +14,8 @@
 #include "widget_toolkit/controls/graph_button.hpp"
 #include "widget_toolkit/graph_widgets/node.hpp"
 #include "widget_toolkit/graph_widgets/graph_node.hpp"
+#include "main_app/themes/dark_simple/image_button.hpp"
+#include "main_app/themes/dark_simple/graph_image_button.hpp"
 #include "widget_toolkit/graph_widgets/edge.hpp"
 #include "widget_toolkit/display_frame/display_frame.hpp"
 #include "widget_toolkit/input_box/InputBox.hpp"
@@ -40,14 +42,14 @@ namespace ds_viz::pages
         static const int MAIN_MENU_BUTTON_POSX = 5;
         static const int MAIN_MENU_BUTTON_POSY = 5;
 
-        static const int MAIN_MENU_BUTTON_WIDTH = 25;
-        static const int MAIN_MENU_BUTTON_HEIGHT = 25;
+        static const int MAIN_MENU_BUTTON_WIDTH = 50;
+        static const int MAIN_MENU_BUTTON_HEIGHT = 50;
 
     
         static const int NOTIFICATION_FRAME_HEIGHT = 340;
         static const int NOTIFICATION_FRAME_WIDTH = DEFAULT_WIN_WIDTH - WORKING_FRAME_WIDTH;
         static const int NOTIFICATION_FRAME_COORDX = 0;
-        static const int NOTIFICATION_FRAME_COORDY = 50;
+        static const int NOTIFICATION_FRAME_COORDY = 60;
 
         static const int DISTANCE_BETWEEN_BUTTONS = 5;
 
@@ -173,6 +175,8 @@ namespace ds_viz::pages
         std::unique_ptr<raywtk::GraphButton> pseudoCodeToggleButton;
         // Main menu button initialize
         std::unique_ptr<raywtk::GraphButton> mainMenuButton;
+        // Main menu texture
+        raylib::Texture mainMenuButtonTex;
         bool showOperatorButtons = true; // Initially, operator buttons are visible
         // Notification
         std::unique_ptr<raywtk::Notification> currentNotification;
