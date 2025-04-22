@@ -60,16 +60,16 @@ namespace raywtk
             HeapPseudoCodeDisplay(raylib::Vector2 position, int numLines, float lineWidth, float lineHeight,
                 raylib::Color defaultColor, raylib::Color highlightColor, raylib::Color executedColor)
                 : position(position), numLines(numLines), lineWidth(lineWidth), lineHeight(lineHeight),
-                defaultColor(defaultColor), highlightColor(highlightColor), executedColor(executedColor),
-                font("./ttf/Inter-Regular.ttf", 18) // Load font during initialization
+                defaultColor(defaultColor), highlightColor(highlightColor), executedColor(executedColor)
             {
+                pseudoFont = raylib::Font("./ttf/Inter-Regular.ttf", 18); // Load font during initialization
                 pseudoCodeLines.resize(numLines, "");
                 lineStates.resize(numLines, LineState::DEFAULT);
             }
 
             // Destructor
             ~HeapPseudoCodeDisplay() {
-                font.Unload(); // Unload font to free resources
+                pseudoFont.Unload(); // Unload font to free resources
             }
             
             // set the state for all lines of pseudo code
@@ -120,7 +120,7 @@ namespace raywtk
                 {
                     raylib::Color lineColor = GetColorForState(lineStates[i]);
                     raylib::Rectangle lineRect(position.x, position.y + i * lineHeight, lineWidth, lineHeight);
-                    raylib::DrawTextEx(font, pseudoCodeLines[i].c_str(), raylib::Vector2(position.x + 5, position.y + i * lineHeight + 2), fontSize, 0, lineColor);
+                    raylib::DrawTextEx(pseudoFont, pseudoCodeLines[i].c_str(), raylib::Vector2(position.x + 5, position.y + i * lineHeight + 2), fontSize, 0, lineColor);
                 }
             }
             
@@ -129,7 +129,7 @@ namespace raywtk
             }
 
     private:
-        inline static raylib::Font font;
+        inline static raylib::Font pseudoFont;
         raylib::Vector2 position;
         int numLines;
         float lineWidth;
