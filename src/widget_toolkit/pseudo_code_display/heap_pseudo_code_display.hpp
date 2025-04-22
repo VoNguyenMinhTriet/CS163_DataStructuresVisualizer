@@ -129,6 +129,7 @@ namespace raywtk
             }
 
     private:
+        inline static raylib::Font font;
         raylib::Vector2 position;
         int numLines;
         float lineWidth;
@@ -136,7 +137,6 @@ namespace raywtk
         raylib::Color defaultColor;
         raylib::Color highlightColor;
         raylib::Color executedColor;
-        raylib::Font font;
         
         std::vector<std::string> pseudoCodeLines;
         std::vector<LineState> lineStates;

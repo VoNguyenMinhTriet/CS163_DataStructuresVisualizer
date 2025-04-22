@@ -4,23 +4,25 @@
 #include "widget_toolkit/controls/heap_button.hpp"
 #include "widget_toolkit/interfaces.hpp"
 #include "raylib-cpp/raylib-cpp.hpp"
+#include <cassert>
 
 namespace ds_viz::themes::dark_simple
 {
     class HeapButtonStyle : public raywtk::IStyle
     {
     public:
-        raylib::Font font;
+        inline static raylib::Font font;
 
         // Constructor
-        HeapButtonStyle() : font("./ttf/Inter-Regular.ttf", 18) // Load font during initialization
+        HeapButtonStyle() 
         {
+            font = raylib::Font("./ttf/Inter-Regular.ttf", 18);
         }
 
         // Destructor
         ~HeapButtonStyle()
         {
-            font.Unload(); // Unload font to free resources
+            font.Unload();
         }    
 
         void RenderWithStyle (raywtk::IRenderable *self) override 
