@@ -9,6 +9,7 @@
 #include "./text_button.hpp"
 #include "./text_box.hpp"
 #include "./code_box.hpp"
+#include "./graph_text_button.hpp"
 
 #include <memory>
 
@@ -30,6 +31,11 @@ namespace ds_viz::themes::dark_simple
                 .insert({
                     typeid(raywtk::Button).name(),
                     std::unique_ptr<raywtk::IStyle>(new ButtonStyle())
+                });
+            _darkSimpleTheme.styles
+                .insert({
+                    typeid(raywtk::Button).name(),
+                    std::unique_ptr<raywtk::IStyle>(new GraphButtonStyle())
                 });
           
             _darkSimpleTheme.styles

@@ -11,153 +11,172 @@
 
 using namespace ds_viz::pages;
 
+const int ds_viz::pages::GraphVisualizer::PSEUDOCODE_LINE_WIDTH;
+const int ds_viz::pages::GraphVisualizer::PSEUDOCODE_LINE_HEIGHT;
+const int ds_viz::pages::GraphVisualizer::NOTIFICATION_COORDX;
+const int ds_viz::pages::GraphVisualizer::NOTIFICATION_COORDY;
 
 
 ds_viz::pages::GraphVisualizer::GraphVisualizer(ds_viz::MainWindow &context) : ds_viz::Page(context) 
 {
     // font and title initialize
     font = std::make_unique<raylib::Font>("./ttf/InterDisplay-Black.ttf", 128, nullptr, 250);
-    title = raylib::Text("Graph Visualizer", 64, raylib::Color::White(), *font, 0);
+    // title = raylib::Text("Graph Visualizer", 100, raylib::Color(255, 255, 255, 128), *font, 0);
+    title = raylib::Text("", 100, raylib::Color(255, 255, 255, 128), *font, 0);
     
     // workingFrame initialize
     workingFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(WORKING_FRAME_COORDX, WORKING_FRAME_COORDY, WORKING_FRAME_WIDTH, WORKING_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
     // notificationFrame initialize
     notificationFrame = std::make_unique<raywtk::DisplayFrame>(raylib::Rectangle(NOTIFICATION_FRAME_COORDX, NOTIFICATION_FRAME_COORDY, NOTIFICATION_FRAME_WIDTH, NOTIFICATION_FRAME_HEIGHT), raylib::Color::Gray(), 5.0f);
 
+    // Main menu button initialize
+    mainMenuButton = std::make_unique<raywtk::GraphButton>();
+    mainMenuButton->buttonText = "";
+    mainMenuButton->buttonRect = raylib::Rectangle(MAIN_MENU_BUTTON_POSX, MAIN_MENU_BUTTON_POSY, MAIN_MENU_BUTTON_WIDTH, MAIN_MENU_BUTTON_HEIGHT);
+    mainMenuButton->Click.append([this]() { _context->ChangePage(std::make_shared<ds_viz::pages::MainMenuPage>(*_context)); });
+    mainMenuButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
+
     // Load file button initialize
-    loadFileButton = std::make_unique<raywtk::Button>();
+    loadFileButton = std::make_unique<raywtk::GraphButton>();
     loadFileButton->buttonText = "Load File";
     loadFileButton->buttonRect = raylib::Rectangle(LOAD_FILE_BUTTON_POSX, LOAD_FILE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     loadFileButton->Click.append([this]() { if (freeFlag) {  notification = std::make_unique<raywtk::Notification>(
-                "Please drag and drop the file here. The file format should be:\n"
-                "1. First two lines: two numbers n and m (number of vertices and edges).\n"
-                "2. Next m lines: (u, v, w) representing edges with weights.",
+                "Please drag and drop the file here. The file format\n" 
+                "should be:\n"
+                "1. First two lines: two numbers n and m (number of\n"
+                "vertices and edges).\n"
+                "2. Next m lines: (u, v, w) representing edges with\n"
+                "weights.",
                 raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY ); waitingForFile = true; }});
-    loadFileButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    loadFileButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Initialize graph button and input box
-    initializeGraphButton = std::make_unique<raywtk::Button>();
+    initializeGraphButton = std::make_unique<raywtk::GraphButton>();
     initializeGraphButton->buttonText = "Initialize Graph";
     initializeGraphButton->buttonRect = raylib::Rectangle(INIT_GRAPH_BUTTON_POSX, INIT_GRAPH_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     initializeGraphButton->Click.append([this]() { if (freeFlag) {
                                                     inputInitializeGraphFlag = true; inputBoxInitializeGraph->processing = true; freeFlag = false;
                                                     notification = std::make_unique<raywtk::Notification>("Enter the number of nodes to initialize the graph", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY ); }
                                                 });
-    initializeGraphButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    initializeGraphButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Insert new node button initialize
-    insertNodeButton = std::make_unique<raywtk::Button>();
+    insertNodeButton = std::make_unique<raywtk::GraphButton>();
     insertNodeButton->buttonText = "Insert New Node";
     insertNodeButton->buttonRect = raylib::Rectangle(INSERT_NODE_BUTTON_POSX, INSERT_NODE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     insertNodeButton->Click.append([this]() { if(freeFlag) InsertNewNode(); });
-    insertNodeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    insertNodeButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Insert new edge button initialize
     inputInsertEdgeButtonFlag = false;
-    insertEdgeButton = std::make_unique<raywtk::Button>();
+    insertEdgeButton = std::make_unique<raywtk::GraphButton>();
     insertEdgeButton->buttonText = "Insert New Edge";
     insertEdgeButton->buttonRect = raylib::Rectangle(INSERT_EDGE_BUTTON_POSX, INSERT_EDGE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     insertEdgeButton->Click.append([this]() { if(freeFlag){
                                                 inputInsertEdgeButtonFlag = true; inputBoxInsertEdge->processing = true; freeFlag = false;
                                                 notification = std::make_unique<raywtk::Notification>("Insert new edge", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
                                             } });
-    insertEdgeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    insertEdgeButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Kruskal initialize
-    KruskalButton = std::make_unique<raywtk::Button>();
+    KruskalButton = std::make_unique<raywtk::GraphButton>();
     KruskalButton->buttonText = "Kruskal";
     KruskalButton->buttonRect = raylib::Rectangle(KRUSKAL_BUTTON_POSX, KRUSKAL_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     KruskalButton->Click.append([this]() { if(freeFlag){ freeFlag = false; Kruskal(); } });
-    KruskalButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    KruskalButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Clear graph button initialize
-    clearGraphButton = std::make_unique<raywtk::Button>();
+    clearGraphButton = std::make_unique<raywtk::GraphButton>();
     clearGraphButton->buttonText = "Clear Graph";
     clearGraphButton->buttonRect = raylib::Rectangle(CLEAR_GRAPH_BUTTON_POSX, CLEAR_GRAPH_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     clearGraphButton->Click.append([this]() { if (freeFlag) { ClearGraph(); }});
-    clearGraphButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    clearGraphButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Delete node button initialize
     inputDeleteNodeButtonFlag = false;
-    deleteNodeButton = std::make_unique<raywtk::Button>();
+    deleteNodeButton = std::make_unique<raywtk::GraphButton>();
     deleteNodeButton->buttonText = "Delete Node";
     deleteNodeButton->buttonRect = raylib::Rectangle(DELETE_NODE_BUTTON_POSX, DELETE_NODE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     deleteNodeButton->Click.append([this]() { if(freeFlag){
                                                 inputDeleteNodeButtonFlag = true; inputBoxDeleteNode->processing = true; freeFlag = false;
                                                 notification = std::make_unique<raywtk::Notification>("Delete node", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
                                             } });
-    deleteNodeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    deleteNodeButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Delete edges button initialize
     inputDeleteEdgeButtonFlag = false;
-    deleteEdgeButton = std::make_unique<raywtk::Button>();
+    deleteEdgeButton = std::make_unique<raywtk::GraphButton>();
     deleteEdgeButton->buttonText = "Delete Edge";
     deleteEdgeButton->buttonRect = raylib::Rectangle(DELETE_EDGE_BUTTON_POSX, DELETE_EDGE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     deleteEdgeButton->Click.append([this]() { if(freeFlag){
                                                 inputDeleteEdgeButtonFlag = true; inputBoxDeleteEdge->processing = true; freeFlag = false;
                                                 notification = std::make_unique<raywtk::Notification>("Delete edge", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY);
                                             } });
-    deleteEdgeButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    deleteEdgeButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Undo button initialize
-    undoButton = std::make_unique<raywtk::Button>();
+    undoButton = std::make_unique<raywtk::GraphButton>();
     undoButton->buttonText = "Undo";
     undoButton->buttonRect = raylib::Rectangle(UNDO_BUTTON_POSX, UNDO_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     undoButton->Click.append([this]() { if(freeFlag) Undo(); });
-    undoButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    undoButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Redo button initialize
-    redoButton = std::make_unique<raywtk::Button>();
+    redoButton = std::make_unique<raywtk::GraphButton>();
     redoButton->buttonText = "Redo";
     redoButton->buttonRect = raylib::Rectangle(REDO_BUTTON_POSX, REDO_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     redoButton->Click.append([this]() { if(freeFlag) Redo(); });
-    redoButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    redoButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Adjust speed button initialize
-    adjustSpeedButton = std::make_unique<raywtk::Button>();
+    adjustSpeedButton = std::make_unique<raywtk::GraphButton>();
     adjustSpeedButton->buttonText = "Adjust Speed";
     adjustSpeedButton->buttonRect = raylib::Rectangle(ADJUST_SPEED_BUTTON_POSX, ADJUST_SPEED_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     adjustSpeedButton->Click.append([this]() { if (freeFlag || kruskalFlag) { 
                                                     inputAdjustSpeedFlag = true; inputBoxAdjustSpeed->processing = true; freeFlag = false; 
-                                                    notification = std::make_unique<raywtk::Notification>( "Enter the number of steps per second for the Kruskal animation.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY );
+                                                    notification = std::make_unique<raywtk::Notification>( "Enter the number of steps per second for the\n"
+                                                                                                            "Kruskal animation.", raywtk::NotificationType::INFO, NOTIFICATION_COORDX, NOTIFICATION_COORDY );
                                                 }});
-    adjustSpeedButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    adjustSpeedButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Toggle button initialize
-    toggleButton = std::make_unique<raywtk::Button>();
+    toggleButton = std::make_unique<raywtk::GraphButton>();
     toggleButton->buttonText = ">";
     toggleButton->buttonRect = raylib::Rectangle(TOGGLE_BUTTON_POSX, TOGGLE_BUTTON_POSY, TOGGLE_BUTTON_WIDTH, TOGGLE_BUTTON_HEIGHT);
     toggleButton->Click.append([this]() { showOperatorButtons = !showOperatorButtons; // Toggle visibility
                                           toggleButton->buttonText = showOperatorButtons ? ">" : "<"; // Update button text
                                         });
-    toggleButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    toggleButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Toggle button for pseudo-code box
-    pseudoCodeToggleButton = std::make_unique<raywtk::Button>();
+    pseudoCodeToggleButton = std::make_unique<raywtk::GraphButton>();
     pseudoCodeToggleButton->buttonText = "<";
     pseudoCodeToggleButton->buttonRect = raylib::Rectangle(PSEUDO_CODE_TOGGLE_BUTTON_POSX, PSEUDO_CODE_TOGGLE_BUTTON_POSY, PSEUDO_CODE_TOGGLE_BUTTON_WIDTH, PSEUDO_CODE_TOGGLE_BUTTON_HEIGHT);
     pseudoCodeToggleButton->Click.append([this]() { showPseudoCodeBox = !showPseudoCodeBox; // Toggle visibility
                                                     pseudoCodeToggleButton->buttonText = showPseudoCodeBox ? "<" : ">"; // Update button text
                                                     }); 
-    pseudoCodeToggleButton->style = std::make_unique<ds_viz::themes::dark_simple::ButtonStyle>();
+    pseudoCodeToggleButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Previous Step Button
-    prevStepButton = std::make_unique<raywtk::Button>();
+    prevStepButton = std::make_unique<raywtk::GraphButton>();
     prevStepButton->buttonText = "Previous";
     prevStepButton->buttonRect = raylib::Rectangle(PREV_STEP_BUTTON_POSX, PREV_STEP_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     prevStepButton->Click.append([this]() { if (currentAnimationStep > 0) { currentAnimationStep--; animationRunning = false; } });
+    prevStepButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Next Step Button
-    nextStepButton = std::make_unique<raywtk::Button>();
+    nextStepButton = std::make_unique<raywtk::GraphButton>();
     nextStepButton->buttonText = "Next";
     nextStepButton->buttonRect = raylib::Rectangle(NEXT_STEP_BUTTON_POSX, NEXT_STEP_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     nextStepButton->Click.append([this]() { if (currentAnimationStep < totalSteps - 1) { currentAnimationStep++; animationRunning = false; }});
+    nextStepButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Continue Button
-    continueButton = std::make_unique<raywtk::Button>();
+    continueButton = std::make_unique<raywtk::GraphButton>();
     continueButton->buttonText = "Continue";
     continueButton->buttonRect = raylib::Rectangle(CONTINUE_BUTTON_POSX, CONTINUE_BUTTON_POSY, BUTTON_WIDTH, BUTTON_HEIGHT);
     continueButton->Click.append([this]() { animationRunning = true; });
+    continueButton->style = std::make_unique<ds_viz::themes::dark_simple::GraphButtonStyle>();
 
     // Input box initialize graph
     inputBoxInitializeGraph = std::make_unique<raywtk::InputBox>(raylib::Rectangle(INPUT_BOX_INIT_GRAPH_POSX, INPUT_BOX_INIT_GRAPH_POSY, INPUT_BOX_WIDTH, INPUT_BOX_HEIGHT), raylib::Color::White(), raylib::Color::Black(), raylib::Color::Pink(), 1, false, false);
@@ -217,7 +236,7 @@ void ds_viz::pages::GraphVisualizer::LoadGraphFromFile(const std::string& filePa
 
     // Create nodes
     for (int i = 0; i < n; ++i) {
-        auto newNode = std::make_unique<raywtk::NodeWidget>(i);
+        auto newNode = std::make_unique<raywtk::GraphNode>(i);
         newNode->position = raylib::Vector2(
             WORKING_FRAME_COORDX + rand() % WORKING_FRAME_WIDTH,
             WORKING_FRAME_COORDY + rand() % WORKING_FRAME_HEIGHT
@@ -264,7 +283,7 @@ void ds_viz::pages::GraphVisualizer::InitializeGraph(int n) {
     };
 
     for (int i = 0; i < n; ++i) {
-        auto newNode = std::make_unique<raywtk::NodeWidget>(i);
+        auto newNode = std::make_unique<raywtk::GraphNode>(i);
         raylib::Vector2 randomPosition = raylib::Vector2(
             getRandomInt(WORKING_FRAME_COORDX, WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH),
             getRandomInt(WORKING_FRAME_COORDY, WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT)
@@ -311,7 +330,7 @@ void ds_viz::pages::GraphVisualizer::InsertNewNode() {
         std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
         return rng() % (maxValue - minValue + 1) + minValue;
     };
-    std::unique_ptr<raywtk::NodeWidget> newNode = std::make_unique<raywtk::NodeWidget>(value);
+    std::unique_ptr<raywtk::GraphNode> newNode = std::make_unique<raywtk::GraphNode>(value);
     raylib::Vector2 randomPosition = raylib::Vector2(getRandomInt(WORKING_FRAME_COORDX, WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH), getRandomInt(WORKING_FRAME_COORDY, WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT));
     if (randomPosition.x - newNode->radius < WORKING_FRAME_COORDX) randomPosition.x += newNode->radius;
     if (randomPosition.x + newNode->radius > WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH) randomPosition.x -= newNode->radius;
@@ -496,7 +515,6 @@ void ds_viz::pages::GraphVisualizer::RenderAnimationStep(const AnimationStep& st
             pseudoCodeDisplay->SetLineState(i, raywtk::PseudoCodeDisplay::LineState::DEFAULT);
         }
     }
-    pseudoCodeDisplay->Render();
 }
 
 void ds_viz::pages::GraphVisualizer::DeleteNode(int node) {
@@ -594,9 +612,9 @@ void ds_viz::pages::GraphVisualizer::ClearGraph() {
 
 void ds_viz::pages::GraphVisualizer::PushToUndoStack() {
     // Create a snapshot of the current state
-    std::vector<std::unique_ptr<raywtk::NodeWidget>> nodeSnapshot;
+    std::vector<std::unique_ptr<raywtk::GraphNode>> nodeSnapshot;
     for (const auto& node : nodes) {
-        nodeSnapshot.push_back(std::make_unique<raywtk::NodeWidget>(*node));
+        nodeSnapshot.push_back(std::make_unique<raywtk::GraphNode>(*node));
     }
 
     undoStack.push({std::move(nodeSnapshot), edges});
@@ -606,9 +624,9 @@ void ds_viz::pages::GraphVisualizer::PushToUndoStack() {
 void ds_viz::pages::GraphVisualizer::Undo() {
     if (!undoStack.empty()) {
         // Push the current state to redoStack
-        std::vector<std::unique_ptr<raywtk::NodeWidget>> nodeSnapshot;
+        std::vector<std::unique_ptr<raywtk::GraphNode>> nodeSnapshot;
         for (const auto& node : nodes) {
-            nodeSnapshot.push_back(std::make_unique<raywtk::NodeWidget>(*node));
+            nodeSnapshot.push_back(std::make_unique<raywtk::GraphNode>(*node));
         }
         redoStack.push({std::move(nodeSnapshot), edges});
 
@@ -623,9 +641,9 @@ void ds_viz::pages::GraphVisualizer::Undo() {
 void ds_viz::pages::GraphVisualizer::Redo() {
     if (!redoStack.empty()) {
         // Push the current state to undoStack
-        std::vector<std::unique_ptr<raywtk::NodeWidget>> nodeSnapshot;
+        std::vector<std::unique_ptr<raywtk::GraphNode>> nodeSnapshot;
         for (const auto& node : nodes) {
-            nodeSnapshot.push_back(std::make_unique<raywtk::NodeWidget>(*node));
+            nodeSnapshot.push_back(std::make_unique<raywtk::GraphNode>(*node));
         }
         undoStack.push({std::move(nodeSnapshot), edges});
 
@@ -801,6 +819,9 @@ void ds_viz::pages::GraphVisualizer::Update(float dt)
         }
     }
 
+    // Update the Main Menu button
+    mainMenuButton->Update(dt);
+
     // Update all nodes
     for (auto &node : nodes) {
         //node->Update(dt);
@@ -913,27 +934,8 @@ void ds_viz::pages::GraphVisualizer::Render()
         RenderAnimationStep(animationSteps[currentAnimationStep], edges);
     }
 
-    // Render the speed display
-    float speed = 1.0f / animationStepDuration; // Calculate the speed in steps per second
-    std::string speedText = std::to_string(speed) + " steps per sec";
-
-    // Define the rectangle for the speed display
-    float rectWidth = 300.0f;
-    float rectHeight = 50.0f;
-    float rectX = WORKING_FRAME_COORDX + WORKING_FRAME_WIDTH - rectWidth - 10; // Align to the right of the working frame
-    float rectY = WORKING_FRAME_COORDY + WORKING_FRAME_HEIGHT + PROGRESS_BAR_HEIGHT + 10; // Below the progress bar
-
-    // Draw the rectangle border
-    raylib::Rectangle speedRect(rectX, rectY, rectWidth, rectHeight);
-    speedRect.DrawLines(raylib::Color::White());
-
-    // Draw the speed text inside the rectangle
-    int fontSize = 20;
-    int textWidth = MeasureText(speedText.c_str(), fontSize);
-    int textHeight = fontSize;
-    float textX = rectX + (rectWidth - textWidth) / 2; // Center the text horizontally
-    float textY = rectY + (rectHeight - textHeight) / 2; // Center the text vertically
-    raylib::DrawText(speedText.c_str(), textX, textY, fontSize, raylib::Color::White());
+    // Render the Main Menu button
+    mainMenuButton->Render();
 
     // vector nodes render
     for(auto &node : nodes){

@@ -84,7 +84,7 @@ namespace raywtk {
     void InputBox::Render() {
         if(processing){
             rect.DrawRoundedLines(0.3f, 10, PINK);
-            raylib::DrawText(text, (int)(rect.x + 10), (int)(rect.y + 10), 20, textColor);
+            raylib::DrawText(text, (int)(rect.x + 10), int(rect.y + (rect.height - 16) / 2.0), 16, textColor);
         }
     }
 

@@ -6,6 +6,7 @@
 #include "raylib-cpp/Font.hpp"
 #include "raylib-cpp/Functions.hpp"
 #include "raylib-cpp/Rectangle.hpp"
+#include "raylib-cpp/Texture.hpp"
 #include "raylib-cpp/Vector2.hpp"
 #include "widget_toolkit/controls/button.hpp"
 #include "widget_toolkit/controls/text_box.hpp"
@@ -240,11 +241,13 @@ class TriePage : public Page
     bool _isPlaying = false;
     float _currentTime = 0;
 
-    std::function<void()> _deferredStateChange;
+    std::unique_ptr<raylib::Font> titleFont;
+    raylib::Text title;
 
     // Controls
 
     raywtk::Button _homeButton;
+    raylib::Texture homeIcon = raylib::Texture("images/return_button.png");
 
     raywtk::Button _toggleShowActionsButton;
     raywtk::Button _initializeButton;
